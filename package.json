@@ -1,7 +1,7 @@
 {
   "name": "t1-asset-tracking-frontend",
   "version": "1.0.0",
-  "description": ":)",
+  "description": "Web-based Asset Tracking Interface: A user-friendly platform for managing and tracking assets in real-time, featuring interactive dashboards, detailed reporting, and seamless integration with backend services.",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -16,7 +16,7 @@
     "type": "git",
     "url": "git+https://github.com/SEV-POWERHOUSE/t1-asset-tracking-frontend.git"
   },
-  "author": "",
+  "author": "Team 1",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/SEV-POWERHOUSE/t1-asset-tracking-frontend/issues"
