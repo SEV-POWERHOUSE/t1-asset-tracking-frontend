@@ -1,0 +1,45 @@
+{
+  "name": "t1-asset-tracking-frontend",
+  "version": "1.0.0",
+  "description": ":)",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cross-env APP_ENV=development vite",
+    "build": "cross-env APP_ENV=production vite build",
+    "preview": "vite preview",
+    "bundle": "mv .env dist",
+    "test": "cypress run",
+    "test:open": "cypress open"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SEV-POWERHOUSE/t1-asset-tracking-frontend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SEV-POWERHOUSE/t1-asset-tracking-frontend/issues"
+  },
+  "homepage": "https://github.com/SEV-POWERHOUSE/t1-asset-tracking-frontend#readme",
+  "dependencies": {
+    "@mdi/font": "^7.2.96",
+    "axios": "^1.5.1",
+    "dotenv": "^16.3.1",
+    "eslint": "^8.50.0",
+    "eslint-plugin-vue": "^9.17.0",
+    "vite-plugin-vuetify": "^1.0.2",
+    "vue": "^3.3.4",
+    "vue-router": "^4.2.5",
+    "vuetify": "^3.4.0-beta.1",
+    "vuex": "^4.1.0",
+    "webfontloader": "^1.6.28"
+  },
+  "devDependencies": {
+    "@mdi/js": "^7.2.96",
+    "@vitejs/plugin-vue": "^4.3.4",
+    "cross-env": "^7.0.3",
+    "cypress": "^13.2.0",
+    "vite": "^4.4.9"
+  }
+}
