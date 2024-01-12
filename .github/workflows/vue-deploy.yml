@@ -1,0 +1,46 @@
+name: Deploy dev to AWS
+
+#turn off deploy to AWS
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - dev
+
+jobs:
+  aws-deploy:
+    runs-on: ubuntu-latest
+    env:
+      VITE_APP_CLIENT_ID: ${{secrets.VITE_APP_CLIENT_ID}}
+      VITE_APP_API_URL: ${{secrets.VITE_APP_API_URL}}
+      VITE_APP_CLIENT_URL: ${{secrets.VITE_APP_CLIENT_URL}}
+      VITE_APP_CLIENT_SECRET: ${{secrets.VITE_APP_CLIENT_SECRET}}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: dev
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.11.0'
+      - name: Create env
+        run: |
+          touch .env
+          echo "VITE_APP_CLIENT_ID='$VITE_APP_CLIENT_ID'" >> .env
+          echo "VITE_APP_API_URL='$VITE_APP_API_URL'" >> .env
+          echo "VITE_APP_CLIENT_URL='$VITE_APP_CLIENT_URL'" >> .env
+          echo "VITE_APP_CLIENT_SECRET='$VITE_APP_CLIENT_SECRET'" >> .env      
+      
+      - run: npm install
+      - run: npm run build
+      - run: npm run bundle
+      
+      - name: Deploy to Server
+        uses: easingthemes/ssh-deploy@v2.1.1
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
+          ARGS: "-rltgoDzvO --delete"
+          SOURCE: "dist/"
+          REMOTE_HOST: "asset.eaglesoftwareteam.com"
+          REMOTE_USER: ubuntu
+          TARGET: "/var/www/html/asset/t1"
