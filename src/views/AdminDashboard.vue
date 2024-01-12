@@ -1,63 +1,63 @@
 <script setup>
-import { ref, watchEffect, computed } from "vue";
-import { useRouter } from "vue-router";
-import Utils from "../config/utils.js";
-import UserAccommodationRequestServices from "../services/userAccommodationRequestServices";
+// import { ref, watchEffect, computed } from "vue";
+// import { useRouter } from "vue-router";
+// import Utils from "../config/utils.js";
+// import UserAccommodationRequestServices from "../services/userAccommodationRequestServices";
 
-const router = useRouter();
-const userAccommodationRequests = ref([]);
-const user = Utils.getStore("user");
-const message = ref("");
-const selectedStatus = ref(''); // To hold the filter status
+// const router = useRouter();
+// const userAccommodationRequests = ref([]);
+// const user = Utils.getStore("user");
+// const message = ref("");
+// const selectedStatus = ref(''); // To hold the filter status
 
-const filteredUserAccommodationRequests = computed(() => {
-  if (!selectedStatus.value) {
-    return userAccommodationRequests.value;
-  }
-  return userAccommodationRequests.value.filter(request => request.status === selectedStatus.value);
-});
+// const filteredUserAccommodationRequests = computed(() => {
+//   if (!selectedStatus.value) {
+//     return userAccommodationRequests.value;
+//   }
+//   return userAccommodationRequests.value.filter(request => request.status === selectedStatus.value);
+// });
 
-const viewUserAccommodationRequest = (userAccommodationRequest) => {
-  router.push({ name: "view", params: { id: userAccommodationRequest.id } });
-};
+// const viewUserAccommodationRequest = (userAccommodationRequest) => {
+//   router.push({ name: "view", params: { id: userAccommodationRequest.id } });
+// };
 
-watchEffect(() => {
-  message.value = userAccommodationRequests.value.length === 0
-    ? "There are currently no active accommodation requests."
-    : "Active Accommodation Requests";
-});
+// watchEffect(() => {
+//   message.value = userAccommodationRequests.value.length === 0
+//     ? "There are currently no active accommodation requests."
+//     : "Active Accommodation Requests";
+// });
 
-const retrieveUserAccommodationRequests = () => {
-  UserAccommodationRequestServices.getAll()
-    .then((response) => {
-      userAccommodationRequests.value = response.data || [];
-    })
-    .catch((e) => {
-      console.error(e.response?.data?.message || e.message);
-      userAccommodationRequests.value = [];
-    });
-};
+// const retrieveUserAccommodationRequests = () => {
+//   UserAccommodationRequestServices.getAll()
+//     .then((response) => {
+//       userAccommodationRequests.value = response.data || [];
+//     })
+//     .catch((e) => {
+//       console.error(e.response?.data?.message || e.message);
+//       userAccommodationRequests.value = [];
+//     });
+// };
 
-const deleteUserAccommodationRequest = async (id) => {
-  try {
-    const response = await UserAccommodationRequestServices.delete(id);
-    if (response.data.message === "userAccommodationRequest was deleted successfully!") {
-      // Filter out the deleted request from the local state
-      userAccommodationRequests.value = userAccommodationRequests.value.filter(
-        (request) => request.id !== id
-      );
-    }
-  } catch (error) {
-    console.error(error.response?.data?.message || error.message);
-  }
-};
+// const deleteUserAccommodationRequest = async (id) => {
+//   try {
+//     const response = await UserAccommodationRequestServices.delete(id);
+//     if (response.data.message === "userAccommodationRequest was deleted successfully!") {
+//       // Filter out the deleted request from the local state
+//       userAccommodationRequests.value = userAccommodationRequests.value.filter(
+//         (request) => request.id !== id
+//       );
+//     }
+//   } catch (error) {
+//     console.error(error.response?.data?.message || error.message);
+//   }
+// };
 
 
-retrieveUserAccommodationRequests();
+// retrieveUserAccommodationRequests();
 </script>
 
 <template>
-    <div>
+    <!-- <div>
       <v-container>
         <v-toolbar>
           <v-toolbar-title>Welcome, {{ user.fName }} {{ user.lName }}!</v-toolbar-title>
@@ -107,6 +107,6 @@ retrieveUserAccommodationRequests();
         </v-table>
         </v-card>
       </v-container>
-    </div>
+    </div> -->
   </template>
   

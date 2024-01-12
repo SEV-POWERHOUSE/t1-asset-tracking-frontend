@@ -1,4 +1,4 @@
-<script>
+<!-- <script>
 import axios from 'axios';
 
 const apiBaseUrl = process.env.NODE_ENV === 'production'
@@ -22,4 +22,4 @@ export default {
 
 <template>
   
-</template>
+</template> -->
