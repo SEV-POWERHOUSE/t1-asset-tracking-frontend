@@ -30,31 +30,31 @@ const loginWithGoogle = () => {
   });
 };
 
-// const handleCredentialResponse = async (response) => {
-//   let token = {
-//     credential: response.credential,
-//   };
-//   await AuthServices.loginUser(token)
-//     .then((response) => {
-//       user.value = response.data;
-//       Utils.setStore('user', user.value);
-//       fName.value = user.value.fName;
-//       lName.value = user.value.lName;
+const handleCredentialResponse = async (response) => {
+  let token = {
+    credential: response.credential,
+  };
+  await AuthServices.loginUser(token)
+    .then((response) => {
+      user.value = response.data;
+      Utils.setStore('user', user.value);
+      fName.value = user.value.fName;
+      lName.value = user.value.lName;
       
-//       // Set the user in the store, which will also set the isAdmin flag
-//       store.commit('setLoginUser', user.value);
+      // Set the user in the store, which will also set the isAdmin flag
+      store.commit('setLoginUser', user.value);
 
-//       // Check if the user is admin and redirect accordingly
-//       if (store.getters.isAdmin) {
-//         router.push({ name: 'adminDashboard' });  // Redirect to admin dashboard
-//       } else {
-//         router.push({ name: 'accommodationsList' });  // Redirect to the existing page for students
-//       }
-//     })
-//     .catch((error) => {
-//       console.log('error', error);
-//     });
-// };
+      // Check if the user is admin and redirect accordingly
+      if (store.getters.isAdmin) {
+        router.push({ name: 'adminDashboard' });  // Redirect to admin dashboard
+      } else {
+        router.push({ name: 'accommodationsList' });  // Redirect to the existing page for students
+      }
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+};
 
 onMounted(() => {
   loginWithGoogle();
