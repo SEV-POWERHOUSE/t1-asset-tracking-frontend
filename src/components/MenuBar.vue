@@ -3,9 +3,8 @@ import ocLogo from "/oc-logo-white.png";
 import { computed, ref, onMounted } from "vue";
 import Utils from "../config/utils";
 import AuthServices from "../services/authServices";
-import { useRouter } from 'vue-router';
-import { useStore } from 'vuex';  // Import useStore
-
+import { useRouter } from "vue-router";
+import { useStore } from "vuex"; // Import useStore
 
 const user = ref(null);
 const title = ref("Asset Tracking");
@@ -13,8 +12,7 @@ const initials = ref("");
 const name = ref("");
 const logoURL = ref("");
 const router = useRouter();
-const store = useStore();  // Use the store
-
+const store = useStore(); // Use the store
 
 const resetMenu = () => {
   user.value = null;
@@ -32,7 +30,7 @@ const logout = () => {
       Utils.removeItem("user");
       router.push({ name: "login" }).then(() => {
         // Check if the NODE_ENV is development
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV === "development") {
           // This will force the view to reload, it's equivalent to a refresh
           router.go();
         }
@@ -52,7 +50,13 @@ onMounted(() => {
 <template>
   <div>
     <v-app-bar app>
-      <router-link :to="store.getters.isAdmin ? { name: 'adminDashboard' } : { name: 'accommodationsList' }">
+      <router-link
+        :to="
+          store.getters.isAdmin
+            ? { name: 'adminDashboard' }
+            : { name: 'accommodationsList' }
+        "
+      >
         <v-img
           class="mx-2"
           :src="logoURL"
@@ -67,15 +71,13 @@ onMounted(() => {
       <v-spacer></v-spacer>
       <v-spacer></v-spacer>
       <div v-if="user">
-
         <!-- Different List button for admin -->
         <!-- <v-btn class="mx-2" v-if="store.getters.isAdmin" :to="{ name: 'adminDashboard' }"> Admin Dashboard </v-btn>
         <v-btn class="mx-2" v-else :to="{ name: 'accommodationsList' }"> Accommodations </v-btn> -->
-        
+
         <!-- Different Accommodation button for admin -->
         <!-- <v-btn class="mx-2" v-if="store.getters.isAdmin" :to="{ name: 'manage' }"> Manage </v-btn>
         <v-btn class="mx-2" v-else :to="{ name: 'requestList' }"> Requests </v-btn> -->
-
       </div>
       <v-menu bottom min-width="200px" rounded offset-y v-if="user">
         <template v-slot:activator="{ props }">
