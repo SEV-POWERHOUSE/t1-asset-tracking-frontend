@@ -69,8 +69,8 @@
           </tbody>
         </v-table>
         <div v-else> -->
-          <!-- This will show when there are no accommodations -->
-        <!-- </div>
+  <!-- This will show when there are no accommodations -->
+  <!-- </div>
       </v-card>
     </v-container>
   </div> -->

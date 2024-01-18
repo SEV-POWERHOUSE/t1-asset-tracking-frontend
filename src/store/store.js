@@ -4,21 +4,16 @@ import Utils from "../config/utils";
 // Vue.use(Vuex);
 
 const user = Utils.getStore("user");
-const testAdminEmails = [
-  "",
-  "z.fike@eagles.oc.edu",
-  "",
-  ""
-];
+const testAdminEmails = ["", "z.fike@eagles.oc.edu", "", ""];
 
 // z.fike@eagles.oc.edu
 // jaxen.mcray@eagles.oc.edu
 
-const isAdmin = user && user.email && (
-  user.email.endsWith('@oc.edu') && 
-  !user.email.endsWith('@eagles.oc.edu') ||
-  testAdminEmails.includes(user.email) // Check if the email is one of the test emails
-);
+const isAdmin =
+  user &&
+  user.email &&
+  ((user.email.endsWith("@oc.edu") && !user.email.endsWith("@eagles.oc.edu")) ||
+    testAdminEmails.includes(user.email)); // Check if the email is one of the test emails
 
 const store = createStore({
   state: {
@@ -30,12 +25,11 @@ const store = createStore({
       state.loginUser = user;
       Utils.setStore("user", user);
       // Whenever the loginUser is set, update the isAdmin state as well
-      state.isAdmin = (
-        user.email && 
-        user.email.endsWith('@oc.edu') && 
-        !user.email.endsWith('@eagles.oc.edu') ||
-        testAdminEmails.includes(user.email)
-      );
+      state.isAdmin =
+        (user.email &&
+          user.email.endsWith("@oc.edu") &&
+          !user.email.endsWith("@eagles.oc.edu")) ||
+        testAdminEmails.includes(user.email);
     },
   },
   actions: {
@@ -43,7 +37,7 @@ const store = createStore({
       // This action can be dispatched when a user logs in
       // Replace this with your actual login logic
       // After login, commit the user to setLoginUser mutation
-      commit('setLoginUser', user);
+      commit("setLoginUser", user);
     },
   },
   getters: {

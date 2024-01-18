@@ -52,12 +52,11 @@
 //   }
 // };
 
-
 // retrieveUserAccommodationRequests();
 </script>
 
 <template>
-    <!-- <div>
+  <!-- <div>
       <v-container>
         <v-toolbar>
           <v-toolbar-title>Welcome, {{ user.fName }} {{ user.lName }}!</v-toolbar-title>
@@ -108,5 +107,4 @@
         </v-card>
       </v-container>
     </div> -->
-  </template>
-  
+</template>
