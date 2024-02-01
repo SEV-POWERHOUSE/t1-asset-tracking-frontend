@@ -1,112 +1,97 @@
 <script setup>
-// import { ref, watchEffect, computed } from "vue";
-// import { useRouter } from "vue-router";
-// import Utils from "../config/utils.js";
-// import UserAccommodationRequestServices from "../services/userAccommodationRequestServices";
+import { ref, onMounted } from "vue";
+import userServices from "../services/userServices";
+import userGroupServices from "../services/userGroupServices";
 
-// const router = useRouter();
-// const userAccommodationRequests = ref([]);
-// const user = Utils.getStore("user");
-// const message = ref("");
-// const selectedStatus = ref(''); // To hold the filter status
+const users = ref([]);
+const userGroups = ref([]);
+const groupNames = ref([]);
+const groupNameToIdMap = ref({});
 
-// const filteredUserAccommodationRequests = computed(() => {
-//   if (!selectedStatus.value) {
-//     return userAccommodationRequests.value;
-//   }
-//   return userAccommodationRequests.value.filter(request => request.status === selectedStatus.value);
-// });
+const fetchUsersAndGroups = async () => {
+  try {
+    const [usersResponse, groupsResponse] = await Promise.all([
+      userServices.getAll(),
+      userGroupServices.getAll(),
+    ]);
 
-// const viewUserAccommodationRequest = (userAccommodationRequest) => {
-//   router.push({ name: "view", params: { id: userAccommodationRequest.id } });
-// };
+    users.value = usersResponse.data;
+    userGroups.value = groupsResponse.data;
 
-// watchEffect(() => {
-//   message.value = userAccommodationRequests.value.length === 0
-//     ? "There are currently no active accommodation requests."
-//     : "Active Accommodation Requests";
-// });
+    groupNames.value = groupsResponse.data.map((group) => group.name);
+    groupNameToIdMap.value = groupsResponse.data.reduce((map, group) => {
+      map[group.name] = group.id;
+      return map;
+    }, {});
+  } catch (error) {
+    console.error("Failed to fetch users or groups:", error);
+  }
+};
 
-// const retrieveUserAccommodationRequests = () => {
-//   UserAccommodationRequestServices.getAll()
-//     .then((response) => {
-//       userAccommodationRequests.value = response.data || [];
-//     })
-//     .catch((e) => {
-//       console.error(e.response?.data?.message || e.message);
-//       userAccommodationRequests.value = [];
-//     });
-// };
+onMounted(fetchUsersAndGroups);
 
-// const deleteUserAccommodationRequest = async (id) => {
-//   try {
-//     const response = await UserAccommodationRequestServices.delete(id);
-//     if (response.data.message === "userAccommodationRequest was deleted successfully!") {
-//       // Filter out the deleted request from the local state
-//       userAccommodationRequests.value = userAccommodationRequests.value.filter(
-//         (request) => request.id !== id
-//       );
-//     }
-//   } catch (error) {
-//     console.error(error.response?.data?.message || error.message);
-//   }
-// };
+const updateUserGroup = async (user, groupName) => {
+  const groupId = groupNameToIdMap.value[groupName];
+  if (!groupId) {
+    console.error("Group ID not found for selected group");
+    return;
+  }
 
-
-// retrieveUserAccommodationRequests();
+  try {
+    await userServices.updateGroup(user.id, groupId);
+    console.log("User group updated successfully");
+    // You might need to re-fetch the user data here to reflect the changes
+  } catch (error) {
+    console.error("Failed to update user group:", error);
+  }
+};
 </script>
 
 <template>
-    <!-- <div>
-      <v-container>
-        <v-toolbar>
-          <v-toolbar-title>Welcome, {{ user.fName }} {{ user.lName }}!</v-toolbar-title>
-        </v-toolbar>
-        <br /><br />
-        <v-select
-        v-model="selectedStatus"
-        :items="['', 'Pending', 'Approved', 'Declined']"
-        label="Filter by status"
-        solo
-        @change="retrieveUserAccommodationRequests"
-        ></v-select>
-        <v-card>
-          <v-card-title> Admin Dashboard </v-card-title>
-          <v-card-text>
-            <b>{{ message }}</b>
-          </v-card-text>
+  <div>
+    <v-container>
+      <v-card>
+        <v-card-title>Admin Dashboard</v-card-title>
+        <v-card-text>
           <v-table>
-          <thead>
-            <tr>
-              <th class="text-left">Request ID</th>
-              <th class="text-left">Semester</th>
-              <th class="text-left">Name</th>
-              <th class="text-left">Status</th>
-              <th class="text-left">View</th>
-              <th class="text-left">Delete</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(item, index) in filteredUserAccommodationRequests" :key="item.id">
-              <td>{{ item.id }}</td>
-              <td>{{ item.semester.title }}</td>
-              <td>{{ item.user.fName }} {{ item.user.lName }}</td>
-              <td>{{ item.status }}</td>
-              <td>
-                <v-icon small class="mx-4" @click="viewUserAccommodationRequest(item)">
-                  mdi-format-list-bulleted-type
-                </v-icon>
-              </td>
-              <td>
-                <v-btn icon color="red" @click="deleteUserAccommodationRequest(item.id)">
-                  <v-icon>mdi-delete</v-icon>
-                </v-btn>
-              </td>
-            </tr>
-          </tbody>
-        </v-table>
-        </v-card>
-      </v-container>
-    </div> -->
-  </template>
-  
+            <thead>
+              <tr>
+                <th class="text-left">User ID</th>
+                <th class="text-left">Name</th>
+                <th class="text-left">Group</th>
+                <th class="text-left">Change Group</th>
+                <th class="text-left">Save</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="user in users" :key="user.id">
+                <td>{{ user.id }}</td>
+                <td>{{ user.fName }} {{ user.lName }}</td>
+                <td>
+                  {{
+                    userGroups.find((group) => group.id === user.userGroupId)
+                      ?.name || "No Group"
+                  }}
+                </td>
+                <td>
+                  <v-select
+                    v-model="user.selectedGroupName"
+                    :items="groupNames"
+                    label="Select Group"
+                  ></v-select>
+                </td>
+                <td>
+                  <v-btn
+                    color="primary"
+                    @click="updateUserGroup(user, user.selectedGroupName)"
+                    >Save</v-btn
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </v-table>
+        </v-card-text>
+      </v-card>
+    </v-container>
+  </div>
+</template>
