@@ -4,7 +4,7 @@ import { computed, ref, onMounted } from "vue";
 import Utils from "../config/utils";
 import AuthServices from "../services/authServices";
 import { useRouter } from "vue-router";
-import { useStore } from "vuex"; // Import useStore
+import { useStore } from "vuex";
 
 const user = ref(null);
 const title = ref("Asset Tracking");
@@ -16,12 +16,16 @@ const store = useStore(); // Use the store
 
 const isAdmin = computed(() => store.getters.isAdmin);
 const isGroupAssigned = computed(() => store.getters.isGroupAssigned);
+// Compute isDev from store
+const isDev = computed(() => store.getters.isDev);
 
 const getDashboardRoute = () => {
   if (store.getters.isAdmin) {
     return { name: "adminDashboard" };
   } else if (store.getters.isGroupAssigned) {
     return { name: "userDashboard" };
+  } else if (store.getters.isDev) { // This condition is to ensure correct routing for devs
+    return { name: "devDashboard" };
   } else {
     return { name: "otherDashboard" };
   }
@@ -41,9 +45,7 @@ const logout = () => {
       console.log(response);
       Utils.removeItem("user");
       router.push({ name: "login" }).then(() => {
-        // Check if the NODE_ENV is development
         if (process.env.NODE_ENV === "development") {
-          // This will force the view to reload, it's equivalent to a refresh
           router.go();
         }
       });
@@ -84,6 +86,9 @@ onMounted(() => {
         </template>
         <template v-else>
           <v-btn text :to="{ name: 'otherDashboard' }">Other Dashboard</v-btn>
+        </template>
+        <template v-if="isDev">
+          <v-btn text :to="{ name: 'devDashboard' }">Dev Dashboard</v-btn>
         </template>
       </template>
 

@@ -4,6 +4,7 @@ import Login from "./views/Login.vue";
 import AdminDashboard from "./views/AdminDashboard.vue";
 import OtherDashboard from "./views/OtherDashboard.vue";
 import UserDashboard from "./views/UserDashboard.vue";
+import DevDashboard from "./views/DevDashboard.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -28,6 +29,11 @@ const router = createRouter({
       path: "/userDashboard",
       name: "userDashboard",
       component: UserDashboard,
+    },
+    {
+      path: "/devDashboard",
+      name: "devDashboard",
+      component: DevDashboard,
     },
   ],
 });

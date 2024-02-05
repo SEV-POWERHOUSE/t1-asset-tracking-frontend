@@ -30,6 +30,11 @@ const store = createStore({
     isGroupAssigned(state) {
       return state.loginUser && state.loginUser.userGroupId !== null;
     },
+    // Add a getter to check for development permission
+    isDev(state) {
+      // This will return true if `devPermission` is true, and false otherwise
+      return state.loginUser && state.loginUser.devPermission === true;
+    },
   },
 });
 
