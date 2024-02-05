@@ -2,6 +2,10 @@
  * Vuetify3 Plugin
  */
 import { createVuetify } from "vuetify";
+// Import components that are not currently added to vuetify 3 
+// (Mainly for v-data-table)
+import * as components from "vuetify/components"
+import * as labsComponents from "vuetify/labs/components"
 
 // Misc
 import { loadFonts } from "./webfontloader";
@@ -27,6 +31,12 @@ const myCustomLightTheme = {
 };
 
 const vuetify = createVuetify({
+  // Import components that are not currently added to vuetify 3 
+  // (Mainly for v-data-table)
+  components : {
+    ...components,
+    ...labsComponents,
+    },
   theme: {
     defaultTheme: "myCustomLightTheme",
     themes: {

@@ -1,7 +1,7 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import userServices from "../services/userServices";
-import userGroupServices from "../services/userGroupServices";
+import { ref, onMounted } from 'vue';
+import userServices from '../services/userServices';
+import userGroupServices from '../services/userGroupServices';
 
 const users = ref([]);
 const userGroups = ref([]);
@@ -18,13 +18,13 @@ const fetchUsersAndGroups = async () => {
     users.value = usersResponse.data;
     userGroups.value = groupsResponse.data;
 
-    groupNames.value = groupsResponse.data.map((group) => group.name);
+    groupNames.value = groupsResponse.data.map(group => group.name);
     groupNameToIdMap.value = groupsResponse.data.reduce((map, group) => {
       map[group.name] = group.id;
       return map;
     }, {});
   } catch (error) {
-    console.error("Failed to fetch users or groups:", error);
+    console.error('Failed to fetch users or groups:', error);
   }
 };
 
@@ -33,18 +33,26 @@ onMounted(fetchUsersAndGroups);
 const updateUserGroup = async (user, groupName) => {
   const groupId = groupNameToIdMap.value[groupName];
   if (!groupId) {
-    console.error("Group ID not found for selected group");
+    console.error('Group ID not found for selected group');
     return;
   }
 
   try {
     await userServices.updateGroup(user.id, groupId);
-    console.log("User group updated successfully");
-    // You might need to re-fetch the user data here to reflect the changes
+    console.log('User group updated successfully');
+    fetchUsersAndGroups();
   } catch (error) {
-    console.error("Failed to update user group:", error);
+    console.error('Failed to update user group:', error);
   }
 };
+
+// Define headers for v-data-table. Currently not working
+const headers = [
+  { text: 'Name', value: 'fName' },
+  { text: 'Group', value: 'group' },
+  { text: 'Change Group', value: 'changeGroup', sortable: false },
+  { text: 'Save', value: 'actions', sortable: false },
+];
 </script>
 
 <template>
@@ -53,43 +61,31 @@ const updateUserGroup = async (user, groupName) => {
       <v-card>
         <v-card-title>Admin Dashboard</v-card-title>
         <v-card-text>
-          <v-table>
-            <thead>
+          <v-data-table
+            :headers="headers"
+            :items="users"
+            item-key="id"
+            class="elevation-1"
+          >
+            <template v-slot:item="{ item }">
               <tr>
-                <th class="text-left">User ID</th>
-                <th class="text-left">Name</th>
-                <th class="text-left">Group</th>
-                <th class="text-left">Change Group</th>
-                <th class="text-left">Save</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="user in users" :key="user.id">
-                <td>{{ user.id }}</td>
-                <td>{{ user.fName }} {{ user.lName }}</td>
+                <td>{{ item.fName }} {{ item.lName }}</td>
                 <td>
-                  {{
-                    userGroups.find((group) => group.id === user.userGroupId)
-                      ?.name || "No Group"
-                  }}
+                  {{ userGroups.find(group => group.id === item.userGroupId)?.name || 'No Group' }}
                 </td>
                 <td>
                   <v-select
-                    v-model="user.selectedGroupName"
+                    v-model="item.selectedGroupName"
                     :items="groupNames"
                     label="Select Group"
                   ></v-select>
                 </td>
                 <td>
-                  <v-btn
-                    color="primary"
-                    @click="updateUserGroup(user, user.selectedGroupName)"
-                    >Save</v-btn
-                  >
+                  <v-btn color="primary" @click="updateUserGroup(item, item.selectedGroupName)">Save</v-btn>
                 </td>
               </tr>
-            </tbody>
-          </v-table>
+            </template>
+          </v-data-table>
         </v-card-text>
       </v-card>
     </v-container>
