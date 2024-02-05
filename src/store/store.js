@@ -25,7 +25,6 @@ const store = createStore({
     isAdmin(state) {
       // Assuming `adminGroupId` is the ID for the Admin group, adjust as necessary
       const adminGroupId = 1; // Example ID, adjust based on your actual Admin group ID
-      console.log(state.loginUser);
       return state.loginUser && state.loginUser.userGroupId === adminGroupId;
     },
     isGroupAssigned(state) {
