@@ -3,22 +3,22 @@ import apiClient from "./services.js";
 export default {
   // Retrieve all users
   getAll() {
-    return apiClient.get("/users");
+    return apiClient.get("/user");
   },
 
   // Find a single user by ID
   get(id) {
-    return apiClient.get(`/users/${id}`);
+    return apiClient.get(`/user/${id}`);
   },
 
   // Create a new user
   create(data) {
-    return apiClient.post("/users", data);
+    return apiClient.post("/user", data);
   },
 
   // Update a user by ID
   update(id, data) {
-    return apiClient.put(`/users/${id}`, data);
+    return apiClient.put(`/user/${id}`, data);
   },
 
   // Update a user's group by user ID
@@ -29,11 +29,11 @@ export default {
 
   // Delete a user by ID
   delete(id) {
-    return apiClient.delete(`/users/${id}`);
+    return apiClient.delete(`/user/${id}`);
   },
 
   // Delete all users
   deleteAll() {
-    return apiClient.delete(`/users`);
+    return apiClient.delete(`/user`);
   },
 };
