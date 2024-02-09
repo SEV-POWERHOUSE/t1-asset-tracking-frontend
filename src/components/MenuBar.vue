@@ -32,12 +32,15 @@ const getDashboardRoute = () => {
 };
 
 const resetMenu = () => {
-  user.value = Utils.getStore("user");
-  if (user.value && user.value.fName && user.value.lName) {
+  user.value = store.state.loginUser; // or Utils.getStore("user"), depending on your state management
+  if (user.value) {
     initials.value = user.value.fName[0] + user.value.lName[0];
     name.value = user.value.fName + " " + user.value.lName;
+    // No changes needed here for the profile picture URL, just ensure it's accessible in the user object
   }
 };
+
+
 
 const logout = () => {
   AuthServices.logoutUser(user.value)
@@ -97,12 +100,13 @@ onMounted(() => {
           <template v-slot:activator="{ props }">
             <v-btn v-bind="props" icon x-large>
               <v-avatar color="secondary">
-                <span class="accent--text font-weight-bold">{{
-                  initials
-                }}</span>
+                <img v-if="user.profilePictureURL" :src="user.profilePictureURL" alt="Profile Picture">
+                <span v-else class="accent--text font-weight-bold">{{ initials }}</span>
               </v-avatar>
+
             </v-btn>
           </template>
+
           <v-card>
             <v-card-text>
               <div class="mx-auto text-center">

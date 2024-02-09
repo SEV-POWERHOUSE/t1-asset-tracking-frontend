@@ -9,10 +9,10 @@ const store = createStore({
   },
   mutations: {
     setLoginUser(state, user) {
-      state.loginUser = user;
-      Utils.setStore("user", user);
+      state.loginUser = user; // Assuming `user` includes `profilePictureURL`
+      Utils.setStore("user", user); // This utility method should also save the profilePictureURL
     },
-  },
+  },  
   actions: {
     login({ commit }, user) {
       commit("setLoginUser", user);
