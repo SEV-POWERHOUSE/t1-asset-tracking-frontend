@@ -4,7 +4,8 @@ import Login from "./views/Login.vue";
 import AdminDashboard from "./views/AdminDashboard.vue";
 import OtherDashboard from "./views/OtherDashboard.vue";
 import UserDashboard from "./views/UserDashboard.vue";
-import DevDashboard from "./views/DevDashboard.vue";
+import DevTools from "./views/DevTools.vue";
+import GroupAssignment from "./views/GroupAssignment.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -31,9 +32,14 @@ const router = createRouter({
       component: UserDashboard,
     },
     {
-      path: "/devDashboard",
-      name: "devDashboard",
-      component: DevDashboard,
+      path: "/devTools",
+      name: "devTools",
+      component: DevTools,
+    },
+    {
+      path: "/groupAssignment",
+      name: "groupAssignment",
+      component: GroupAssignment,
     },
   ],
 });
