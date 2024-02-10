@@ -18,7 +18,7 @@ import "@mdi/font/css/materialdesignicons.css";
 const myCustomLightTheme = {
   dark: false,
   colors: {
-    primary: "#E1F0F8",
+    primary: "#801429",
     secondary: "#E1E1E1",
     accent: "#47121D",
     success: "#47121D",
@@ -27,7 +27,8 @@ const myCustomLightTheme = {
     blue: "#196CA2",
     yellow: "#F8C545",
     darkblue: "#032F45",
-  },
+    background: "#FFFFFF"
+  }
 };
 
 const vuetify = createVuetify({

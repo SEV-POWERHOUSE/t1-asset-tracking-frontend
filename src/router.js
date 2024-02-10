@@ -14,21 +14,36 @@ const router = createRouter({
       alias: "/login",
       name: "login",
       component: Login,
+      meta: {
+        breadCrumb: [{ text: 'Login' }]
+      }
     },
     {
       path: "/adminDashboard",
       name: "adminDashboard",
       component: AdminDashboard,
+      meta: {
+        breadCrumb: [{ text: 'Admin Dashboard' }]
+      }
     },
     {
       path: "/otherDashboard",
       name: "otherDashboard",
       component: OtherDashboard,
+      meta: {
+        breadCrumb: [{ text: 'Other Dashboard' }]
+      }
     },
     {
       path: "/userDashboard",
       name: "userDashboard",
       component: UserDashboard,
+      meta: {
+        breadCrumb: [
+          { text: 'Login', to: {name: 'login'}},
+          { text: 'User Dashboard' }
+        ]
+      }
     },
     {
       path: "/devDashboard",
