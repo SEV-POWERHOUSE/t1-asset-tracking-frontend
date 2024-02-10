@@ -37,3 +37,4 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+node_modules

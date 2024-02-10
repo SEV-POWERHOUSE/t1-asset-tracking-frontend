@@ -62,19 +62,10 @@ onMounted(() => {
 
 <template>
   <div>
-    <v-app-bar app>
-      <router-link :to="getDashboardRoute()">
-        <v-img
-          class="mx-2"
-          :src="logoURL"
-          height="50"
-          width="50"
-          contain
-        ></v-img>
-      </router-link>
+    <v-app-bar app color="primary">
+      <v-app-bar-nav-icon></v-app-bar-nav-icon>
       <v-toolbar-title>{{ title }}</v-toolbar-title>
       <v-spacer></v-spacer>
-
       <template v-if="user">
         <!-- Conditional rendering based on user group -->
         <template v-if="isAdmin">

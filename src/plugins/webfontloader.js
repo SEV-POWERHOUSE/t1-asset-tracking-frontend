@@ -7,3 +7,6 @@ export async function loadFonts() {
     },
   });
 }
+
+
+// @import url('https://fonts.googleapis.com/css2?family=Sofia+Sans+Extra+Condensed&display=swap');
