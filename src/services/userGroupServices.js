@@ -33,6 +33,6 @@ export default {
 
   // Delete all UserGroups
   deleteAll() {
-    return apiClient.delete(`/userGroups`);
+    return apiClient.delete(`/userGroup`);
   },
 };
