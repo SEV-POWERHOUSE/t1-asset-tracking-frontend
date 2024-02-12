@@ -24,7 +24,7 @@ export default {
   // Update a user's group by user ID
   updateGroup(userId, groupId) {
     console.log(`Service: Updating user ${userId} group to`, groupId);
-    return apiClient.put(`/users/${userId}/group`, { userGroupId: groupId });
+    return apiClient.put(`/user/${userId}/group`, { userGroupId: groupId });
   },
 
   // Delete a user by ID
