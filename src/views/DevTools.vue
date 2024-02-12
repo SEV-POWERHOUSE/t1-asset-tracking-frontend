@@ -112,7 +112,7 @@ watch(users, (newUsers) => {
           </v-data-table>
         </v-card-text>
         <v-card-text>
-          <v-btn color="success" @click="saveAllUserGroupChanges">Save All Changes</v-btn>
+          <v-btn color="secondary" @click="saveAllUserGroupChanges">Save All Changes</v-btn>
         </v-card-text>
       </v-card>
     </v-container>
