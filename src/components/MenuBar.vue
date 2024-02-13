@@ -24,8 +24,7 @@ const getDashboardRoute = () => {
     return { name: "adminDashboard" };
   } else if (store.getters.isGroupAssigned) {
     return { name: "userDashboard" };
-  } else if (store.getters.isDev) { // This condition is to ensure correct routing for devs
-    return { name: "devDashboard" };
+  } else if (store.getters.isDev) {
   } else {
     return { name: "otherDashboard" };
   }
@@ -66,23 +65,15 @@ onMounted(() => {
 
 <template>
   <div>
-    <v-app-bar app>
-      <router-link :to="getDashboardRoute()">
-        <v-img
-          class="mx-2"
-          :src="logoURL"
-          height="50"
-          width="50"
-          contain
-        ></v-img>
-      </router-link>
+    <v-app-bar app color="primary">
+      <v-app-bar-nav-icon></v-app-bar-nav-icon>
       <v-toolbar-title>{{ title }}</v-toolbar-title>
       <v-spacer></v-spacer>
-
       <template v-if="user">
         <!-- Conditional rendering based on user group -->
         <template v-if="isAdmin">
           <v-btn text :to="{ name: 'adminDashboard' }">Admin Dashboard</v-btn>
+          <v-btn text :to="{ name: 'groupAssignment' }">Group Assignment</v-btn>
         </template>
         <template v-else-if="isGroupAssigned">
           <v-btn text :to="{ name: 'userDashboard' }">User Dashboard</v-btn>
@@ -91,7 +82,7 @@ onMounted(() => {
           <v-btn text :to="{ name: 'otherDashboard' }">Other Dashboard</v-btn>
         </template>
         <template v-if="isDev">
-          <v-btn text :to="{ name: 'devDashboard' }">Dev Dashboard</v-btn>
+          <v-btn text :to="{ name: 'devTools' }">Dev Tools</v-btn>
         </template>
       </template>
 
