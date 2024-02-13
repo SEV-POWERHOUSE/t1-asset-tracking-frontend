@@ -1,4 +1,4 @@
-# Asset Tracking System for Oklahoma Christian University
+# Asset Tracking System - Oklahoma Christian University
 
 This project develops a web application designed for Support Central and OC Operation, aimed at managing and tracking Oklahoma Christian University's physical assets. The application facilitates comprehensive asset management including acquisition, location, assignment to individuals, and maintenance, with a focus on an intuitive and user-friendly frontend interface.
 
