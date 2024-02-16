@@ -47,8 +47,8 @@ const handleCredentialResponse = async (response) => {
       if (store.getters.isAdmin) {
         router.push({ name: "adminDashboard" }); // Redirect to admin dashboard
       } else if (store.getters.isGroupAssigned) {
-        router.push({ name: "userDashboard" }); // Redirect to the page for non admin but not null id
-      } else router.push({ name: "unassignedDashboard" }); // Redirect to the page for null id
+        router.push({ name: "userDashboard" }); // Redirect to the page for non admin and non-unassigned id
+      } else router.push({ name: "unassignedDashboard" }); // Redirect to the page for unassigned id
     })
     .catch((error) => {
       console.log("error", error);
