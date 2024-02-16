@@ -98,7 +98,7 @@ watch(users, (newUsers) => {
               <tr>
                 <td>{{ item.fName }} {{ item.lName }}</td>
                 <td>
-                  {{ userGroups.find(group => group.id === item.userGroupId)?.name || 'No Group' }}
+                  {{ userGroups.find(group => group.id === item.userGroupId)?.name}}
                 </td>
                 <td>
                   <v-select
