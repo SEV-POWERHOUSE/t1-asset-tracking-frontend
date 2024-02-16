@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 
 import Login from "./views/Login.vue";
 import AdminDashboard from "./views/AdminDashboard.vue";
-import OtherDashboard from "./views/OtherDashboard.vue";
+import UnassignedDashboard from "./views/UnassignedDashboard.vue";
 import UserDashboard from "./views/UserDashboard.vue";
 import DevTools from "./views/DevTools.vue";
 import GroupAssignment from "./views/GroupAssignment.vue";
@@ -28,11 +28,11 @@ const router = createRouter({
       }
     },
     {
-      path: "/otherDashboard",
-      name: "otherDashboard",
-      component: OtherDashboard,
+      path: "/unassignedDashboard",
+      name: "unassignedDashboard",
+      component: UnassignedDashboard,
       meta: {
-        breadCrumb: [{ text: 'Other Dashboard' }]
+        breadCrumb: [{ text: 'Unassigned Dashboard' }]
       }
     },
     {

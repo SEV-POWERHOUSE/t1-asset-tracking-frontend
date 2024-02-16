@@ -26,7 +26,7 @@ const getDashboardRoute = () => {
     return { name: "userDashboard" };
   } else if (store.getters.isDev) {
   } else {
-    return { name: "otherDashboard" };
+    return { name: "unassignedDashboard" };
   }
 };
 
@@ -75,9 +75,7 @@ onMounted(() => {
         <template v-else-if="isGroupAssigned">
           <v-btn text :to="{ name: 'userDashboard' }">User Dashboard</v-btn>
         </template>
-        <template v-else>
-          <v-btn text :to="{ name: 'otherDashboard' }">Other Dashboard</v-btn>
-        </template>
+        
         <template v-if="isDev">
           <v-btn text :to="{ name: 'devTools' }">Dev Tools</v-btn>
         </template>
