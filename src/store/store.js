@@ -2,7 +2,7 @@ import { createStore } from "vuex";
 import Utils from "../config/utils";
 
 const adminGroupId = 1;
-const userGroupId = 2;
+const miscUserGroupId = 2;
 
 const user = Utils.getStore("user");
 
@@ -30,7 +30,7 @@ const store = createStore({
       return state.loginUser && state.loginUser.userGroupId === adminGroupId;
     },
     isGroupAssigned(state) {
-      return state.loginUser && state.loginUser.userGroupId !== userGroupId;
+      return state.loginUser && state.loginUser.userGroupId !== miscUserGroupId;
     },
     // Add a getter to check for development permission
     isDev(state) {
