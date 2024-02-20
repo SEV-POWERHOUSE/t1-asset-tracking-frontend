@@ -50,10 +50,9 @@ onMounted(fetchUsersAndGroups);
 
 // Define headers for v-data-table. Currently not working
 const headers = [
-  { text: 'Name', value: 'fName' },
-  { text: 'Group', value: 'group' },
-  { text: 'Change Group', value: 'changeGroup', sortable: false },
-  { text: 'Save', value: 'actions', sortable: false },
+  { title: 'Name', key: 'fName' },
+  { title: 'Group', key: 'group' },
+  { title: 'Change Group', key: 'changeGroup', sortable: false },
 ];
 
 // Batch update function
