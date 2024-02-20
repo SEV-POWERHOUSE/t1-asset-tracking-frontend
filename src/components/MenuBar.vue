@@ -70,6 +70,7 @@ onMounted(() => {
         <!-- Conditional rendering based on user group -->
         <template v-if="isAdmin">
           <v-btn text :to="{ name: 'adminDashboard' }">Admin Dashboard</v-btn>
+          <v-btn text :to="{ name: 'assetManage' }">Asset Manage</v-btn>
           <v-btn text :to="{ name: 'groupAssignment' }">Group Assignment</v-btn>
         </template>
         <template v-else-if="isGroupAssigned">

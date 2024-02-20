@@ -5,9 +5,9 @@
 import { ref } from "vue";
 
 const headers = [
-  { text: "Name", align: "start", sortable: false, value: "name" },
-  { text: "Quantity", value: "quantity" },
-  { text: "Category", value: "category" },
+  { title: "Name", align: "start", sortable: false, key: "name" },
+  { title: "Quantity", key: "quantity" },
+  { title: "Category", key: "category" },
   // Defining headers
 ];
 

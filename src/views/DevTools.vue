@@ -9,6 +9,15 @@ const groupNames = ref([]);
 const groupNameToIdMap = ref({});
 const changedUserGroups = ref({});
 
+// Define headers for v-data-table. Currently not working
+const headers = [
+  { text: 'First Name', value: 'fName' },
+  { text: 'Last Name', value: 'lName' },
+  { text: 'Group', value: 'userGroupId' },
+  // 'Change Group' does not have a corresponding value because it's a custom template slot.
+  { text: 'Change Group', value: 'changeGroup', sortable: false }
+];
+
 
 const fetchUsersAndGroups = async () => {
   try {
@@ -47,14 +56,6 @@ onMounted(fetchUsersAndGroups);
 //     console.error('Failed to update user group:', error);
 //   }
 // };
-
-// Define headers for v-data-table. Currently not working
-const headers = [
-  { text: 'Name', value: 'fName' },
-  { text: 'Group', value: 'group' },
-  { text: 'Change Group', value: 'changeGroup', sortable: false },
-  { text: 'Save', value: 'actions', sortable: false },
-];
 
 // Batch update function
 const saveAllUserGroupChanges = async () => {
