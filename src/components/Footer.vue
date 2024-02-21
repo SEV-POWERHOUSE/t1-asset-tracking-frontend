@@ -10,7 +10,7 @@
         </v-col>
         <v-col class="pa-0">
           <v-img
-            :src="`/public/oc-logo-maroon.png`"
+            :src="`/oc-logo-maroon.png`"
             height="60"
             width="60"
             class="logo"
