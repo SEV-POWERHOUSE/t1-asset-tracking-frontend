@@ -12,7 +12,7 @@ const changedUserGroups = ref({});
 // Define headers for v-data-table.
 const headers = [
   { title: 'Name', key: 'fName' },
-  { title: 'Group', key: 'userGroup' },
+  { title: 'Group', key: 'userGroup.name' },
   { title: 'Change Group', key: 'changeGroup', sortable: false },
 ];
 
