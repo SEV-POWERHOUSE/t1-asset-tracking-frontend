@@ -32,8 +32,8 @@ const getDashboardRoute = () => {
 
 const maintainenceActions = [
   {
-    title: "Users // No Path",
-    component: "",
+    title: "UserGroups",
+    component: "groupAssignment",
   },
   {
     title: "Assets",
@@ -85,7 +85,6 @@ onMounted(() => {
         <!-- Conditional rendering based on user group -->
         <template v-if="isAdmin">
           <v-btn text :to="{ name: 'adminDashboard' }">Admin Dashboard</v-btn>
-          <v-btn text :to="{ name: 'groupAssignment' }">Group Assignment</v-btn>
           <v-btn>
             Maintain
             <v-menu activator="parent" open-on-hover>
