@@ -1,6 +1,9 @@
 <script>
-import ocLogo from "/oc-logo-white.png";
+import ocLogo from "/oc-logo-maroon.png";
+import {ref, onMounted } from "vue";
+
 const logoURL = ref("");
+
 onMounted(() => {
   logoURL.value = ocLogo;
 });
