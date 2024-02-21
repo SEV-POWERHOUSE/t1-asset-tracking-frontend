@@ -30,6 +30,21 @@ const getDashboardRoute = () => {
   }
 };
 
+const maintainenceActions = [
+  {
+    title: "Users // No Path",
+    component: "",
+  },
+  {
+    title: "Assets",
+    component: "assetManage",
+  },
+  {
+    title: "Buildings",
+    component: "buildingManage",
+  },
+];
+
 const resetMenu = () => {
   user.value = Utils.getStore("user");
   if (user.value && user.value.fName && user.value.lName) {
@@ -70,8 +85,21 @@ onMounted(() => {
         <!-- Conditional rendering based on user group -->
         <template v-if="isAdmin">
           <v-btn text :to="{ name: 'adminDashboard' }">Admin Dashboard</v-btn>
-          <v-btn text :to="{ name: 'assetManage' }">Asset Manage</v-btn>
           <v-btn text :to="{ name: 'groupAssignment' }">Group Assignment</v-btn>
+          <v-btn>
+            Maintain
+            <v-menu activator="parent" open-on-hover>
+              <v-list>
+                <v-list-item
+                  v-for="(item, index) in maintainenceActions"
+                  :key="index"
+                  :value="index"
+                  @click="router.push({ name: item.component })"
+                > <v-list-item-title>{{ item.title }}</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </v-btn>
         </template>
         <template v-else-if="isGroupAssigned">
           <v-btn text :to="{ name: 'userDashboard' }">User Dashboard</v-btn>
