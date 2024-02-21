@@ -9,14 +9,13 @@ const groupNames = ref([]);
 const groupNameToIdMap = ref({});
 const changedUserGroups = ref({});
 
-// Define headers for v-data-table. Currently not working
+// Define headers for v-data-table.
 const headers = [
-  { text: 'First Name', value: 'fName' },
-  { text: 'Last Name', value: 'lName' },
-  { text: 'Group', value: 'userGroupId' },
-  // 'Change Group' does not have a corresponding value because it's a custom template slot.
-  { text: 'Change Group', value: 'changeGroup', sortable: false }
+  { title: 'Name', key: 'fName' },
+  { title: 'Group', key: 'userGroup' },
+  { title: 'Change Group', key: 'changeGroup', sortable: false },
 ];
+
 
 
 const fetchUsersAndGroups = async () => {
