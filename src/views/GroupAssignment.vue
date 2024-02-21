@@ -48,10 +48,10 @@ onMounted(fetchUsersAndGroups);
 //   }
 // };
 
-// Define headers for v-data-table. Currently not working
+// Define headers for v-data-table.
 const headers = [
   { title: 'Name', key: 'fName' },
-  { title: 'Group', key: 'group' },
+  { title: 'Group', key: 'userGroup' },
   { title: 'Change Group', key: 'changeGroup', sortable: false },
 ];
 
