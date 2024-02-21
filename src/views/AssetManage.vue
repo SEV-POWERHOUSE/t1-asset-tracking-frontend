@@ -364,7 +364,7 @@ onMounted(() => {
                             icon
                             @click="deleteCategory(assetCategory.categoryId)"
                           >
-                            <v-icon color="red">mdi-delete</v-icon>
+                            <v-icon color="primary">mdi-delete</v-icon>
                           </v-btn>
                         </td>
                       </tr>
@@ -406,7 +406,7 @@ onMounted(() => {
                             <v-icon>mdi-pencil</v-icon>
                           </v-btn>
                           <v-btn icon @click="deleteType(assetType.typeId)">
-                            <v-icon color="red">mdi-delete</v-icon>
+                            <v-icon color="primary">mdi-delete</v-icon>
                           </v-btn>
                         </td>
                       </tr>
