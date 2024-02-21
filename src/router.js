@@ -7,6 +7,7 @@ import UserDashboard from "./views/UserDashboard.vue";
 import DevTools from "./views/DevTools.vue";
 import GroupAssignment from "./views/GroupAssignment.vue";
 import AssetManage from "./views/AssetManage.vue";
+import BuildingManage from "./views/BuildingManage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -61,6 +62,11 @@ const router = createRouter({
       path: "/assetManage",
       name: "assetManage",
       component: AssetManage,
+    },
+    {
+      path: "/buildingManage",
+      name: "buildingManage",
+      component: BuildingManage,
     },
   ],
 });
