@@ -1,5 +1,9 @@
 <script>
-
+import ocLogo from "/oc-logo-white.png";
+const logoURL = ref("");
+onMounted(() => {
+  logoURL.value = ocLogo;
+});
 </script>
 
 <template>
@@ -10,7 +14,7 @@
         </v-col>
         <v-col class="pa-0">
           <v-img
-            :src="`/oc-logo-maroon.png`"
+            :src="logoURL"
             height="60"
             width="60"
             class="logo"
