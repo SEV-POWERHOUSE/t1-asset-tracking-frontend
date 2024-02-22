@@ -205,26 +205,19 @@ const saveType = async () => {
   };
 
   try {
-    // Distinguish between creating a new type and updating an existing one
     if (editingType.value) {
-      // Update existing type
       await AssetTypeServices.update(newType.value.id, typeData);
     } else {
-      // Create new type
       await AssetTypeServices.create(typeData);
     }
-
-    // Display a success message
     message.value = "Type saved successfully.";
-
-    // Refresh the list of types to reflect the change
     await retrieveAssetTypes();
   } catch (error) {
-    // Log and display any errors encountered during the save operation
     console.error("Error saving type:", error);
     message.value = `Error saving type: ${error.message || "Unknown error"}`;
   } finally {
-    closeTypeDialog(); // Resets the form after saving or if an error occurs
+    resetForm(); // Ensure form is reset here
+    showAddTypeDialog.value = false; // Close dialog in finally to ensure it closes
   }
 };
 
@@ -241,10 +234,10 @@ const deleteType = async (typeId) => {
 };
 
 const resetForm = () => {
-  newType.value = { typeName: "", desc: "", categoryId: "" };
-  selectedCategoryId.value = ""; // Reset to a default or initial value if necessary
-  validType.value = false; // Assuming you're using this to control the 'Save' button's disabled state
-  // Reset any additional state here
+  newType.value = { typeName: "", desc: "", categoryId: "", id: null }; // Explicitly set `id` to `null`
+  selectedCategoryId.value = "";
+  validType.value = false;
+  editingType.value = false; // Explicitly reset editing flag
 };
 
 const closeTypeDialog = () => {
