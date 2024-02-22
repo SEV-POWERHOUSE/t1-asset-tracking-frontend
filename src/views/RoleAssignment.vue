@@ -32,22 +32,6 @@ const fetchUsersAndRoles = async () => {
 
 onMounted(fetchUsersAndRoles);
 
-// const updateUserRole = async (user, roleName) => {
-//   const roleId = roleNameToIdMap.value[roleName];
-//   if (!roleId) {
-//     console.error('Role ID not found for selected role');
-//     return;
-//   }
-
-//   try {
-//     await userServices.updateRole(user.id, roleId);
-//     console.log('User role updated successfully');
-//     fetchUsersAndRoles();
-//   } catch (error) {
-//     console.error('Failed to update user role:', error);
-//   }
-// };
-
 // Define headers for v-data-table.
 const headers = [
   { title: 'Name', key: 'fName' },

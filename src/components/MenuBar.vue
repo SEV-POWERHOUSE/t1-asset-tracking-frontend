@@ -22,7 +22,7 @@ const isDev = computed(() => store.getters.isDev);
 const maintenanceActions = [
   {
     title: "Users",
-    component: "roleAssignment",
+    component: "userManage",
   },
   {
     title: "Assets",
@@ -83,7 +83,8 @@ onMounted(() => {
                   :key="index"
                   :value="index"
                   @click="router.push({ name: item.component })"
-                > <v-list-item-title>{{ item.title }}</v-list-item-title>
+                >
+                  <v-list-item-title>{{ item.title }}</v-list-item-title>
                 </v-list-item>
               </v-list>
             </v-menu>
@@ -92,7 +93,7 @@ onMounted(() => {
         <template v-else-if="isRoleAssigned">
           <v-btn text :to="{ name: 'userDashboard' }">User Dashboard</v-btn>
         </template>
-        
+
         <template v-if="isDev">
           <v-btn text :to="{ name: 'devTools' }">Dev Tools</v-btn>
         </template>
