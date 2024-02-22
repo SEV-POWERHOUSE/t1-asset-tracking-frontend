@@ -19,20 +19,9 @@ const isRoleAssigned = computed(() => store.getters.isRoleAssigned);
 // Compute isDev from store
 const isDev = computed(() => store.getters.isDev);
 
-const getDashboardRoute = () => {
-  if (store.getters.isAdmin) {
-    return { name: "adminDashboard" };
-  } else if (store.getters.isRoleAssigned) {
-    return { name: "userDashboard" };
-  } else if (store.getters.isDev) {
-  } else {
-    return { name: "unassignedDashboard" };
-  }
-};
-
-const maintainenceActions = [
+const maintenanceActions = [
   {
-    title: "UserRoles",
+    title: "Users",
     component: "roleAssignment",
   },
   {
@@ -90,7 +79,7 @@ onMounted(() => {
             <v-menu activator="parent" open-on-hover>
               <v-list>
                 <v-list-item
-                  v-for="(item, index) in maintainenceActions"
+                  v-for="(item, index) in maintenanceActions"
                   :key="index"
                   :value="index"
                   @click="router.push({ name: item.component })"
