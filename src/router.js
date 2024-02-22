@@ -5,7 +5,6 @@ import AdminDashboard from "./views/AdminDashboard.vue";
 import UnassignedDashboard from "./views/UnassignedDashboard.vue";
 import UserDashboard from "./views/UserDashboard.vue";
 import DevTools from "./views/DevTools.vue";
-import RoleAssignment from "./views/RoleAssignment.vue";
 import UserManage from "./views/UserManage.vue";
 import AssetManage from "./views/AssetManage.vue";
 import BuildingManage from "./views/BuildingManage.vue";
@@ -53,11 +52,6 @@ const router = createRouter({
       path: "/devTools",
       name: "devTools",
       component: DevTools,
-    },
-    {
-      path: "/roleAssignment",
-      name: "roleAssignment",
-      component: RoleAssignment,
     },
     {
       path: "/userManage",
