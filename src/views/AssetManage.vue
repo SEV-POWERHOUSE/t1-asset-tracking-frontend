@@ -5,7 +5,7 @@ import AssetProfileServices from "../services/assetProfileServices";
 import { ref, onMounted, watch } from "vue";
 
 const message = ref("");
-const selectedTab = ref("Categories");
+const selectedTab = ref("Profiles");
 const assetCategories = ref([]);
 const assetTypes = ref([]);
 const assetProfiles = ref([]);
@@ -385,8 +385,9 @@ onMounted(() => {
     // retrieveCategoryNames();
     retrieveAssetTypes();
   } else if (selectedTab.value === "Profiles") {
-    // retrieveAssetProfiles();
     retrieveAssetCategories();
+    retrieveAssetTypes();
+    retrieveAssetProfiles();
   }
 });
 </script>
