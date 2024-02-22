@@ -8,9 +8,15 @@ const message = ref("");
 const selectedTab = ref("Categories");
 const assetCategories = ref([]);
 const assetTypes = ref([]);
+const assetProfiles = ref([]);
 const showAddCategoryDialog = ref(false);
 const showAddTypeDialog = ref(false);
+const showAddProfileDialog = ref(false);
+const editingCategory = ref(false);
+const editingType = ref(false);
+const editingProfile = ref(false);
 const selectedCategoryId = ref("");
+const selectedTypeId = ref("");
 const validCategory = ref(false);
 const validType = ref(false);
 const validProfile = ref(false);
@@ -29,11 +35,11 @@ const newType = ref({
   desc: "",
   categoryId: "",
 });
-// const newProfile = ref({
-//   title: "",
-//   startDate: "",
-//   endDate: "",
-// });
+const newProfile = ref({
+  profileName: "",
+  desc: "",
+  typeId: "",
+});
 
 // Categories Section
 
@@ -85,8 +91,6 @@ const getCategoryIdByName = async (categoryName) => {
   }
 };
 
-const editingCategory = ref(false);
-
 const editCategory = (category) => {
   newCategory.value = {
     title: category.title,
@@ -96,7 +100,6 @@ const editCategory = (category) => {
   editingCategory.value = true;
   showAddCategoryDialog.value = true;
 };
-
 
 const saveCategory = async () => {
   const categoryData = {
@@ -108,7 +111,10 @@ const saveCategory = async () => {
     let response;
     if (editingCategory.value) {
       // Assuming your API expects an ID and the updated data for category updates
-      response = await AssetCategoryServices.update(newCategory.value.categoryId, categoryData);
+      response = await AssetCategoryServices.update(
+        newCategory.value.categoryId,
+        categoryData
+      );
     } else {
       response = await AssetCategoryServices.create(categoryData);
     }
@@ -116,14 +122,15 @@ const saveCategory = async () => {
     retrieveAssetCategories(); // Refresh categories list
   } catch (error) {
     console.error("Error saving category:", error);
-    message.value = `Error saving category: ${error.message || "Unknown error"}`;
+    message.value = `Error saving category: ${
+      error.message || "Unknown error"
+    }`;
   } finally {
     editingCategory.value = false;
     showAddCategoryDialog.value = false;
     newCategory.value = { title: "", description: "" }; // Reset the form
   }
 };
-
 
 const deleteCategory = async (categoryId) => {
   try {
@@ -147,7 +154,7 @@ const closeCategoryDialog = () => {
 
 const categoryHeaders = ref([
   { title: "Category Name", key: "title" },
-  { title: "Description", key: "description" },
+  { title: "Description", key: "description", sortable: false },
   { title: "Actions", key: "actions", sortable: false },
 ]);
 
@@ -163,8 +170,6 @@ const retrieveAssetTypes = () => {
       message.value = e.response.data.message;
     });
 };
-
-const editingType = ref(false);
 
 const editType = async (type) => {
   console.log("Editing type:", type);
@@ -253,7 +258,85 @@ const openAddTypeDialog = () => {
 const typeHeaders = ref([
   { title: "Type Name", key: "typeName" },
   { title: "Type Category", key: "assetCategory.categoryName" },
-  { title: "Description", key: "desc" },
+  { title: "Description", key: "desc", sortable: false },
+  { title: "Actions", key: "actions", sortable: false },
+]);
+
+// Profiles Section
+
+// Retrieve Profiles from Database
+const retrieveAssetProfiles = async () => {
+  try {
+    const response = await AssetProfileServices.getAll();
+    assetProfiles.value = response.data;
+  } catch (error) {
+    console.error("Error loading profiles:", error);
+    message.value = "Failed to load profiles.";
+  }
+};
+
+// Open dialog to add a new profile
+const openAddProfileDialog = () => {
+  resetProfileForm();
+  showAddProfileDialog.value = true;
+};
+
+// Reset the profile form to its default state
+const resetProfileForm = () => {
+  newProfile.value = { profileName: "", desc: "", typeId: "" };
+  selectedTypeId.value = "";
+  validProfile.value = false;
+  editingProfile.value = false;
+};
+
+// Save profile (add or edit)
+const saveProfile = async () => {
+  const profileData = {
+    ...newProfile.value,
+    typeId: selectedTypeId.value,
+  };
+
+  try {
+    if (editingProfile.value && newProfile.value.id) {
+      await AssetProfileServices.update(newProfile.value.id, profileData);
+    } else {
+      await AssetProfileServices.create(profileData);
+    }
+    message.value = "Profile saved successfully.";
+    await retrieveAssetProfiles();
+  } catch (error) {
+    console.error("Error saving profile:", error);
+    message.value = `Error saving profile: ${error.message || "Unknown error"}`;
+  } finally {
+    resetProfileForm();
+    showAddProfileDialog.value = false;
+  }
+};
+
+// Edit profile
+const editProfile = (profile) => {
+  newProfile.value = { ...profile, id: profile.profileId };
+  selectedTypeId.value = profile.typeId;
+  editingProfile.value = true;
+  showAddProfileDialog.value = true;
+};
+
+// Delete profile
+const deleteProfile = async (profileId) => {
+  try {
+    await AssetProfileServices.delete(profileId);
+    retrieveAssetProfiles();
+    message.value = "Profile deleted successfully.";
+  } catch (error) {
+    console.error("Error deleting profile:", error);
+    message.value = "Error deleting profile.";
+  }
+};
+
+const profileHeaders = ref([
+  { title: "Profile Name", key: "profileName" },
+  { title: "Description", key: "desc", sortable: false },
+  { title: "Type ID", key: "typeId" },
   { title: "Actions", key: "actions", sortable: false },
 ]);
 
@@ -269,6 +352,8 @@ const confirmDelete = async () => {
     await deleteCategory(itemToDelete.value.id);
   } else if (itemToDelete.value.type === "type") {
     await deleteType(itemToDelete.value.id);
+  } else if (itemToDelete.value.type === "profile") {
+    await deleteProfile(itemToDelete.value.id);
   }
   showDeleteConfirmDialog.value = false;
   itemToDelete.value = null; // Reset after deletion
@@ -283,8 +368,9 @@ watch(selectedTab, (newValue) => {
     // retrieveCategoryNames();
     retrieveAssetTypes();
   } else if (newValue === "Profiles") {
-    // retrieveAssetProfiles();
-    // retrieveCategoryNames();
+    retrieveAssetCategories();
+    retrieveAssetTypes();
+    retrieveAssetProfiles();
   }
 });
 
@@ -402,6 +488,41 @@ onMounted(() => {
             </div>
 
             <!-- Profiles Section -->
+            <div v-if="selectedTab === 'Profiles'">
+              <v-card>
+                <v-card-title class="d-flex justify-space-between align-center">
+                  <span>Asset Profiles</span>
+                  <v-btn color="secondary" @click="openAddProfileDialog"
+                    >Add New Profile</v-btn
+                  >
+                </v-card-title>
+                <v-card-text>
+                  <v-data-table
+                    :headers="profileHeaders"
+                    :items="assetProfiles"
+                    item-key="profileId"
+                    class="elevation-1"
+                  >
+                    <template v-slot:item.actions="{ item }">
+                      <v-btn icon @click="editProfile(item)">
+                        <v-icon>mdi-pencil</v-icon>
+                      </v-btn>
+                      <v-btn
+                        icon
+                        @click="
+                          openDeleteConfirmDialog({
+                            id: item.profileId,
+                            type: 'profile',
+                          })
+                        "
+                      >
+                        <v-icon color="primary">mdi-delete</v-icon>
+                      </v-btn>
+                    </template>
+                  </v-data-table>
+                </v-card-text>
+              </v-card>
+            </div>
           </v-fade-transition>
         </v-col>
       </v-row>
@@ -491,6 +612,64 @@ onMounted(() => {
           <!-- Use the validType model to control the disabled state -->
           <v-btn color="primary" text @click="closeTypeDialog">Cancel</v-btn>
           <v-btn color="green darken-1" @click="saveType" :disabled="!validType"
+            >Save</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!-- Add/Edit Profile Dialog -->
+    <v-dialog v-model="showAddProfileDialog" max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="headline"
+            >{{ editingProfile ? "Edit" : "Add" }} Profile</span
+          >
+        </v-card-title>
+        <v-card-text>
+          <v-form ref="formProfile" v-model="validProfile">
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <v-text-field
+                    label="Profile Name"
+                    v-model="newProfile.profileName"
+                    :rules="[rules.required]"
+                    required
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    label="Description"
+                    v-model="newProfile.desc"
+                    :rules="[rules.required]"
+                    required
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <!-- Asset Type Selection -->
+                  <v-select
+                    label="Type"
+                    :items="assetTypes"
+                    item-text="typeName"
+                    item-value="typeId"
+                    v-model="selectedTypeId"
+                    :rules="[rules.required]"
+                    required
+                  ></v-select>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" text @click="showAddProfileDialog = false"
+            >Cancel</v-btn
+          >
+          <v-btn
+            color="green darken-1"
+            @click="saveProfile"
+            :disabled="!validProfile"
             >Save</v-btn
           >
         </v-card-actions>
