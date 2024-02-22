@@ -15,14 +15,14 @@ const router = useRouter();
 const store = useStore(); // Use the store
 
 const isAdmin = computed(() => store.getters.isAdmin);
-const isGroupAssigned = computed(() => store.getters.isGroupAssigned);
+const isRoleAssigned = computed(() => store.getters.isRoleAssigned);
 // Compute isDev from store
 const isDev = computed(() => store.getters.isDev);
 
 const getDashboardRoute = () => {
   if (store.getters.isAdmin) {
     return { name: "adminDashboard" };
-  } else if (store.getters.isGroupAssigned) {
+  } else if (store.getters.isRoleAssigned) {
     return { name: "userDashboard" };
   } else if (store.getters.isDev) {
   } else {
@@ -32,8 +32,8 @@ const getDashboardRoute = () => {
 
 const maintainenceActions = [
   {
-    title: "UserGroups",
-    component: "groupAssignment",
+    title: "UserRoles",
+    component: "roleAssignment",
   },
   {
     title: "Assets",
@@ -82,7 +82,7 @@ onMounted(() => {
       <v-toolbar-title>{{ title }}</v-toolbar-title>
       <v-spacer></v-spacer>
       <template v-if="user">
-        <!-- Conditional rendering based on user group -->
+        <!-- Conditional rendering based on user role -->
         <template v-if="isAdmin">
           <v-btn text :to="{ name: 'adminDashboard' }">Admin Dashboard</v-btn>
           <v-btn>
@@ -100,7 +100,7 @@ onMounted(() => {
             </v-menu>
           </v-btn>
         </template>
-        <template v-else-if="isGroupAssigned">
+        <template v-else-if="isRoleAssigned">
           <v-btn text :to="{ name: 'userDashboard' }">User Dashboard</v-btn>
         </template>
         

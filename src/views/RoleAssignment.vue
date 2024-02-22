@@ -9,14 +9,6 @@ const roleNames = ref([]);
 const roleNameToIdMap = ref({});
 const changedUserRoles = ref({});
 
-// Define headers for v-data-table.
-const headers = [
-  { title: 'Name', key: 'fName' },
-  { title: 'Role', key: 'userRole.name' },
-  { title: 'Change Role', key: 'changeRole', sortable: false },
-];
-
-
 
 const fetchUsersAndRoles = async () => {
   try {
@@ -56,6 +48,13 @@ onMounted(fetchUsersAndRoles);
 //   }
 // };
 
+// Define headers for v-data-table.
+const headers = [
+  { title: 'Name', key: 'fName' },
+  { title: 'Role', key: 'userRole.name' },
+  { title: 'Change Role', key: 'changeRole', sortable: false },
+];
+
 // Batch update function
 const saveAllUserRoleChanges = async () => {
   const updatePromises = Object.entries(changedUserRoles.value).map(([userId, roleId]) =>
@@ -86,7 +85,7 @@ watch(users, (newUsers) => {
   <div>
     <v-container>
       <v-card>
-        <v-card-title>Dev Tools</v-card-title>
+        <v-card-title>Role Assignment</v-card-title>
         <v-card-text>
           <v-data-table
             :headers="headers"
@@ -98,7 +97,7 @@ watch(users, (newUsers) => {
               <tr>
                 <td>{{ item.fName }} {{ item.lName }}</td>
                 <td>
-                  {{ userRoles.find(role => role.id === item.userRoleId)?.name || 'No Role' }}
+                  {{ userRoles.find(role => role.id === item.userRoleId)?.name}}
                 </td>
                 <td>
                   <v-select

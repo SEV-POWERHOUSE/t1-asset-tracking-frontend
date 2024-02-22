@@ -21,10 +21,10 @@ export default {
     return apiClient.put(`/user/${id}`, data);
   },
 
-  // Update a user's group by user ID
-  updateGroup(userId, groupId) {
-    console.log(`Service: Updating user ${userId} group to`, groupId);
-    return apiClient.put(`/user/${userId}/group`, { userGroupId: groupId });
+  // Update a user's role by user ID
+  updateRole(userId, roleId) {
+    console.log(`Service: Updating user ${userId} role to`, roleId);
+    return apiClient.put(`/user/${userId}/role`, { userRoleId: roleId });
   },
 
   // Delete a user by ID

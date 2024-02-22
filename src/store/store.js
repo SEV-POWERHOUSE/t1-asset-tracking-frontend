@@ -1,8 +1,8 @@
 import { createStore } from "vuex";
 import Utils from "../config/utils";
 
-const adminGroupId = 1;
-const miscUserGroupId = 2;
+const adminRoleId = 1;
+const miscUserRoleId = 2;
 
 const user = Utils.getStore("user");
 
@@ -26,11 +26,11 @@ const store = createStore({
       return state.loginUser;
     },
     isAdmin(state) {
-      // Assuming `adminGroupId` is the ID for the Admin group, adjust as necessary
-      return state.loginUser && state.loginUser.userGroupId === adminGroupId;
+      // Assuming `adminRoleId` is the ID for the Admin role, adjust as necessary
+      return state.loginUser && state.loginUser.userRoleId === adminRoleId;
     },
-    isGroupAssigned(state) {
-      return state.loginUser && state.loginUser.userGroupId !== miscUserGroupId;
+    isRoleAssigned(state) {
+      return state.loginUser && state.loginUser.userRoleId !== miscUserRoleId;
     },
     // Add a getter to check for development permission
     isDev(state) {
