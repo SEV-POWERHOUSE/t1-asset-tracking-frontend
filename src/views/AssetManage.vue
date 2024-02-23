@@ -31,8 +31,8 @@ const newCategory = ref({
   description: "",
 });
 const newType = ref({
-  title: "",
-  description: "",
+  typeName: "",
+  desc: "",
   categoryId: "",
 });
 const newProfile = ref({
@@ -61,7 +61,7 @@ const editCategory = (category) => {
   newCategory.value = {
     title: category.title,
     description: category.description,
-    categoryId: category.key,
+    categoryId: category.key, // Ensure you have categoryId or equivalent to identify the category
   };
   editingCategory.value = true;
   showAddCategoryDialog.value = true;
@@ -76,6 +76,7 @@ const saveCategory = async () => {
   try {
     let response;
     if (editingCategory.value) {
+      // Assuming your API expects an ID and the updated data for category updates
       response = await AssetCategoryServices.update(
         newCategory.value.categoryId,
         categoryData
@@ -227,9 +228,9 @@ const openAddTypeDialog = () => {
 };
 
 const typeHeaders = ref([
-  { title: "Type Name", key: "title" },
-  { title: "Category", key: "categoryName" },
-  { title: "Description", key: "description" },
+  { title: "Type Name", key: "typeName" },
+  { title: "Type Category", key: "assetCategory.categoryName" },
+  { title: "Description", key: "desc", sortable: false },
   { title: "Actions", key: "actions", sortable: false },
 ]);
 
@@ -239,13 +240,7 @@ const typeHeaders = ref([
 const retrieveAssetProfiles = async () => {
   try {
     const response = await AssetProfileServices.getAll();
-    assetProfiles.value = response.data.map(profile => {
-      const type = assetTypes.value.find(t => t.key === profile.typeId);
-      return {
-        ...profile,
-        typeName: type ? type.title : 'Unknown Type'
-      };
-    });
+    assetProfiles.value = response.data;
   } catch (error) {
     console.error("Error loading profiles:", error);
     message.value = "Failed to load profiles.";
@@ -306,7 +301,6 @@ const editProfile = (profile) => {
   showAddProfileDialog.value = true;
 };
 
-
 // Delete profile
 const deleteProfile = async (profileId) => {
   try {
@@ -321,8 +315,8 @@ const deleteProfile = async (profileId) => {
 
 const profileHeaders = ref([
   { title: "Profile Name", key: "profileName" },
-  { title: "Description", key: "desc" },
-  { title: "Type", key: "typeName" },
+  { title: "Description", key: "desc", sortable: false },
+  { title: "Type ID", key: "typeId" },
   { title: "Actions", key: "actions", sortable: false },
 ]);
 
@@ -351,6 +345,7 @@ watch(selectedTab, (newValue) => {
     retrieveAssetCategories();
   } else if (newValue === "Types") {
     retrieveAssetCategories();
+    // retrieveCategoryNames();
     retrieveAssetTypes();
   } else if (newValue === "Profiles") {
     retrieveAssetCategories();
@@ -365,6 +360,7 @@ onMounted(() => {
     retrieveAssetCategories();
   } else if (selectedTab.value === "Types") {
     retrieveAssetCategories();
+    // retrieveCategoryNames();
     retrieveAssetTypes();
   } else if (selectedTab.value === "Profiles") {
     retrieveAssetCategories();
@@ -446,7 +442,7 @@ onMounted(() => {
                   <v-data-table
                     :headers="typeHeaders"
                     :items="assetTypes"
-                    item-key="key"
+                    item-key="typeId"
                     class="elevation-1"
                   >
                     <template v-slot:item.actions="{ item }">
@@ -575,7 +571,7 @@ onMounted(() => {
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
-                  <!-- Category Selection -->
+                  <!-- Ensure selectedCategoryId is properly validated if necessary -->
                   <v-select
                     label="Category"
                     :items="assetCategories"
@@ -633,8 +629,8 @@ onMounted(() => {
                   <v-select
                     label="Type"
                     :items="assetTypes"
-                    item-text="title"
-                    item-value="key"
+                    item-text="typeName"
+                    item-value="typeId"
                     v-model="selectedTypeId"
                     :rules="[rules.required]"
                     required
