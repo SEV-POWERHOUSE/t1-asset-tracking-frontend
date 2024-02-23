@@ -21,9 +21,9 @@ export default {
     return apiClient.post("/userRole", data);
   },
 
-  // Update a UserRole by USERROLEID
-  update(userRoleId, data) {
-    return apiClient.put(`/userRole/${userRoleId}`, data);
+  // Update a UserRole by ?
+  update(userId, data) {
+    return apiClient.put(`/userRole/${userId}`, data);
   },
 
   // Delete a UserRole by USERROLEID

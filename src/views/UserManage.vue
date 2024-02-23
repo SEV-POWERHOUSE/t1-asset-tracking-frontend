@@ -167,7 +167,7 @@ watch(
       newUsers.forEach((user) => {
         if (
           user.selectedRoleName &&
-          roleNameToIdMap.value[user.selectedRoleName] !== user.userUserRoleId
+          roleNameToIdMap.value[user.selectedRoleName] !== user.userRoleId
         ) {
           changedUserRoles.value[user.userRoleId] =
             roleNameToIdMap.value[user.selectedRoleName];
