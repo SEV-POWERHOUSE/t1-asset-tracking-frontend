@@ -45,7 +45,7 @@ const fetchUsersAndRoles = async () => {
 
     roleNames.value = rolesResponse.data.map((role) => role.name);
     roleNameToIdMap.value = rolesResponse.data.reduce((map, role) => {
-      map[role.name] = role.id;
+      map[role.name] = role.userRoleId;
       return map;
     }, {});
   } catch (error) {
@@ -56,7 +56,7 @@ const fetchUsersAndRoles = async () => {
 // Batch update function
 const saveAllUserRoleChanges = async () => {
   const updatePromises = Object.entries(changedUserRoles.value).map(
-    ([userId, roleId]) => userServices.updateRole(userId, roleId)
+    ([userId, userRoleId]) => userServices.updateRole(userId, userRoleId)
   );
 
   try {
@@ -94,9 +94,9 @@ const editUserRole = (role) => {
 };
 
 const saveUserRole = async () => {
-  if (editingUserRole.value && newUserRole.value.id) {
+  if (editingUserRole.value && newUserRole.value.userRoleId) {
     // Update existing user role
-    await userRoleServices.update(newUserRole.value.id, newUserRole.value);
+    await userRoleServices.update(newUserRole.value.userRoleId, newUserRole.value);
   } else {
     // Add new user role
     await userRoleServices.create(newUserRole.value);
@@ -111,15 +111,15 @@ const saveUserRole = async () => {
   await retrieveUserRoles(); // Refresh the list of roles
 };
 
-const deleteUserRole = async (roleId) => {
+const deleteUserRole = async (userRoleId) => {
   try {
-    await userRoleServices.delete(roleId); // Use the delete method from your services
-    console.log(`Role with ID ${roleId} deleted successfully.`);
+    await userRoleServices.delete(userRoleId); // Use the delete method from your services
+    console.log(`Role with ID ${userRoleId} deleted successfully.`);
     await retrieveUserRoles(); // Refresh the list of roles after deletion
     showDeleteConfirmDialog.value = false; // Close the confirmation dialog
     itemToDelete.value = null; // Reset the itemToDelete
   } catch (error) {
-    console.error(`Failed to delete role with ID ${roleId}:`, error);
+    console.error(`Failed to delete role with ID ${userRoleId}:`, error);
     // Handle the error appropriately, e.g., showing an error message to the user
   }
 };
@@ -146,7 +146,7 @@ const openDeleteConfirmDialog = (item) => {
 
 const confirmDelete = async () => {
   if (itemToDelete.value) {
-    await deleteUserRole(itemToDelete.value.id);
+    await deleteUserRole(itemToDelete.value.userRoleId);
     showDeleteConfirmDialog.value = false;
     itemToDelete.value = null; // Reset
   }
@@ -167,9 +167,9 @@ watch(
       newUsers.forEach((user) => {
         if (
           user.selectedRoleName &&
-          roleNameToIdMap.value[user.selectedRoleName] !== user.userRoleId
+          roleNameToIdMap.value[user.selectedRoleName] !== user.userUserRoleId
         ) {
-          changedUserRoles.value[user.id] =
+          changedUserRoles.value[user.userRoleId] =
             roleNameToIdMap.value[user.selectedRoleName];
         }
       });
@@ -194,7 +194,7 @@ watch(isUserRolesTabActive, async (isActive) => {
 //       newUsers.forEach((user) => {
 //         if (
 //           user.selectedRoleName &&
-//           roleNameToIdMap.value[user.selectedRoleName] !== user.userRoleId
+//           roleNameToIdMap.value[user.selectedRoleName] !== user.userUserRoleId
 //         ) {
 //           changedUserRoles.value[user.id] =
 //             roleNameToIdMap.value[user.selectedRoleName];
@@ -245,7 +245,7 @@ onMounted(() => {
                   <v-data-table
                     :headers="userHeaders"
                     :items="users"
-                    item-key="id"
+                    item-key="userRoleId"
                     class="elevation-1"
                   >
                     <template v-slot:item="{ item }">
@@ -254,7 +254,7 @@ onMounted(() => {
                         <td>
                           {{
                             userRoles.find(
-                              (role) => role.id === item.userRoleId
+                              (role) => role.userRoleId === item.userRoleId
                             )?.name
                           }}
                         </td>
@@ -297,7 +297,7 @@ onMounted(() => {
                   <v-data-table
                     :headers="userRoleHeaders"
                     :items="roles"
-                    item-key="id"
+                    item-key="userRoleId"
                   >
                     <template v-slot:item.actions="{ item }">
                       <v-btn icon @click="editUserRole(item)">
@@ -329,7 +329,7 @@ onMounted(() => {
                         <td>
                           {{
                             userRoles.find(
-                              (role) => role.id === item.userRoleId
+                              (role) => role.id === item.userUserRoleId
                             )?.name
                           }}
                         </td>

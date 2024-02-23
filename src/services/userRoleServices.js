@@ -6,12 +6,12 @@ export default {
     return apiClient.get("/userRole");
   },
 
-  // Find a single UserRole by ID
-  get(id) {
-    return apiClient.get(`/userRole/${id}`);
+  // Find a single UserRole by USERROLEID
+  get(userRoleId) {
+    return apiClient.get(`/userRole/${userRoleId}`);
   },
 
-  // Fetch the userRoleId from the userRole by role name
+  // Fetch the userRoleUserRoleId from the userRole by role name
   getByRoleName(roleName) {
     return apiClient.get(`/userRole?roleName=${roleName}`);
   },
@@ -21,14 +21,14 @@ export default {
     return apiClient.post("/userRole", data);
   },
 
-  // Update a UserRole by ID
-  update(id, data) {
-    return apiClient.put(`/userRole/${id}`, data);
+  // Update a UserRole by USERROLEID
+  update(userRoleId, data) {
+    return apiClient.put(`/userRole/${userRoleId}`, data);
   },
 
-  // Delete a UserRole by ID
-  delete(id) {
-    return apiClient.delete(`/userRole/${id}`);
+  // Delete a UserRole by USERROLEID
+  delete(userRoleid) {
+    return apiClient.delete(`/userRole/${userRoleid}`);
   },
 
   // Delete all UserRoles
