@@ -57,40 +57,6 @@ const retrieveAssetCategories = async () => {
   }
 };
 
-// const retrieveCategoryNames = async () => {
-//   try {
-//     const response = await AssetCategoryServices.getAll();
-//     assetCategories.value = response.data.map(
-//       (category) => category.categoryName
-//     );
-//   } catch (error) {
-//     console.error(error);
-//     message.value = "Failed to load categories.";
-//   }
-// };
-
-// const getCategoryName = (categoryId) => {
-//   // Ensure categoryId is treated as a Number for strict equality comparison
-//   const numericCategoryId = Number(categoryId);
-//   const category = assetCategories.value.find(
-//     (category) => category.categoryId === numericCategoryId
-//   );
-//   return category ? category.categoryName : "Unknown";
-// };
-
-const getCategoryIdByName = async (categoryName) => {
-  try {
-    const response = await AssetCategoryServices.getCategoryIdByName(
-      categoryName
-    );
-    return response.data[0]; // Assuming the service returns an array and you need the first item
-  } catch (error) {
-    console.error(error);
-    message.value = `Error fetching category by name: ${categoryName}.`;
-    return null;
-  }
-};
-
 const editCategory = (category) => {
   newCategory.value = {
     title: category.title,
@@ -553,11 +519,11 @@ onMounted(() => {
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="closeCategoryDialog"
+          <v-btn color="cancelgrey" text @click="closeCategoryDialog"
             >Cancel</v-btn
           >
           <v-btn
-            color="green darken-1"
+            color="saveblue"
             :disabled="!validCategory"
             @click="saveCategory(newCategory)"
             >Save</v-btn
@@ -611,8 +577,8 @@ onMounted(() => {
         <v-card-actions>
           <v-spacer></v-spacer>
           <!-- Use the validType model to control the disabled state -->
-          <v-btn color="primary" text @click="closeTypeDialog">Cancel</v-btn>
-          <v-btn color="green darken-1" @click="saveType" :disabled="!validType"
+          <v-btn color="cancelgrey" text @click="closeTypeDialog">Cancel</v-btn>
+          <v-btn color="saveblue" @click="saveType" :disabled="!validType"
             >Save</v-btn
           >
         </v-card-actions>
@@ -664,11 +630,11 @@ onMounted(() => {
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="showAddProfileDialog = false"
+          <v-btn color="cancelgrey" text @click="showAddProfileDialog = false"
             >Cancel</v-btn
           >
           <v-btn
-            color="green darken-1"
+            color="saveblue"
             @click="saveProfile"
             :disabled="!validProfile"
             >Save</v-btn
@@ -684,7 +650,7 @@ onMounted(() => {
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            color="green darken-1"
+            color="cancelgrey"
             text
             @click="showDeleteConfirmDialog = false"
             >Cancel</v-btn
