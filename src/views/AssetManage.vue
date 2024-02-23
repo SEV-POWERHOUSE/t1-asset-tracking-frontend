@@ -127,38 +127,42 @@ const categoryHeaders = ref([
 // Asset Types Section
 
 // Retrieve Types from Database
-const retrieveAssetTypes = () => {
-  AssetTypeServices.getAll()
-    .then((response) => {
-      assetTypes.value = response.data;
-    })
-    .catch((e) => {
-      message.value = e.response.data.message;
+const retrieveAssetTypes = async () => {
+  try {
+    // Assuming you've already fetched categories at this point
+    const typesResponse = await AssetTypeServices.getAll();
+    const enrichedTypes = typesResponse.data.map((type) => {
+      // Find the category for each type
+      const category = assetCategories.value.find((c) => c.key === type.categoryId);
+      return {
+        ...type,
+        categoryName: category ? category.title : 'Unknown Category', // Enriching type with category name
+        key: type.typeId, // Keeping your original key assignment
+        title: type.typeName, // Assuming you're mapping typeName to title
+        description: type.desc, // Direct mapping
+        categoryId: type.categoryId,
+      };
     });
-};
-
-const editType = async (type) => {
-  console.log("Editing type:", type);
-  if (type.typeId) {
-    await retrieveAssetCategories();
-    // Find the category using `c.key` to match `type.categoryId`
-    const category = assetCategories.value.find(
-      (c) => c.key === type.categoryId
-    );
-    if (category) {
-      // Since v-select is bound to selectedCategoryId, ensure it's set to the expected value format
-      selectedCategoryId.value = category.key; // Assuming v-select is configured to work with category IDs
-    } else {
-      console.error("Category not found for this type:", type.categoryId);
-      selectedCategoryId.value = "";
-    }
-    newType.value = { ...type, id: type.typeId };
-    editingType.value = true;
-    showAddTypeDialog.value = true;
-  } else {
-    console.error("Type ID is undefined in editType function");
+    assetTypes.value = enrichedTypes;
+  } catch (error) {
+    console.error("Error loading types:", error);
+    message.value = "Failed to load types.";
   }
 };
+
+
+const editType = (type) => {
+  selectedCategoryId.value = type.categoryId; // Assuming you have this ID correctly set
+  newType.value = {
+    title: type.title,
+    description: type.description,
+    categoryId: type.categoryId,
+    typeId: type.typeId,
+  };
+  editingType.value = true;
+  showAddTypeDialog.value = true;
+};
+
 
 const saveType = async () => {
   let categoryId = selectedCategoryId.value; // Directly use the selected category ID
@@ -171,13 +175,15 @@ const saveType = async () => {
 
   // Prepare the type data for saving
   const typeData = {
-    ...newType.value,
-    categoryId: categoryId,
+    typeName: newType.value.title,
+    desc: newType.value.description,
+    categoryId: selectedCategoryId.value, // Make sure this is getting set correctly
   };
 
   try {
     if (editingType.value) {
-      await AssetTypeServices.update(newType.value.id, typeData);
+      console.log(newType.value.typeId);
+      await AssetTypeServices.update(newType.value.typeId, typeData);
     } else {
       await AssetTypeServices.create(typeData);
     }
@@ -258,14 +264,18 @@ const resetProfileForm = () => {
 // Save profile (add or edit)
 const saveProfile = async () => {
   const profileData = {
-    ...newProfile.value,
+    profileName: newProfile.value.profileName,
+    desc: newProfile.value.desc,
     typeId: selectedTypeId.value,
   };
 
   try {
+    // Check if editing an existing profile (i.e., `id` is present)
     if (editingProfile.value && newProfile.value.id) {
+      // Call update service if editing
       await AssetProfileServices.update(newProfile.value.id, profileData);
     } else {
+      // Call create service if adding a new profile
       await AssetProfileServices.create(profileData);
     }
     message.value = "Profile saved successfully.";
@@ -281,7 +291,11 @@ const saveProfile = async () => {
 
 // Edit profile
 const editProfile = (profile) => {
-  newProfile.value = { ...profile, id: profile.profileId };
+  // Assign existing profile's properties, including its unique identifier
+  newProfile.value = {
+    ...profile,
+    id: profile.profileId, // Adjust according to how profile IDs are named in your data
+  };
   selectedTypeId.value = profile.typeId;
   editingProfile.value = true;
   showAddProfileDialog.value = true;
@@ -343,9 +357,7 @@ watch(selectedTab, (newValue) => {
 // Call this once to load the default tab's data when the component mounts
 onMounted(() => {
   if (selectedTab.value === "Categories") {
-    retrieveAssetCategories().then(() => {
-      console.log(assetCategories.value); // Check the structure and data
-    });
+    retrieveAssetCategories();
   } else if (selectedTab.value === "Types") {
     retrieveAssetCategories();
     // retrieveCategoryNames();
@@ -545,7 +557,7 @@ onMounted(() => {
                 <v-col cols="12">
                   <v-text-field
                     label="Type Name"
-                    v-model="newType.typeName"
+                    v-model="newType.title"
                     :rules="[rules.required]"
                     required
                   ></v-text-field>
@@ -553,7 +565,7 @@ onMounted(() => {
                 <v-col cols="12">
                   <v-text-field
                     label="Type Description"
-                    v-model="newType.desc"
+                    v-model="newType.description"
                     :rules="[rules.required]"
                     required
                   ></v-text-field>
