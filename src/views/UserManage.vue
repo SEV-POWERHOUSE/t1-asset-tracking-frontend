@@ -374,11 +374,11 @@ onMounted(() => {
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="closeUserRoleDialog"
+          <v-btn color="cancelgrey" text @click="closeUserRoleDialog"
             >Cancel</v-btn
           >
           <v-btn
-            color="green darken-1"
+            color="saveblue"
             text
             :disabled="!validUserRole"
             @click="saveUserRole"
@@ -398,7 +398,7 @@ onMounted(() => {
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            color="green darken-1"
+            color="cancelgrey"
             text
             @click="showDeleteConfirmDialog = false"
             >Cancel</v-btn

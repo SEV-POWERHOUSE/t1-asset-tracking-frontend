@@ -28,7 +28,8 @@ const myCustomLightTheme = {
     yellow: "#F8C545",
     darkblue: "#032F45",
     background: "#FBFBFE",
-    saveblue: "#0098FF"
+    saveblue: "#0085DF",
+    cancelgrey: "#858B8A"
   }
 };
 
