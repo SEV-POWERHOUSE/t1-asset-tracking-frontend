@@ -1,12 +1,22 @@
 <script>
 import { ref, onMounted } from "vue";
-import ocLogo from "/oc-logo-maroon.png";
+import ocLogo from "/src/oc-logo-maroon.png";
 
-const logoURL = ref('');
+export default {
+  setup() {
+    const logoURL = ref('');
 
-onMounted(() => {
-  logoURL.value = ocLogo;
-});
+    onMounted(() => {
+      logoURL.value = ocLogo;
+    });
+
+    console.log(ocLogo); // Ensure the correct URL is logged
+
+    return {
+      logoURL
+    };
+  }
+}
 
 </script>
 
