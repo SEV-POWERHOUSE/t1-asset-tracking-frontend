@@ -48,6 +48,15 @@ const fetchUsersAndRoles = async () => {
       map[role.name] = role.id;
       return map;
     }, {});
+
+    // Initialize each user's selectedRoleName with their current role name
+    users.value = users.value.map((user) => {
+      const userRole = userRoles.value.find(
+        (role) => role.id === user.userRoleId
+      );
+      user.selectedRoleName = userRole ? userRole.name : null;
+      return user;
+    });
   } catch (error) {
     console.error("Failed to fetch users or roles:", error);
   }
@@ -72,7 +81,7 @@ const saveAllUserRoleChanges = async () => {
 // Define headers for v-data-table.
 const userHeaders = [
   { title: "Name", key: "fName" },
-  { title: "Role", key: "userRole.name" },
+  // { title: "Role", key: "userRole.name" },
   { title: "Change Role", key: "changeRole", sortable: false },
 ];
 
@@ -123,7 +132,6 @@ const deleteUserRole = async (roleId) => {
     // Handle the error appropriately, e.g., showing an error message to the user
   }
 };
-
 
 const closeUserRoleDialog = () => {
   showAddUserRoleDialog.value = false;
@@ -255,18 +263,19 @@ onMounted(() => {
                     <template v-slot:item="{ item }">
                       <tr>
                         <td>{{ item.fName }} {{ item.lName }}</td>
-                        <td>
+                        <!-- <td>
                           {{
                             userRoles.find(
                               (role) => role.id === item.userRoleId
                             )?.name
                           }}
-                        </td>
+                        </td> -->
                         <td>
                           <v-select
                             v-model="item.selectedRoleName"
                             :items="roleNames"
                             label="Select Role"
+                            class="select-fixed-width"
                           ></v-select>
                         </td>
                       </tr>
@@ -287,7 +296,7 @@ onMounted(() => {
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>User Roles</span>
                   <v-btn
-                    color="secondary"
+                    color="primary"
                     @click="
                       resetForm(),
                         (showAddUserRoleDialog = true),
