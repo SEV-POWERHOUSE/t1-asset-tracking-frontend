@@ -451,7 +451,7 @@ onMounted(() => {
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Asset Types</span>
-                  <v-btn color="secondary" @click="openAddTypeDialog">
+                  <v-btn color="primary" @click="openAddTypeDialog">
                     Add New Type
                   </v-btn>
                 </v-card-title>
@@ -488,7 +488,7 @@ onMounted(() => {
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Asset Profiles</span>
-                  <v-btn color="secondary" @click="openAddProfileDialog"
+                  <v-btn color="primary" @click="openAddProfileDialog"
                     >Add New Profile</v-btn
                   >
                 </v-card-title>

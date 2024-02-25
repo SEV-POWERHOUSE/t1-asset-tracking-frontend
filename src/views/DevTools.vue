@@ -115,6 +115,7 @@ onMounted(fetchUsersAndRoles);
                     v-model="item.selectedRoleName"
                     :items="roleNames"
                     label="Select Role"
+                    class="select-fixed-width"
                   ></v-select>
                 </td>
               </tr>

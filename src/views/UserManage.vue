@@ -50,6 +50,15 @@ const fetchUsersAndRoles = async () => {
       map[role.name] = role.id;
       return map;
     }, {});
+
+    // Initialize each user's selectedRoleName with their current role name
+    users.value = users.value.map((user) => {
+      const userRole = userRoles.value.find(
+        (role) => role.id === user.userRoleId
+      );
+      user.selectedRoleName = userRole ? userRole.name : null;
+      return user;
+    });
   } catch (error) {
     console.error("Failed to fetch users or roles:", error);
   }
@@ -132,7 +141,6 @@ const deleteUserRole = async (roleId) => {
     // Handle the error appropriately, e.g., showing an error message to the user
   }
 };
-
 
 const closeUserRoleDialog = () => {
   showAddUserRoleDialog.value = false;
@@ -270,6 +278,7 @@ onMounted(() => {
                             v-model="item.selectedRoleName"
                             :items="roleNames"
                             label="Select Role"
+                            class="select-fixed-width"
                           ></v-select>
                         </td>
                       </tr>
@@ -294,7 +303,7 @@ onMounted(() => {
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>User Roles</span>
                   <v-btn
-                    color="secondary"
+                    color="primary"
                     @click="
                       resetForm(),
                         (showAddUserRoleDialog = true),
