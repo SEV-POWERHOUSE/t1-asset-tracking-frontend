@@ -10,6 +10,8 @@ const userRoles = ref([]);
 const roleNames = ref([]);
 const roleNameToIdMap = ref({});
 const changedUserRoles = ref({});
+const snackbar = ref(false);
+const snackbarText = ref("");
 
 // Refs for User Roles tab
 const roles = ref([]);
@@ -61,18 +63,25 @@ const saveAllUserRoleChanges = async () => {
 
   try {
     await Promise.all(updatePromises);
-    console.log("All user roles updated successfully");
+    snackbarText.value = "All user roles updated successfully";
+    snackbar.value = true; // Show the snackbar
     fetchUsersAndRoles(); // Refresh data
     changedUserRoles.value = {}; // Reset changes tracker
   } catch (error) {
     console.error("Failed to update user roles:", error);
+    snackbarText.value = "Failed to update user roles";
+    snackbar.value = true; // Show the snackbar even in case of error
   }
 };
+
+// Computed property to check if there are changes
+const hasChanges = computed(() => {
+  return Object.keys(changedUserRoles.value).length > 0;
+});
 
 // Define headers for v-data-table.
 const userHeaders = [
   { title: "Name", key: "fName" },
-  { title: "Role", key: "userRole.name" },
   { title: "Change Role", key: "changeRole", sortable: false },
 ];
 
@@ -215,9 +224,10 @@ onMounted(() => {
     fetchUsersAndRoles();
   } else if (selectedTab.value === "User Roles") {
     retrieveUserRoles();
-  } else if (selectedTab.value === "Dev Tools") {
-    fetchUsersAndRoles();
-  }
+  } 
+  // else if (selectedTab.value === "Dev Tools") {
+  //   fetchUsersAndRoles();
+  // }
 });
 </script>
 
@@ -256,13 +266,6 @@ onMounted(() => {
                       <tr>
                         <td>{{ item.fName }} {{ item.lName }}</td>
                         <td>
-                          {{
-                            userRoles.find(
-                              (role) => role.id === item.userRoleId
-                            )?.name
-                          }}
-                        </td>
-                        <td>
                           <v-select
                             v-model="item.selectedRoleName"
                             :items="roleNames"
@@ -274,9 +277,13 @@ onMounted(() => {
                   </v-data-table>
                 </v-card-text>
                 <v-card-text>
-                  <v-btn color="secondary" @click="saveAllUserRoleChanges"
-                    >Save All Changes</v-btn
-                  >
+                  <v-btn
+            color="primary"
+            @click="saveAllUserRoleChanges"
+            :disabled="!hasChanges"
+          >
+            Save All Changes
+          </v-btn>
                 </v-card-text>
               </v-card>
             </div>
@@ -413,5 +420,9 @@ onMounted(() => {
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-snackbar v-model="snackbar" :timeout="3000" class="custom-snackbar">
+      {{ snackbarText }}
+      <!-- <v-btn color="pink" text @click="snackbar = false">Close</v-btn> -->
+    </v-snackbar>
   </div>
 </template>

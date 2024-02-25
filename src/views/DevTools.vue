@@ -1,22 +1,21 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
-import userServices from '../services/userServices';
-import userRoleServices from '../services/userRoleServices';
+import { ref, onMounted, watch, computed } from "vue";
+import userServices from "../services/userServices";
+import userRoleServices from "../services/userRoleServices";
 
 const users = ref([]);
 const userRoles = ref([]);
 const roleNames = ref([]);
 const roleNameToIdMap = ref({});
 const changedUserRoles = ref({});
+const snackbar = ref(false);
+const snackbarText = ref("");
 
 // Define headers for v-data-table.
 const headers = [
-  { title: 'Name', key: 'fName' },
-  { title: 'Role', key: 'userRole.name' },
-  { title: 'Change Role', key: 'changeRole', sortable: false },
+  { title: "Name", key: "fName" },
+  { title: "Change Role", key: "changeRole", sortable: false },
 ];
-
-
 
 const fetchUsersAndRoles = async () => {
   try {
@@ -28,67 +27,72 @@ const fetchUsersAndRoles = async () => {
     users.value = usersResponse.data;
     userRoles.value = rolesResponse.data;
 
-    roleNames.value = rolesResponse.data.map(role => role.name);
+    roleNames.value = rolesResponse.data.map((role) => role.name);
     roleNameToIdMap.value = rolesResponse.data.reduce((map, role) => {
       map[role.name] = role.id;
       return map;
     }, {});
+
+    // Initialize each user's selectedRoleName with their current role name
+    users.value = users.value.map((user) => {
+      const userRole = userRoles.value.find(
+        (role) => role.id === user.userRoleId
+      );
+      user.selectedRoleName = userRole ? userRole.name : null;
+      return user;
+    });
   } catch (error) {
-    console.error('Failed to fetch users or roles:', error);
+    console.error("Failed to fetch users or roles:", error);
   }
 };
 
-onMounted(fetchUsersAndRoles);
-
-// const updateUserRole = async (user, roleName) => {
-//   const roleId = roleNameToIdMap.value[roleName];
-//   if (!roleId) {
-//     console.error('Role ID not found for selected role');
-//     return;
-//   }
-
-//   try {
-//     await userServices.updateRole(user.id, roleId);
-//     console.log('User role updated successfully');
-//     fetchUsersAndRoles();
-//   } catch (error) {
-//     console.error('Failed to update user role:', error);
-//   }
-// };
-
 // Batch update function
 const saveAllUserRoleChanges = async () => {
-  const updatePromises = Object.entries(changedUserRoles.value).map(([userId, roleId]) =>
-    userServices.updateRole(userId, roleId)
+  const updatePromises = Object.entries(changedUserRoles.value).map(
+    ([userId, roleId]) => userServices.updateRole(userId, roleId)
   );
 
   try {
     await Promise.all(updatePromises);
-    console.log('All user roles updated successfully');
+    snackbarText.value = "All user roles updated successfully";
+    snackbar.value = true; // Show the snackbar
     fetchUsersAndRoles(); // Refresh data
     changedUserRoles.value = {}; // Reset changes tracker
   } catch (error) {
-    console.error('Failed to update user roles:', error);
+    console.error("Failed to update user roles:", error);
+    snackbarText.value = "Failed to update user roles";
+    snackbar.value = true; // Show the snackbar even in case of error
   }
 };
 
+// Computed property to check if there are changes
+const hasChanges = computed(() => {
+  return Object.keys(changedUserRoles.value).length > 0;
+});
+
 // Watcher to track role changes
-watch(users, (newUsers) => {
-  newUsers.forEach(user => {
-    const selectedRoleId = roleNameToIdMap.value[user.selectedRoleName];
-    if (selectedRoleId !== undefined) {
-      if (selectedRoleId === user.userRoleId) {
-        // If the selected role is the same as the original, remove from changedUserRoles
-        if (changedUserRoles.value.hasOwnProperty(user.id)) {
-          delete changedUserRoles.value[user.id];
+watch(
+  users,
+  (newUsers) => {
+    newUsers.forEach((user) => {
+      const selectedRoleId = roleNameToIdMap.value[user.selectedRoleName];
+      if (selectedRoleId !== undefined) {
+        if (selectedRoleId === user.userRoleId) {
+          // If the selected role is the same as the original, remove from changedUserRoles
+          if (changedUserRoles.value.hasOwnProperty(user.id)) {
+            delete changedUserRoles.value[user.id];
+          }
+        } else {
+          // Track the role change
+          changedUserRoles.value[user.id] = selectedRoleId;
         }
-      } else {
-        // Track the role change
-        changedUserRoles.value[user.id] = selectedRoleId;
       }
-    }
-  });
-}, { deep: true });
+    });
+  },
+  { deep: true }
+);
+
+onMounted(fetchUsersAndRoles);
 </script>
 
 <template>
@@ -107,9 +111,6 @@ watch(users, (newUsers) => {
               <tr>
                 <td>{{ item.fName }} {{ item.lName }}</td>
                 <td>
-                  {{ userRoles.find(role => role.id === item.userRoleId)?.name || 'No Role' }}
-                </td>
-                <td>
                   <v-select
                     v-model="item.selectedRoleName"
                     :items="roleNames"
@@ -121,9 +122,19 @@ watch(users, (newUsers) => {
           </v-data-table>
         </v-card-text>
         <v-card-text>
-          <v-btn color="secondary" @click="saveAllUserRoleChanges">Save All Changes</v-btn>
+          <v-btn
+            color="primary"
+            @click="saveAllUserRoleChanges"
+            :disabled="!hasChanges"
+          >
+            Save All Changes
+          </v-btn>
         </v-card-text>
       </v-card>
     </v-container>
+    <v-snackbar v-model="snackbar" :timeout="3000" class="custom-snackbar">
+      {{ snackbarText }}
+      <!-- <v-btn color="pink" text @click="snackbar = false">Close</v-btn> -->
+    </v-snackbar>
   </div>
 </template>
