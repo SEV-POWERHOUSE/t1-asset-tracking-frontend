@@ -22,6 +22,8 @@ const validType = ref(false);
 const validProfile = ref(false);
 const showDeleteConfirmDialog = ref(false);
 const itemToDelete = ref(null);
+const snackbar = ref(false);
+const snackbarText = ref("");
 const rules = {
   required: (value) => !!value || "Required.",
 };
@@ -80,9 +82,12 @@ const saveCategory = async () => {
         newCategory.value.categoryId,
         categoryData
       );
+      snackbarText.value = "Category updated successfully.";
     } else {
       response = await AssetCategoryServices.create(categoryData);
+      snackbarText.value = "Category added successfully.";
     }
+    snackbar.value = true; // Show the snackbar
     message.value = "Category saved successfully.";
     retrieveAssetCategories(); // Refresh categories list
   } catch (error) {
@@ -100,6 +105,8 @@ const saveCategory = async () => {
 const deleteCategory = async (categoryId) => {
   try {
     await AssetCategoryServices.delete(categoryId);
+    snackbarText.value = "Category deleted successfully.";
+    snackbar.value = true; // Show the snackbar
     // Refresh the list of categories after successful deletion
     retrieveAssetCategories();
     assetCategories.value = assetCategories.value.filter(
@@ -132,10 +139,12 @@ const retrieveAssetTypes = async () => {
     const typesResponse = await AssetTypeServices.getAll();
     const enrichedTypes = typesResponse.data.map((type) => {
       // Find the category for each type
-      const category = assetCategories.value.find((c) => c.key === type.categoryId);
+      const category = assetCategories.value.find(
+        (c) => c.key === type.categoryId
+      );
       return {
         ...type,
-        categoryName: category ? category.title : 'Unknown Category', // Enriching type with category name
+        categoryName: category ? category.title : "Unknown Category", // Enriching type with category name
         key: type.typeId, // Keeping your original key assignment
         title: type.typeName, // Assuming you're mapping typeName to title
         description: type.desc, // Direct mapping
@@ -149,7 +158,6 @@ const retrieveAssetTypes = async () => {
   }
 };
 
-
 const editType = (type) => {
   selectedCategoryId.value = type.categoryId; // Assuming you have this ID correctly set
   newType.value = {
@@ -161,7 +169,6 @@ const editType = (type) => {
   editingType.value = true;
   showAddTypeDialog.value = true;
 };
-
 
 const saveType = async () => {
   let categoryId = selectedCategoryId.value; // Directly use the selected category ID
@@ -183,9 +190,12 @@ const saveType = async () => {
     if (editingType.value) {
       console.log(newType.value.typeId);
       await AssetTypeServices.update(newType.value.typeId, typeData);
+      snackbarText.value = "Type updated successfully.";
     } else {
       await AssetTypeServices.create(typeData);
+      snackbarText.value = "Type added successfully.";
     }
+    snackbar.value = true; // Show the snackbar
     message.value = "Type saved successfully.";
     await retrieveAssetTypes();
   } catch (error) {
@@ -200,6 +210,8 @@ const saveType = async () => {
 const deleteType = async (typeId) => {
   try {
     await AssetTypeServices.delete(typeId);
+    snackbarText.value = "Type deleted successfully.";
+    snackbar.value = true; // Show the snackbar
     // Refresh the list of types after successful deletion
     retrieveAssetTypes();
     assetTypes.value = assetTypes.value.filter((t) => t.id !== typeId);
@@ -239,11 +251,11 @@ const typeHeaders = ref([
 const retrieveAssetProfiles = async () => {
   try {
     const response = await AssetProfileServices.getAll();
-    assetProfiles.value = response.data.map(profile => {
-      const type = assetTypes.value.find(t => t.key === profile.typeId);
+    assetProfiles.value = response.data.map((profile) => {
+      const type = assetTypes.value.find((t) => t.key === profile.typeId);
       return {
         ...profile,
-        typeName: type ? type.title : 'Unknown Type'
+        typeName: type ? type.title : "Unknown Type",
       };
     });
   } catch (error) {
@@ -279,10 +291,13 @@ const saveProfile = async () => {
     if (editingProfile.value && newProfile.value.id) {
       // Call update service if editing
       await AssetProfileServices.update(newProfile.value.id, profileData);
+      snackbarText.value = "Profile updated successfully.";
     } else {
       // Call create service if adding a new profile
       await AssetProfileServices.create(profileData);
+      snackbarText.value = "Profile added successfully.";
     }
+    snackbar.value = true; // Show the snackbar
     message.value = "Profile saved successfully.";
     await retrieveAssetProfiles();
   } catch (error) {
@@ -306,11 +321,12 @@ const editProfile = (profile) => {
   showAddProfileDialog.value = true;
 };
 
-
 // Delete profile
 const deleteProfile = async (profileId) => {
   try {
     await AssetProfileServices.delete(profileId);
+    snackbarText.value = "Profile deleted successfully.";
+    snackbar.value = true; // Show the snackbar
     retrieveAssetProfiles();
     message.value = "Profile deleted successfully.";
   } catch (error) {
@@ -398,10 +414,7 @@ onMounted(() => {
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Asset Categories</span>
-                  <v-btn
-                    color="primary"
-                    @click="showAddCategoryDialog = true"
-                  >
+                  <v-btn color="primary" @click="showAddCategoryDialog = true">
                     Add New Category
                   </v-btn>
                 </v-card-title>
@@ -649,10 +662,7 @@ onMounted(() => {
           <v-btn color="cancelgrey" text @click="showAddProfileDialog = false"
             >Cancel</v-btn
           >
-          <v-btn
-            color="saveblue"
-            @click="saveProfile"
-            :disabled="!validProfile"
+          <v-btn color="saveblue" @click="saveProfile" :disabled="!validProfile"
             >Save</v-btn
           >
         </v-card-actions>
@@ -675,5 +685,9 @@ onMounted(() => {
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-snackbar v-model="snackbar" :timeout="3000" class="custom-snackbar">
+      {{ snackbarText }}
+      <!-- <v-btn color="pink" text @click="snackbar = false">Close</v-btn> -->
+    </v-snackbar>
   </div>
 </template>
