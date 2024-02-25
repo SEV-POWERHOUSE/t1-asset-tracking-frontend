@@ -1,29 +1,29 @@
 <script>
 import ocLogo from "/oc-logo-maroon.png";
-import {ref, onMounted } from "vue";
 
-const logo = ref("");
+const logoURL = ref("");
 
 onMounted(() => {
-  logo.value = ocLogo;
+  logoURL.value = ocLogo;
 });
+
 </script>
 
 <template>
     <v-footer color="primary" class="flex-grow-0 flex-shrink-0 pa-0 ma-0" height=68>
       <v-row justify="space-between" class="mx-0">
         <v-col justify="left">
-            Oklahoma Christian University  — {{ new Date().getFullYear() }}
+            Oklahoma Christian University — {{ new Date().getFullYear() }}
         </v-col>
         <v-col class="pa-0">
           <v-img
-            :src="logo"
+            :src="logoURL"
             height="60"
             width="60"
             class="logo"
           ></v-img>
         </v-col>
-    </v-row>
+      </v-row>
     </v-footer>
 </template>
 
