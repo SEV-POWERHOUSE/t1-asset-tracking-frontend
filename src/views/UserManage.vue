@@ -163,14 +163,18 @@ watch(
   [users, isUsersTabActive],
   ([newUsers, isUsersActive]) => {
     if (isUsersActive) {
-      // Logic specific to the "Users" tab
       newUsers.forEach((user) => {
-        if (
-          user.selectedRoleName &&
-          roleNameToIdMap.value[user.selectedRoleName] !== user.userRoleId
-        ) {
-          changedUserRoles.value[user.id] =
-            roleNameToIdMap.value[user.selectedRoleName];
+        const selectedRoleId = roleNameToIdMap.value[user.selectedRoleName];
+        if (selectedRoleId !== undefined) {
+          if (selectedRoleId === user.userRoleId) {
+            // If the selected role is the same as the original role, remove the change tracking for this user.
+            if (changedUserRoles.value.hasOwnProperty(user.id)) {
+              delete changedUserRoles.value[user.id];
+            }
+          } else {
+            // Track the role change.
+            changedUserRoles.value[user.id] = selectedRoleId;
+          }
         }
       });
     }
