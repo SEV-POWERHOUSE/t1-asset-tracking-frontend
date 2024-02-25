@@ -115,11 +115,11 @@ const saveUserRole = async () => {
   if (editingUserRole.value && newUserRole.value.id) {
     // Update existing user role
     await userRoleServices.update(newUserRole.value.id, newUserRole.value);
-    snackbarText.value = "Category updated successfully.";
+    snackbarText.value = "Role updated successfully.";
   } else {
     // Add new user role
     await userRoleServices.create(newUserRole.value);
-    snackbarText.value = "Category added successfully.";
+    snackbarText.value = "Role added successfully.";
   }
   snackbar.value = true; // Show the snackbar
 
@@ -136,7 +136,7 @@ const saveUserRole = async () => {
 const deleteUserRole = async (roleId) => {
   try {
     await userRoleServices.delete(roleId); // Use the delete method from your services
-    snackbarText.value = "Category deleted successfully.";
+    snackbarText.value = "Role deleted successfully.";
     snackbar.value = true; // Show the snackbar
     await retrieveUserRoles(); // Refresh the list of roles after deletion
     showDeleteConfirmDialog.value = false; // Close the confirmation dialog
