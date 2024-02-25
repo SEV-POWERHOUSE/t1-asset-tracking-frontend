@@ -26,7 +26,7 @@ export default {
         <v-col justify="left">
             Oklahoma Christian University — {{ new Date().getFullYear() }}
         </v-col>
-        <v-col class="pa-0">
+        <v-col class="pa-0" justify="right">
           <v-img
             :src="logoURL"
             height="60"
@@ -40,7 +40,7 @@ export default {
 
 <style scoped>
   .logo {
-    position: fixed;
+    position: absolute;
     bottom: 0; /* Adjust as needed */
     right: 0; /* Adjust as needed */
   }
