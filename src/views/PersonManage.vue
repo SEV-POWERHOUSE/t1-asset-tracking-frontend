@@ -255,7 +255,7 @@ onMounted(() => {
             >Cancel</v-btn
           >
           <v-btn color="saveblue" @click="savePerson" :disabled="!validPerson"
-            >Cancel</v-btn
+            >Save</v-btn
           >
         </v-card-actions>
       </v-card>
