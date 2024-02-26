@@ -123,7 +123,6 @@ const saveUserRole = async () => {
   }
   snackbar.value = true; // Show the snackbar
 
-
   // Reset newUserRole to its initial state
   newUserRole.value = { name: "" };
   validUserRole.value = false; // Also reset form validation state
@@ -237,7 +236,7 @@ onMounted(() => {
     fetchUsersAndRoles();
   } else if (selectedTab.value === "User Roles") {
     retrieveUserRoles();
-  } 
+  }
   // else if (selectedTab.value === "Dev Tools") {
   //   fetchUsersAndRoles();
   // }
@@ -267,7 +266,16 @@ onMounted(() => {
             <!-- Users Section -->
             <div v-if="selectedTab === 'Users'">
               <v-card>
-                <v-card-title>Role Assignment</v-card-title>
+                <v-card-title class="d-flex justify-space-between align-center">
+                  <span>Role Assignment</span>
+                  <v-btn
+                    color="saveblue"
+                    @click="saveAllUserRoleChanges"
+                    :disabled="!hasChanges"
+                  >
+                    Save All Changes
+                  </v-btn>
+                </v-card-title>
                 <v-card-text>
                   <v-data-table
                     :headers="userHeaders"
@@ -289,15 +297,6 @@ onMounted(() => {
                       </tr>
                     </template>
                   </v-data-table>
-                </v-card-text>
-                <v-card-text>
-                  <v-btn
-            color="primary"
-            @click="saveAllUserRoleChanges"
-            :disabled="!hasChanges"
-          >
-            Save All Changes
-          </v-btn>
                 </v-card-text>
               </v-card>
             </div>
