@@ -99,7 +99,16 @@ onMounted(fetchUsersAndRoles);
   <div>
     <v-container>
       <v-card>
-        <v-card-title>Dev Tools</v-card-title>
+        <v-card-title class="d-flex justify-space-between align-center">
+          <span>Dev Tools</span>
+          <v-btn
+            color="saveblue"
+            @click="saveAllUserRoleChanges"
+            :disabled="!hasChanges"
+          >
+            Save All Changes
+          </v-btn>
+        </v-card-title>
         <v-card-text>
           <v-data-table
             :headers="headers"
@@ -121,15 +130,6 @@ onMounted(fetchUsersAndRoles);
               </tr>
             </template>
           </v-data-table>
-        </v-card-text>
-        <v-card-text>
-          <v-btn
-            color="primary"
-            @click="saveAllUserRoleChanges"
-            :disabled="!hasChanges"
-          >
-            Save All Changes
-          </v-btn>
         </v-card-text>
       </v-card>
     </v-container>
