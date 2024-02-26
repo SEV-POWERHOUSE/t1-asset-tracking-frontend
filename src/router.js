@@ -8,7 +8,7 @@ import DevTools from "./views/DevTools.vue";
 import UserManage from "./views/UserManage.vue";
 import AssetManage from "./views/AssetManage.vue";
 import BuildingManage from "./views/BuildingManage.vue";
-
+import PersonManage from "./views/PersonManage.vue";
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -91,6 +91,11 @@ const router = createRouter({
           { text: 'Building Manage' }
         ]
       }
+    },
+    {
+      path: "/personManage",
+      name: "personManage",
+      component: PersonManage,
     },
   ],
 });
