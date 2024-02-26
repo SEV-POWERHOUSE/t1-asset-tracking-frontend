@@ -52,23 +52,60 @@ const router = createRouter({
       path: "/devTools",
       name: "devTools",
       component: DevTools,
+      meta: {
+        breadCrumb: [
+          { text: 'Admin Dashboard', to: {name: 'adminDashboard'}},
+          { text: 'Dev Tools' }
+        ]
+      }
     },
     {
       path: "/userManage",
       name: "userManage",
       component: UserManage,
+      meta: {
+        breadCrumb: [
+          { text: 'Admin Dashboard'},
+          { text: 'User Manage' }
+        ]
+      }
     },
     {
       path: "/assetManage",
       name: "assetManage",
       component: AssetManage,
+      meta: {
+        breadCrumb: [
+          { text: 'Admin Dashboard'},
+          { text: 'Asset Manage' }
+        ]
+      }
     },
     {
       path: "/buildingManage",
       name: "buildingManage",
       component: BuildingManage,
+      meta: {
+        breadCrumb: [
+          { text: 'Admin Dashboard'},
+          { text: 'Building Manage' }
+        ]
+      }
     },
   ],
 });
 
 export default router;
+
+
+
+
+
+
+// Template for breadcrumb links
+// meta: {
+//   breadCrumb: [
+//     { text: 'Admin Dashboard', to: {name: 'adminDashboard'}},
+//     { text: 'Dev Tools' }
+//   ]
+// }
