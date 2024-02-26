@@ -10,15 +10,17 @@ const editingPerson = ref(false);
 const validPerson = ref(false);
 const showDeleteConfirmDialog = ref(false);
 const itemToDelete = ref(null);
+const snackbar = ref(false);
+const snackbarText = ref("");
 const rules = {
   required: (value) => !!value || "Required.",
 };
 
 const newPerson = ref({
-  title: '',
-  lName: '',
-  email: '',
-  idNumber: ''
+  title: "",
+  lName: "",
+  email: "",
+  idNumber: "",
 });
 
 // People Section
@@ -28,18 +30,17 @@ const retrievePeople = async () => {
   try {
     const response = await PersonServices.getAll();
     people.value = response.data.map((person) => ({
-        title: person.fName,
-        key: person.personId,
-        lName: person.lName,
-        email: person.email,
-        idNumber: person.idNumber
+      title: person.fName,
+      key: person.personId,
+      lName: person.lName,
+      email: person.email,
+      idNumber: person.idNumber,
     }));
   } catch (error) {
     console.error("Error loading people:", error);
   }
-  console.log(people.value)
+  console.log(people.value);
 };
-
 
 const editPerson = async (person) => {
   newPerson.value = {
@@ -47,7 +48,7 @@ const editPerson = async (person) => {
     lName: person.lName,
     email: person.email,
     idNumber: person.idNumber,
-    personId: person.key
+    personId: person.key,
   };
   editingPerson.value = true;
   showAddPersonDialog.value = true;
@@ -58,8 +59,7 @@ const savePerson = async () => {
     fName: newPerson.value.title,
     lName: newPerson.value.lName,
     email: newPerson.value.email,
-    idNumber: newPerson.value.idNumber
-   
+    idNumber: newPerson.value.idNumber,
   };
 
   try {
@@ -70,16 +70,17 @@ const savePerson = async () => {
         newPerson.value.personId,
         personData
       );
+      snackbarText.value = "Person updated successfully.";
     } else {
       response = await PersonServices.create(personData);
+      snackbarText.value = "Person added successfully.";
     }
+    snackbar.value = true; // Show the snackbar
     message.value = "Person saved successfully.";
     retrievePeople(); // Refresh people list
   } catch (error) {
     console.error("Error saving person:", error);
-    message.value = `Error saving person: ${
-      error.message || "Unknown error"
-    }`;
+    message.value = `Error saving person: ${error.message || "Unknown error"}`;
   } finally {
     editingPerson.value = false;
     showAddPersonDialog.value = false;
@@ -90,10 +91,11 @@ const savePerson = async () => {
 const deletePerson = async (personId) => {
   try {
     await PersonServices.delete(personId);
+    snackbarText.value = "Person deleted successfully.";
+    snackbar.value = true; // Show the snackbar
     // Refresh the list of buildings after successful deletion
     retrievePeople();
-    people.value = people.value.filter(
-      (t) => t.personId !== personId);
+    people.value = people.value.filter((t) => t.personId !== personId);
   } catch (error) {
     console.error(error);
     message.value = "Error deleting person.";
@@ -103,7 +105,7 @@ const deletePerson = async (personId) => {
 const closePersonDialog = () => {
   showAddPersonDialog.value = false;
   editingPerson.value = false;
-  newPerson.value = { fName: "", lName: "", email: '', idNumber: "" };
+  newPerson.value = { fName: "", lName: "", email: "", idNumber: "" };
 };
 
 const personHeaders = ref([
@@ -114,8 +116,6 @@ const personHeaders = ref([
   { title: "Actions", key: "actions", sortable: false },
 ]);
 
-
-
 // Misc Section
 const openDeleteConfirmDialog = (item) => {
   itemToDelete.value = item;
@@ -125,7 +125,7 @@ const openDeleteConfirmDialog = (item) => {
 const confirmDelete = async () => {
   if (itemToDelete.value.type === "person") {
     await deletePerson(itemToDelete.value.id);
-  } 
+  }
   showDeleteConfirmDialog.value = false;
   itemToDelete.value = null; // Reset after deletion
 };
@@ -134,14 +134,14 @@ const confirmDelete = async () => {
 watch(selectedTab, (newValue) => {
   if (newValue === "People") {
     retrievePeople();
-  } 
+  }
 });
 
 // Call this once to load the default tab's data when the component mounts
 onMounted(() => {
   if (selectedTab.value === "People") {
     retrievePeople();
-  } 
+  }
 });
 </script>
 
@@ -155,8 +155,6 @@ onMounted(() => {
           </v-toolbar>
           <v-tabs v-model="selectedTab" background-color="primary" dark>
             <v-tab value="People">People</v-tab>
-           
-            
           </v-tabs>
         </v-col>
       </v-row>
@@ -164,13 +162,12 @@ onMounted(() => {
       <v-row>
         <v-col cols="12">
           <v-fade-transition mode="out-in">
-
             <!-- People Section -->
             <div v-if="selectedTab === 'People'">
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>People</span>
-                  <v-btn color="primary" @click="showAddPersonDialog = true;">
+                  <v-btn color="primary" @click="showAddPersonDialog = true">
                     Add New Person
                   </v-btn>
                 </v-card-title>
@@ -180,12 +177,12 @@ onMounted(() => {
                     :items="people"
                     item-key="key"
                     class="elevation-1"
-                      > 
-                        <template v-slot:item.actions="{ item }">
-                         <v-btn icon @click="editPerson(item)">
-                           <v-icon>mdi-pencil</v-icon>
-                         </v-btn>
-                        <v-btn
+                  >
+                    <template v-slot:item.actions="{ item }">
+                      <v-btn icon @click="editPerson(item)">
+                        <v-icon>mdi-pencil</v-icon>
+                      </v-btn>
+                      <v-btn
                         icon
                         @click="
                           openDeleteConfirmDialog({
@@ -201,62 +198,65 @@ onMounted(() => {
                 </v-card-text>
               </v-card>
             </div>
-     
           </v-fade-transition>
         </v-col>
       </v-row>
     </v-container>
 
-    
-
     <!-- Add/Edit Person Dialog -->
     <v-dialog v-model="showAddPersonDialog" max-width="600px">
       <v-card>
         <v-card-title>
-          <span class="headline">{{ editingPerson ? "Edit" : "Add" }} Person</span>
+          <span class="headline"
+            >{{ editingPerson ? "Edit" : "Add" }} Person</span
+          >
         </v-card-title>
         <v-card-text>
-          <v-form ref = "formPerson" v-model="validPerson">
-          <v-container>
-            <v-row>
-              <v-col cols="12">
-                <v-text-field
-                  label="First Name"
-                  v-model="newPerson.title"
-                  :rules="[rules.required]"
-                  required
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12">
-                <v-text-field
-                  label="Last Name"
-                  v-model="newPerson.lName"
-                  :rules="[rules.required]"
-                  required
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12">
-                <v-text-field
-                  label="Email"
-                  v-model="newPerson.email"
-                  :rules="[rules.required]"
-                  required
-                ></v-text-field>
-                <v-text-field
-                  label="ID No."
-                  v-model="newPerson.idNumber"
-                  :rules="[rules.required]"
-                  required
-                ></v-text-field>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-form>
+          <v-form ref="formPerson" v-model="validPerson">
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <v-text-field
+                    label="First Name"
+                    v-model="newPerson.title"
+                    :rules="[rules.required]"
+                    required
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    label="Last Name"
+                    v-model="newPerson.lName"
+                    :rules="[rules.required]"
+                    required
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    label="Email"
+                    v-model="newPerson.email"
+                    :rules="[rules.required]"
+                    required
+                  ></v-text-field>
+                  <v-text-field
+                    label="ID No."
+                    v-model="newPerson.idNumber"
+                    :rules="[rules.required]"
+                    required
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="cancelgrey" text @click="closePersonDialog">Cancel</v-btn>
-          <v-btn color="saveblue" @click="savePerson" :disabled="!validPerson">Cancel</v-btn>
+          <v-btn color="cancelgrey" text @click="closePersonDialog"
+            >Cancel</v-btn
+          >
+          <v-btn color="saveblue" @click="savePerson" :disabled="!validPerson"
+            >Cancel</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -277,7 +277,9 @@ onMounted(() => {
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    
+    <v-snackbar v-model="snackbar" :timeout="3000" class="custom-snackbar">
+      {{ snackbarText }}
+      <!-- <v-btn color="pink" text @click="snackbar = false">Close</v-btn> -->
+    </v-snackbar>
   </div>
 </template>

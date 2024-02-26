@@ -10,24 +10,25 @@ const rooms = ref([]);
 const showAddBuildingDialog = ref(false);
 const showAddRoomDialog = ref(false);
 const editingBuilding = ref(false);
-const editingRoom= ref(false);
+const editingRoom = ref(false);
 const selectedBuildingId = ref("");
 const validBuilding = ref(false);
-const validRoom= ref(false);
+const validRoom = ref(false);
 const showDeleteConfirmDialog = ref(false);
 const itemToDelete = ref(null);
+const snackbar = ref(false);
+const snackbarText = ref("");
 const rules = {
   required: (value) => !!value || "Required.",
 };
-
 const newBuilding = ref({
-  title: '',
-  abbreviation: '',
-  noOfRooms: '',
+  title: "",
+  abbreviation: "",
+  noOfRooms: "",
 });
 const newRoom = ref({
-  title: '',
-  buildingId: '',
+  title: "",
+  buildingId: "",
 });
 
 // Buildings Section
@@ -40,14 +41,13 @@ const retrieveBuildings = async () => {
       title: building.name,
       key: building.buildingId,
       abbreviation: building.abbreviation,
-      noOfRooms: building.noOfRooms
+      noOfRooms: building.noOfRooms,
     }));
   } catch (error) {
     console.error("Error loading buildings:", error);
   }
-  console.log(buildings.value)
+  console.log(buildings.value);
 };
-
 
 const editBuilding = async (building) => {
   newBuilding.value = {
@@ -75,9 +75,12 @@ const saveBuilding = async () => {
         newBuilding.value.buildingId,
         buildingData
       );
+      snackbarText.value = "Building updated successfully.";
     } else {
       response = await BuildingServices.create(buildingData);
+      snackbarText.value = "Building added successfully.";
     }
+    snackbar.value = true; // Show the snackbar
     message.value = "Building saved successfully.";
     retrieveBuildings(); // Refresh buildings list
   } catch (error) {
@@ -95,10 +98,13 @@ const saveBuilding = async () => {
 const deleteBuilding = async (buildingId) => {
   try {
     await BuildingServices.delete(buildingId);
+    snackbarText.value = "Building deleted successfully.";
+    snackbar.value = true; // Show the snackbar
     // Refresh the list of buildings after successful deletion
     retrieveBuildings();
     buildings.value = buildings.value.filter(
-      (t) => t.buildingId !== buildingId);
+      (t) => t.buildingId !== buildingId
+    );
   } catch (error) {
     console.error(error);
     message.value = "Error deleting building.";
@@ -108,7 +114,7 @@ const deleteBuilding = async (buildingId) => {
 const closeBuildingDialog = () => {
   showAddBuildingDialog.value = false;
   editingBuilding.value = false;
-  newBuilding.value = { name: "", abbreviation: '', noOfRooms: "" };
+  newBuilding.value = { name: "", abbreviation: "", noOfRooms: "" };
 };
 
 const buildingHeaders = ref([
@@ -130,8 +136,8 @@ const retrieveRooms = async () => {
       const building = buildings.value.find((c) => c.key === room.buildingId);
       return {
         ...room,
-        buildingName: building ? building.title : 'Unknown Building', // Enriching room with building name
-        key: room.roomId, // Keeping your original key assignment 
+        buildingName: building ? building.title : "Unknown Building", // Enriching room with building name
+        key: room.roomId, // Keeping your original key assignment
         title: room.roomNo, // Assuming you're mapping roomNo to roomNo
         buildingId: room.buildingId,
       };
@@ -142,7 +148,6 @@ const retrieveRooms = async () => {
     message.value = "Failed to load rooms.";
   }
 };
-
 
 const editRoom = (room) => {
   selectedBuildingId.value = room.buildingId; // Assuming you have this ID correctly set
@@ -155,11 +160,10 @@ const editRoom = (room) => {
   showAddRoomDialog.value = true;
 };
 
-
 const saveRoom = async () => {
   let buildingId = selectedBuildingId.value; // Directly use the selected category ID
   console.log(buildingId);
-  
+
   if (!buildingId) {
     console.error("Building not selected.");
     message.value = "Building not found or not selected.";
@@ -176,10 +180,13 @@ const saveRoom = async () => {
     if (editingRoom.value) {
       console.log(newRoom.value.roomId);
       await RoomServices.update(newRoom.value.roomId, roomData);
+      snackbarText.value = "Room updated successfully.";
     } else {
       await RoomServices.create(roomData);
-      console.log(roomData)
+      snackbarText.value = "Room added successfully.";
+      console.log(roomData);
     }
+    snackbar.value = true; // Show the snackbar
     message.value = "Room saved successfully.";
     await retrieveRooms();
   } catch (error) {
@@ -189,12 +196,14 @@ const saveRoom = async () => {
     resetForm(); // Ensure form is reset here
     showAddRoomDialog.value = false; // Close dialog in finally to ensure it closes
   }
-  console.log(roomData)
+  console.log(roomData);
 };
 
 const deleteRoom = async (roomId) => {
   try {
     await RoomServices.delete(roomId);
+    snackbarText.value = "Room deleted successfully.";
+    snackbar.value = true; // Show the snackbar
     // Refresh the list of rooms after successful deletion
     retrieveRooms();
     rooms.value = rooms.value.filter((t) => t.id !== roomId);
@@ -251,7 +260,7 @@ watch(selectedTab, (newValue) => {
   } else if (newValue === "Rooms") {
     retrieveBuildings();
     retrieveRooms();
-  } 
+  }
 });
 
 // Call this once to load the default tab's data when the component mounts
@@ -276,8 +285,6 @@ onMounted(() => {
           <v-tabs v-model="selectedTab" background-color="primary" dark>
             <v-tab value="Buildings">Buildings</v-tab>
             <v-tab value="Rooms">Rooms</v-tab>
-           
-            
           </v-tabs>
         </v-col>
       </v-row>
@@ -285,13 +292,12 @@ onMounted(() => {
       <v-row>
         <v-col cols="12">
           <v-fade-transition mode="out-in">
-
             <!-- Buildings Section -->
             <div v-if="selectedTab === 'Buildings'">
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Buildings</span>
-                  <v-btn color="primary" @click="showAddBuildingDialog = true;">
+                  <v-btn color="primary" @click="showAddBuildingDialog = true">
                     Add New Building
                   </v-btn>
                 </v-card-title>
@@ -301,12 +307,12 @@ onMounted(() => {
                     :items="buildings"
                     item-key="key"
                     class="elevation-1"
-                      > 
-                        <template v-slot:item.actions="{ item }">
-                         <v-btn icon @click="editBuilding(item)">
-                           <v-icon>mdi-pencil</v-icon>
-                         </v-btn>
-                        <v-btn
+                  >
+                    <template v-slot:item.actions="{ item }">
+                      <v-btn icon @click="editBuilding(item)">
+                        <v-icon>mdi-pencil</v-icon>
+                      </v-btn>
+                      <v-btn
                         icon
                         @click="
                           openDeleteConfirmDialog({
@@ -359,56 +365,62 @@ onMounted(() => {
                 </v-card-text>
               </v-card>
             </div>
-     
           </v-fade-transition>
         </v-col>
       </v-row>
     </v-container>
 
-    
-
     <!-- Add/Edit Building Dialog -->
     <v-dialog v-model="showAddBuildingDialog" max-width="600px">
       <v-card>
         <v-card-title>
-          <span class="headline">{{ editingBuilding ? "Edit" : "Add" }} Building</span>
+          <span class="headline"
+            >{{ editingBuilding ? "Edit" : "Add" }} Building</span
+          >
         </v-card-title>
         <v-card-text>
           <v-form ref="formBuilding" v-model="validBuilding">
-          <v-container>
-            <v-row>
-              <v-col cols="12">
-                <v-text-field
-                  label="Building Name"
-                  v-model="newBuilding.title"
-                  :rules="[rules.required]"
-                  required
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12">
-                <v-text-field
-                  label="Building abbreviation"
-                  v-model="newBuilding.abbreviation"
-                  :rules="[rules.required]"
-                  required
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12">
-                <v-text-field
-                  label="No. of Rooms"
-                  v-model="newBuilding.noOfRooms"
-                  :rules="[rules.required]"
-                  required
-                ></v-text-field>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-form>
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <v-text-field
+                    label="Building Name"
+                    v-model="newBuilding.title"
+                    :rules="[rules.required]"
+                    required
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    label="Building abbreviation"
+                    v-model="newBuilding.abbreviation"
+                    :rules="[rules.required]"
+                    required
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    label="No. of Rooms"
+                    v-model="newBuilding.noOfRooms"
+                    :rules="[rules.required]"
+                    required
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="cancelgrey" text @click="closeBuildingDialog">Cancel</v-btn>
-          <v-btn color="saveblue" @click="saveBuilding(newBuilding)" :disabled="!validBuilding">Save</v-btn>
+          <v-btn color="cancelgrey" text @click="closeBuildingDialog"
+            >Cancel</v-btn
+          >
+          <v-btn
+            color="saveblue"
+            @click="saveBuilding(newBuilding)"
+            :disabled="!validBuilding"
+            >Save</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -474,7 +486,9 @@ onMounted(() => {
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    
+    <v-snackbar v-model="snackbar" :timeout="3000" class="custom-snackbar">
+      {{ snackbarText }}
+      <!-- <v-btn color="pink" text @click="snackbar = false">Close</v-btn> -->
+    </v-snackbar>
   </div>
 </template>
