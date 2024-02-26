@@ -110,9 +110,9 @@ const closePersonDialog = () => {
 
 const personHeaders = ref([
   { title: "First Name", key: "title" },
-  { title: "Last Name", key: "lName", sortable: false },
-  { title: "Email", key: "email", sortable: false },
-  { title: "ID", key: "idNumber", sortable: false },
+  { title: "Last Name", key: "lName"},
+  { title: "Email", key: "email"},
+  { title: "ID", key: "idNumber"},
   { title: "Actions", key: "actions", sortable: false },
 ]);
 
