@@ -51,8 +51,9 @@ const retrieveBuildings = async () => {
 
 const editBuilding = async (building) => {
   newBuilding.value = {
-    title: building.name,
+    title: building.title,
     abbreviation: building.abbreviation,
+    noOfRooms: building.noOfRooms,
     buildingId: building.key,
   };
   editingBuilding.value = true;
