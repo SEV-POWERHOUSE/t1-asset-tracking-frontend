@@ -53,7 +53,7 @@ const editBuilding = async (building) => {
   newBuilding.value = {
     title: building.title,
     abbreviation: building.abbreviation,
-    noOfRooms: building.title,
+    noOfRooms: building.noOfRooms,
     buildingId: building.key,
   };
   editingBuilding.value = true;
@@ -208,6 +208,7 @@ const resetForm = () => {
   newRoom.value = { roomNo: "", buildingId: "", id: null }; // Explicitly set `id` to `null`
   selectedBuildingId.value = "";
   validRoom.value = false;
+  validBuilding.value = false;
   editingRoom.value = false; // Explicitly reset editing flag
 };
 
@@ -290,7 +291,7 @@ onMounted(() => {
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Buildings</span>
-                  <v-btn color="secondary" @click="showAddBuildingDialog = true;">
+                  <v-btn color="primary" @click="showAddBuildingDialog = true;">
                     Add New Building
                   </v-btn>
                 </v-card-title>
@@ -327,7 +328,7 @@ onMounted(() => {
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Rooms</span>
-                  <v-btn color="secondary" @click="openAddRoomDialog">
+                  <v-btn color="primary" @click="openAddRoomDialog">
                     Add New Room
                   </v-btn>
                 </v-card-title>
@@ -373,6 +374,7 @@ onMounted(() => {
           <span class="headline">{{ editingBuilding ? "Edit" : "Add" }} Building</span>
         </v-card-title>
         <v-card-text>
+          <v-form ref="formBuilding" v-model="validBuilding">
           <v-container>
             <v-row>
               <v-col cols="12">
@@ -401,13 +403,12 @@ onMounted(() => {
               </v-col>
             </v-row>
           </v-container>
+        </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="green darken-1" @click="saveBuilding">Save</v-btn>
-          <v-btn color="primary" text @click="closeBuildingDialog"
-            >Cancel</v-btn
-          >
+          <v-btn color="cancelgrey" text @click="closeBuildingDialog">Cancel</v-btn>
+          <v-btn color="saveblue" @click="saveBuilding(newBuilding)" :disabled="!validBuilding">Save</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

@@ -7,6 +7,7 @@ const selectedTab = ref("People");
 const people = ref([]);
 const showAddPersonDialog = ref(false);
 const editingPerson = ref(false);
+const validPerson = ref(false);
 const showDeleteConfirmDialog = ref(false);
 const itemToDelete = ref(null);
 const rules = {
@@ -14,7 +15,7 @@ const rules = {
 };
 
 const newPerson = ref({
-  title: 'fname',
+  title: '',
   lName: '',
   email: '',
   idNumber: ''
@@ -169,7 +170,7 @@ onMounted(() => {
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>People</span>
-                  <v-btn color="secondary" @click="showAddPersonDialog = true;">
+                  <v-btn color="primary" @click="showAddPersonDialog = true;">
                     Add New Person
                   </v-btn>
                 </v-card-title>
@@ -215,6 +216,7 @@ onMounted(() => {
           <span class="headline">{{ editingPerson ? "Edit" : "Add" }} Person</span>
         </v-card-title>
         <v-card-text>
+          <v-form ref = "formPerson" v-model="validPerson">
           <v-container>
             <v-row>
               <v-col cols="12">
@@ -249,13 +251,12 @@ onMounted(() => {
               </v-col>
             </v-row>
           </v-container>
+        </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="green darken-1" @click="savePerson">Save</v-btn>
-          <v-btn color="primary" text @click="closePersonDialog"
-            >Cancel</v-btn
-          >
+          <v-btn color="cancelgrey" text @click="closePersonDialog">Cancel</v-btn>
+          <v-btn color="saveblue" @click="savePerson" :disabled="!validPerson">Cancel</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
