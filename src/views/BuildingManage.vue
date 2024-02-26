@@ -53,7 +53,7 @@ const editBuilding = async (building) => {
   newBuilding.value = {
     title: building.title,
     abbreviation: building.abbreviation,
-    noOfRooms: building.noOfRooms,
+    noOfRooms: building.title,
     buildingId: building.key,
   };
   editingBuilding.value = true;
@@ -70,7 +70,7 @@ const saveBuilding = async () => {
   try {
     let response;
     if (editingBuilding.value) {
-      // Assuming your API expects an ID and the updated data for category updates
+      // Assuming your API expects an ID and the updated data for building updates
       response = await BuildingServices.update(
         newBuilding.value.buildingId,
         buildingData

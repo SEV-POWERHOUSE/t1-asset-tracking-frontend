@@ -32,6 +32,10 @@ const maintenanceActions = [
     title: "Buildings",
     component: "buildingManage",
   },
+  {
+    title: "People",
+    component: "personManage",
+  },
 ];
 
 const resetMenu = () => {
