@@ -240,8 +240,8 @@ const openAddTypeDialog = () => {
 
 const typeHeaders = ref([
   { title: "Type Name", key: "title" },
-  { title: "Category", key: "categoryName" },
   { title: "Description", key: "description" },
+  { title: "Category", key: "categoryName" },
   { title: "Actions", key: "actions", sortable: false },
 ]);
 
@@ -376,17 +376,10 @@ watch(selectedTab, (newValue) => {
 });
 
 // Call this once to load the default tab's data when the component mounts
-onMounted(() => {
-  if (selectedTab.value === "Categories") {
-    retrieveAssetCategories();
-  } else if (selectedTab.value === "Types") {
-    retrieveAssetCategories();
-    retrieveAssetTypes();
-  } else if (selectedTab.value === "Profiles") {
-    retrieveAssetCategories();
-    retrieveAssetTypes();
-    retrieveAssetProfiles();
-  }
+onMounted(async () => {
+  await retrieveAssetCategories();
+  await retrieveAssetTypes(); // Ensure types are loaded before profiles
+  await retrieveAssetProfiles(); // Now safe to load profiles
 });
 </script>
 
