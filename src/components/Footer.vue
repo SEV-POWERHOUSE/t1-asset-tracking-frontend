@@ -1,35 +1,46 @@
 <script>
-import ocLogo from "/oc-logo-maroon.png";
-import {ref, onMounted } from "vue";
+import { ref, onMounted } from "vue";
+import ocLogo from "/src/oc-logo-maroon.png";
 
-const logo = ref("");
+export default {
+  setup() {
+    const logoURL = ref('');
 
-onMounted(() => {
-  logo.value = ocLogo;
-});
+    onMounted(() => {
+      logoURL.value = ocLogo;
+    });
+
+    console.log(ocLogo); // Ensure the correct URL is logged
+
+    return {
+      logoURL
+    };
+  }
+}
+
 </script>
 
 <template>
     <v-footer color="primary" class="flex-grow-0 flex-shrink-0 pa-0 ma-0" height=68>
       <v-row justify="space-between" class="mx-0">
         <v-col justify="left">
-            Oklahoma Christian University  — {{ new Date().getFullYear() }}
+            Oklahoma Christian University — {{ new Date().getFullYear() }}
         </v-col>
-        <v-col class="pa-0">
+        <v-col class="pa-0" justify="right">
           <v-img
-            :src="logo"
+            :src="logoURL"
             height="60"
             width="60"
             class="logo"
           ></v-img>
         </v-col>
-    </v-row>
+      </v-row>
     </v-footer>
 </template>
 
 <style scoped>
   .logo {
-    position: fixed;
+    position: absolute;
     bottom: 0; /* Adjust as needed */
     right: 0; /* Adjust as needed */
   }

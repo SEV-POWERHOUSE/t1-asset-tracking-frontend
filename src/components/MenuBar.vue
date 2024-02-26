@@ -67,7 +67,6 @@ onMounted(() => {
 <template>
   <div>
     <v-app-bar app color="primary">
-      <v-app-bar-nav-icon></v-app-bar-nav-icon>
       <v-toolbar-title>{{ title }}</v-toolbar-title>
       <v-spacer></v-spacer>
       <template v-if="user">

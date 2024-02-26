@@ -10,6 +10,8 @@ const userRoles = ref([]);
 const roleNames = ref([]);
 const roleNameToIdMap = ref({});
 const changedUserRoles = ref({});
+const snackbar = ref(false);
+const snackbarText = ref("");
 
 // Refs for User Roles tab
 const roles = ref([]);
@@ -48,6 +50,15 @@ const fetchUsersAndRoles = async () => {
       map[role.name] = role.id;
       return map;
     }, {});
+
+    // Initialize each user's selectedRoleName with their current role name
+    users.value = users.value.map((user) => {
+      const userRole = userRoles.value.find(
+        (role) => role.id === user.userRoleId
+      );
+      user.selectedRoleName = userRole ? userRole.name : null;
+      return user;
+    });
   } catch (error) {
     console.error("Failed to fetch users or roles:", error);
   }
@@ -61,18 +72,25 @@ const saveAllUserRoleChanges = async () => {
 
   try {
     await Promise.all(updatePromises);
-    console.log("All user roles updated successfully");
+    snackbarText.value = "All user roles updated successfully";
+    snackbar.value = true; // Show the snackbar
     fetchUsersAndRoles(); // Refresh data
     changedUserRoles.value = {}; // Reset changes tracker
   } catch (error) {
     console.error("Failed to update user roles:", error);
+    snackbarText.value = "Failed to update user roles";
+    snackbar.value = true; // Show the snackbar even in case of error
   }
 };
+
+// Computed property to check if there are changes
+const hasChanges = computed(() => {
+  return Object.keys(changedUserRoles.value).length > 0;
+});
 
 // Define headers for v-data-table.
 const userHeaders = [
   { title: "Name", key: "fName" },
-  { title: "Role", key: "userRole.name" },
   { title: "Change Role", key: "changeRole", sortable: false },
 ];
 
@@ -97,10 +115,14 @@ const saveUserRole = async () => {
   if (editingUserRole.value && newUserRole.value.id) {
     // Update existing user role
     await userRoleServices.update(newUserRole.value.id, newUserRole.value);
+    snackbarText.value = "Role updated successfully.";
   } else {
     // Add new user role
     await userRoleServices.create(newUserRole.value);
+    snackbarText.value = "Role added successfully.";
   }
+  snackbar.value = true; // Show the snackbar
+
 
   // Reset newUserRole to its initial state
   newUserRole.value = { name: "" };
@@ -114,7 +136,8 @@ const saveUserRole = async () => {
 const deleteUserRole = async (roleId) => {
   try {
     await userRoleServices.delete(roleId); // Use the delete method from your services
-    console.log(`Role with ID ${roleId} deleted successfully.`);
+    snackbarText.value = "Role deleted successfully.";
+    snackbar.value = true; // Show the snackbar
     await retrieveUserRoles(); // Refresh the list of roles after deletion
     showDeleteConfirmDialog.value = false; // Close the confirmation dialog
     itemToDelete.value = null; // Reset the itemToDelete
@@ -123,7 +146,6 @@ const deleteUserRole = async (roleId) => {
     // Handle the error appropriately, e.g., showing an error message to the user
   }
 };
-
 
 const closeUserRoleDialog = () => {
   showAddUserRoleDialog.value = false;
@@ -163,14 +185,18 @@ watch(
   [users, isUsersTabActive],
   ([newUsers, isUsersActive]) => {
     if (isUsersActive) {
-      // Logic specific to the "Users" tab
       newUsers.forEach((user) => {
-        if (
-          user.selectedRoleName &&
-          roleNameToIdMap.value[user.selectedRoleName] !== user.userRoleId
-        ) {
-          changedUserRoles.value[user.id] =
-            roleNameToIdMap.value[user.selectedRoleName];
+        const selectedRoleId = roleNameToIdMap.value[user.selectedRoleName];
+        if (selectedRoleId !== undefined) {
+          if (selectedRoleId === user.userRoleId) {
+            // If the selected role is the same as the original role, remove the change tracking for this user.
+            if (changedUserRoles.value.hasOwnProperty(user.id)) {
+              delete changedUserRoles.value[user.id];
+            }
+          } else {
+            // Track the role change.
+            changedUserRoles.value[user.id] = selectedRoleId;
+          }
         }
       });
     }
@@ -211,9 +237,10 @@ onMounted(() => {
     fetchUsersAndRoles();
   } else if (selectedTab.value === "User Roles") {
     retrieveUserRoles();
-  } else if (selectedTab.value === "Dev Tools") {
-    fetchUsersAndRoles();
-  }
+  } 
+  // else if (selectedTab.value === "Dev Tools") {
+  //   fetchUsersAndRoles();
+  // }
 });
 </script>
 
@@ -252,17 +279,11 @@ onMounted(() => {
                       <tr>
                         <td>{{ item.fName }} {{ item.lName }}</td>
                         <td>
-                          {{
-                            userRoles.find(
-                              (role) => role.id === item.userRoleId
-                            )?.name
-                          }}
-                        </td>
-                        <td>
                           <v-select
                             v-model="item.selectedRoleName"
                             :items="roleNames"
                             label="Select Role"
+                            class="select-fixed-width"
                           ></v-select>
                         </td>
                       </tr>
@@ -270,9 +291,13 @@ onMounted(() => {
                   </v-data-table>
                 </v-card-text>
                 <v-card-text>
-                  <v-btn color="secondary" @click="saveAllUserRoleChanges"
-                    >Save All Changes</v-btn
-                  >
+                  <v-btn
+            color="primary"
+            @click="saveAllUserRoleChanges"
+            :disabled="!hasChanges"
+          >
+            Save All Changes
+          </v-btn>
                 </v-card-text>
               </v-card>
             </div>
@@ -283,7 +308,7 @@ onMounted(() => {
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>User Roles</span>
                   <v-btn
-                    color="secondary"
+                    color="primary"
                     @click="
                       resetForm(),
                         (showAddUserRoleDialog = true),
@@ -409,5 +434,9 @@ onMounted(() => {
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-snackbar v-model="snackbar" :timeout="3000" class="custom-snackbar">
+      {{ snackbarText }}
+      <!-- <v-btn color="pink" text @click="snackbar = false">Close</v-btn> -->
+    </v-snackbar>
   </div>
 </template>
