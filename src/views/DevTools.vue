@@ -17,14 +17,13 @@ const headers = [
   { title: "Change Role", key: "changeRole", sortable: false },
 ];
 
-const fetchUsersAndRoles = async () => {
+const fetchDevUsersAndRoles = async () => {
   try {
     const [usersResponse, rolesResponse] = await Promise.all([
       userServices.getAll(),
       userRoleServices.getAll(),
     ]);
 
-    users.value = usersResponse.data;
     userRoles.value = rolesResponse.data;
 
     roleNames.value = rolesResponse.data.map((role) => role.name);
@@ -32,6 +31,9 @@ const fetchUsersAndRoles = async () => {
       map[role.name] = role.id;
       return map;
     }, {});
+
+    // Filter users to only those with devPermission set to true
+    users.value = usersResponse.data.filter(user => user.devPermission === true);
 
     // Initialize each user's selectedRoleName with their current role name
     users.value = users.value.map((user) => {
@@ -56,7 +58,7 @@ const saveAllUserRoleChanges = async () => {
     await Promise.all(updatePromises);
     snackbarText.value = "All user roles updated successfully";
     snackbar.value = true; // Show the snackbar
-    fetchUsersAndRoles(); // Refresh data
+    fetchDevUsersAndRoles(); // Refresh data
     changedUserRoles.value = {}; // Reset changes tracker
   } catch (error) {
     console.error("Failed to update user roles:", error);
@@ -92,7 +94,7 @@ watch(
   { deep: true }
 );
 
-onMounted(fetchUsersAndRoles);
+onMounted(fetchDevUsersAndRoles);
 </script>
 
 <template>
