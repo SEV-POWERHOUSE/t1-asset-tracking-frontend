@@ -147,7 +147,6 @@ onMounted(() => {
 .logo {
   position: absolute;
   padding: 2px;
-  margin: auto;
   top: 0; /* Adjust as needed */
   left: 0; /* Adjust as needed */
 }
