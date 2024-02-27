@@ -29,7 +29,7 @@ const maintenanceActions = [
     component: "assetManage",
   },
   {
-    title: "Buildings",
+    title: "Facilities",
     component: "buildingManage",
   },
   {
