@@ -72,15 +72,9 @@ onMounted(() => {
   <div>
     <v-app-bar app color="primary">
       <router-link :to="store.getters.isAdmin ? { name: 'adminDashboard' }
-        :to=store.getters.isRoleAssigned ? {name: 'userDashboard'} 
-        : { name: 'unassignedDashboard' }">
-        <v-img
-          class="mx-2"
-          :src="logoURL"
-          height="60"
-          width="60"
-          contain
-        ></v-img>
+        : to = store.getters.isRoleAssigned ? { name: 'userDashboard' }
+          : { name: 'unassignedDashboard' }">
+        <v-img class="mx-2" :src="logoURL" height="60" width="60" contain></v-img>
       </router-link>
       <v-toolbar-title class="mx-5">{{ title }}</v-toolbar-title>
       <v-spacer></v-spacer>
@@ -92,12 +86,8 @@ onMounted(() => {
             Maintain
             <v-menu activator="parent" open-on-hover>
               <v-list>
-                <v-list-item
-                  v-for="(item, index) in maintenanceActions"
-                  :key="index"
-                  :value="index"
-                  @click="router.push({ name: item.component })"
-                >
+                <v-list-item v-for="(item, index) in maintenanceActions" :key="index" :value="index"
+                  @click="router.push({ name: item.component })">
                   <v-list-item-title>{{ item.title }}</v-list-item-title>
                 </v-list-item>
               </v-list>
@@ -149,7 +139,7 @@ onMounted(() => {
 .logo {
   position: absolute;
   padding: 2px;
-  top: 0; /* Adjust as needed */
-  left: 0; /* Adjust as needed */
+  top: 0;/* Adjust as needed */
+  left: 0;/* Adjust as needed */
 }
 </style>
