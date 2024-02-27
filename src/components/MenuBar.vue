@@ -71,7 +71,9 @@ onMounted(() => {
 <template>
   <div>
     <v-app-bar app color="primary">
-      <router-link :to="store.getters.isAdmin ? { name: 'adminDashboard' } : { name: 'userDashboard' }">
+      <router-link :to="store.getters.isAdmin ? { name: 'adminDashboard' }
+        :to=store.getters.isRoleAssigned ? {name: 'userDashboard'} 
+        : { name: 'unassignedDashboard' }">
         <v-img
           class="mx-2"
           :src="logoURL"
