@@ -417,6 +417,8 @@ onMounted(async () => {
                     :items="assetCategories"
                     item-key="key"
                     class="elevation-1"
+                    :items-per-page="5"
+                    :items-per-page-options="[5, 10, 15, 20]"
                   >
                     <template v-slot:item.actions="{ item }">
                       <v-btn icon @click="editCategory(item)">
@@ -454,6 +456,8 @@ onMounted(async () => {
                     :items="assetTypes"
                     item-key="key"
                     class="elevation-1"
+                    :items-per-page="5"
+                    :items-per-page-options="[5, 10, 15, 20]"
                   >
                     <template v-slot:item.actions="{ item }">
                       <v-btn icon @click="editType(item)">
@@ -491,6 +495,8 @@ onMounted(async () => {
                     :items="assetProfiles"
                     item-key="profileId"
                     class="elevation-1"
+                    :items-per-page="5"
+                    :items-per-page-options="[5, 10, 15, 20]"
                   >
                     <template v-slot:item.actions="{ item }">
                       <v-btn icon @click="editProfile(item)">

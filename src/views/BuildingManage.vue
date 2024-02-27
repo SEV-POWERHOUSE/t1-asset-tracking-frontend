@@ -307,6 +307,8 @@ onMounted(() => {
                     :items="buildings"
                     item-key="key"
                     class="elevation-1"
+                    :items-per-page="5"
+                    :items-per-page-options="[5, 10, 15, 20]"
                   >
                     <template v-slot:item.actions="{ item }">
                       <v-btn icon @click="editBuilding(item)">
@@ -344,6 +346,8 @@ onMounted(() => {
                     :items="rooms"
                     item-key="key"
                     class="elevation-1"
+                    :items-per-page="5"
+                    :items-per-page-options="[5, 10, 15, 20]"
                   >
                     <template v-slot:item.actions="{ item }">
                       <v-btn icon @click="editRoom(item)">

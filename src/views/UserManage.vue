@@ -282,6 +282,8 @@ onMounted(() => {
                     :items="users"
                     item-key="id"
                     class="elevation-1"
+                    :items-per-page="5"
+                    :items-per-page-options="[5, 10, 15, 20]"
                   >
                     <template v-slot:item="{ item }">
                       <tr>
@@ -322,6 +324,9 @@ onMounted(() => {
                     :headers="userRoleHeaders"
                     :items="roles"
                     item-key="id"
+                    class="elevation-1"
+                    :items-per-page="5"
+                    :items-per-page-options="[5, 10, 15, 20]"
                   >
                     <template v-slot:item.actions="{ item }">
                       <v-btn icon @click="editUserRole(item)">
