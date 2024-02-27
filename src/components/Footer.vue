@@ -21,29 +21,15 @@ export default {
 </script>
 
 <template>
-    <v-footer color="primary" class="flex-grow-0 flex-shrink-0 pa-0 ma-0" height=68>
-      <v-row justify="space-between" class="mx-0">
-        <v-col justify="left">
-            Oklahoma Christian University — {{ new Date().getFullYear() }}
-        </v-col>
-        <v-col class="pa-0" justify="right">
-          <v-img
-            :src="logoURL"
-            height="60"
-            width="60"
-            class="logo"
-          ></v-img>
-        </v-col>
-      </v-row>
-    </v-footer>
+  <v-footer color="primary" class="flex-grow-0 flex-shrink-0 pa-0 ma-0" height=68>
+    <v-row justify="space-between" class="mx-0">
+      <v-col justify="left">
+        Oklahoma Christian University — {{ new Date().getFullYear() }}
+      </v-col>
+    </v-row>
+  </v-footer>
 </template>
 
-<style scoped>
-  .logo {
-    position: absolute;
-    bottom: 0; /* Adjust as needed */
-    right: 0; /* Adjust as needed */
-  }
-</style>
+
 
 <!-- Love, Zane -->

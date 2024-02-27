@@ -17,80 +17,80 @@ const router = createRouter({
       alias: "/login",
       name: "login",
       component: Login,
-      meta: {
-        breadCrumb: [{ text: 'Login' }]
-      }
+      // meta: {
+      //   breadCrumb: [{ text: 'Login' }]
+      // }
     },
     {
       path: "/adminDashboard",
       name: "adminDashboard",
       component: AdminDashboard,
-      meta: {
-        breadCrumb: [{ text: 'Admin Dashboard' }]
-      }
+      // meta: {
+      //   breadCrumb: [{ text: 'Admin Dashboard' }]
+      // }
     },
     {
       path: "/unassignedDashboard",
       name: "unassignedDashboard",
       component: UnassignedDashboard,
-      meta: {
-        breadCrumb: [{ text: 'Unassigned Dashboard' }]
-      }
+      // meta: {
+      //   breadCrumb: [{ text: 'Unassigned Dashboard' }]
+      // }
     },
     {
       path: "/userDashboard",
       name: "userDashboard",
       component: UserDashboard,
-      meta: {
-        breadCrumb: [
-          { text: 'Login', to: {name: 'login'}},
-          { text: 'User Dashboard' }
-        ]
-      }
+      // meta: {
+      //   breadCrumb: [
+      //     { text: 'Login', to: {name: 'login'}},
+      //     { text: 'User Dashboard' }
+      //   ]
+      // }
     },
     {
       path: "/devTools",
       name: "devTools",
       component: DevTools,
-      meta: {
-        breadCrumb: [
-          { text: 'Admin Dashboard', to: {name: 'adminDashboard'}},
-          { text: 'Dev Tools' }
-        ]
-      }
+      // meta: {
+      //   breadCrumb: [
+      //     { text: 'Admin Dashboard', to: {name: 'adminDashboard'}},
+      //     { text: 'Dev Tools' }
+      //   ]
+      // }
     },
     {
       path: "/userManage",
       name: "userManage",
       component: UserManage,
-      meta: {
-        breadCrumb: [
-          { text: 'Admin Dashboard'},
-          { text: 'User Manage' }
-        ]
-      }
+      // meta: {
+      //   breadCrumb: [
+      //     { text: 'Admin Dashboard'},
+      //     { text: 'User Manage' }
+      //   ]
+      // }
     },
     {
       path: "/assetManage",
       name: "assetManage",
       component: AssetManage,
-      meta: {
-        breadCrumb: [
-          { text: 'Admin Dashboard'},
-          { text: 'Asset Manage' }
-        ]
-      }
+      // meta: {
+      //   breadCrumb: [
+      //     { text: 'Admin Dashboard'},
+      //     { text: 'Asset Manage' }
+      //   ]
+      // }
     },
     {
       path: "/buildingManage",
       name: "buildingManage",
       component: BuildingManage,
-      meta: {
-        breadCrumb: [
-          { text: 'Admin Dashboard'},
-          { text: 'Building Manage' }
-        ]
-      }
+      // meta: {
+      //   breadCrumb: [
+      //     { text: 'Admin Dashboard'},
+      //     { text: 'Building Manage' }
+      //   ]
+      // }
     },
     {
       path: "/personManage",
