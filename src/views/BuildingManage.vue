@@ -280,7 +280,7 @@ onMounted(() => {
       <v-row>
         <v-col cols="12">
           <v-toolbar>
-            <v-toolbar-title>Building Management</v-toolbar-title>
+            <v-toolbar-title>Facility Management</v-toolbar-title>
           </v-toolbar>
           <v-tabs v-model="selectedTab" background-color="primary" dark>
             <v-tab value="Buildings">Buildings</v-tab>
