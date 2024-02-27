@@ -21,16 +21,13 @@ const headers = [
 
 // Example items for the data table
 const items = ref([
-  { item: "IPhone 14", assignment: "Solomon Granger", dateTime: "February 14 3:00 P.M." },
+  { item: "iPhone 14", assignment: "Solomon Granger", dateTime: "February 14 3:00 P.M." },
   { item: "Apple Vision Pro", assignment: "Jaxen Mcray", dateTime: "February 16 5:30 P.M." },
   { item: "Playstation 5", assignment: "Zane Fike", dateTime: "February 20 12:05 P.M." },
   { item: "Overhead Projector", assignment: "PEC 223", dateTime: "February 23 8:19 A.M." },
   { item: "Smartboard", assignment: "HSH 212", dateTime: "February 25 12:18 P.M." },
-  { item: "RTAC", assignment: "Beam Library", dateTime: "February 27 10:53 A.M."  },
-  { item: "Playstation 5", assignment: "Zane Fike", dateTime: "February 20 12:05 P.M." },
-  { item: "Overhead Projector", assignment: "PEC 223", dateTime: "February 23 8:19 A.M." },
-  { item: "Smartboard", assignment: "HSH 212", dateTime: "February 25 12:18 P.M." },
   { item: "RTAC", assignment: "Beam Library", dateTime: "February 27 10:53 A.M."  }
+  
 ]);
 
 
@@ -95,7 +92,6 @@ const items = ref([
             :items="items"
             class="elevation-1 mb-4"
             caption="Asset Profiles"
-            :items-per-page="5"
           >
             <!-- Custom Header Slot -->
             <template v-slot:header="{ props: { headers } }">
