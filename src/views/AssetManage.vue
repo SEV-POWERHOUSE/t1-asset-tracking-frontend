@@ -786,7 +786,7 @@ onMounted(async () => {
             >
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
-                  <span>Asset Types</span>
+                  <span>Inactive Types</span>
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
