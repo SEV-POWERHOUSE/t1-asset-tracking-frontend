@@ -346,7 +346,7 @@ const activateType = async (typeId) => {
     assetTypes.value = assetTypes.value.filter((c) => c.id !== typeId);
   } catch (error) {
     console.error(error);
-    message.value = "Error archiving type.";
+    message.value = "Error activating type.";
   }
 };
 
@@ -628,15 +628,15 @@ onMounted(async () => {
             <v-toolbar-title>Asset Management</v-toolbar-title>
           </v-toolbar>
           <v-tabs v-model="selectedTab" background-color="primary" dark>
-            <v-tab value="Profiles">Asset Profiles</v-tab>
-            <v-tab value="Types">Asset Types</v-tab>
-            <v-tab value="Categories">Asset Categories</v-tab>
+            <v-tab color="primary" value="Profiles">Asset Profiles</v-tab>
+            <v-tab color="primary" value="Types">Asset Types</v-tab>
+            <v-tab color="primary" value="Categories">Asset Categories</v-tab>
           </v-tabs>
         </v-col>
       </v-row>
       <v-tabs v-model="selectedStatus" background-color="primary" dark>
-        <v-tab value="Active">Active</v-tab>
-        <v-tab value="Inactive">Archived</v-tab>
+        <v-tab color="primary" value="Active">Active</v-tab>
+        <v-tab color="primary" value="Inactive">Archived</v-tab>
       </v-tabs>
 
       <v-row>
@@ -662,6 +662,7 @@ onMounted(async () => {
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 15, 20]"
                   >
+                  
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editCategory(item)">
                         <v-icon>mdi-pencil</v-icon>

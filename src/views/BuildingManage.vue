@@ -1,10 +1,11 @@
 <script setup>
 import BuildingServices from "../services/buildingServices";
 import RoomServices from "../services/roomServices";
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 
 const message = ref("");
 const selectedTab = ref("Buildings");
+const selectedStatus = ref("Active");
 const buildings = ref([]);
 const rooms = ref([]);
 const showAddBuildingDialog = ref(false);
@@ -15,7 +16,11 @@ const selectedBuildingId = ref("");
 const validBuilding = ref(false);
 const validRoom = ref(false);
 const showDeleteConfirmDialog = ref(false);
+const showArchiveDialog = ref(false);
+const showActivateDialog = ref(false);
 const itemToDelete = ref(null);
+const itemToArchive = ref(null);
+const itemToActivate = ref(null);
 const snackbar = ref(false);
 const snackbarText = ref("");
 const rules = {
@@ -42,6 +47,7 @@ const retrieveBuildings = async () => {
       key: building.buildingId,
       abbreviation: building.abbreviation,
       noOfRooms: building.noOfRooms,
+      activeStatus: building.activeStatus,
     }));
   } catch (error) {
     console.error("Error loading buildings:", error);
@@ -54,6 +60,7 @@ const editBuilding = async (building) => {
     title: building.title,
     abbreviation: building.abbreviation,
     noOfRooms: building.noOfRooms,
+    activeStatus: building.activeStatus,
     buildingId: building.key,
   };
   editingBuilding.value = true;
@@ -116,14 +123,71 @@ const closeBuildingDialog = () => {
   editingBuilding.value = false;
   newBuilding.value = { name: "", abbreviation: "", noOfRooms: "" };
 };
+const archiveBuilding = async (buildingId) => {
+  const archiveData = {
+    activeStatus: false, // The new value for the activeStatus field
+  };
+  try {
+    await BuildingServices.update(buildingId, archiveData);
+    snackbarText.value = "Building archived successfully.";
+    snackbar.value = true; // Show the snackbar
+    // Refresh the list of buildings after successful deletion
+    retrieveBuildings();
+    buildings.value = buildings.value.filter((c) => c.id !== buildingId);
+  } catch (error) {
+    console.error(error);
+    message.value = "Error archiving building.";
+  }
+};
+
+const activateBuilding = async (buildingId) => {
+  const activateData = {
+    activeStatus: true, // The new value for the activeStatus field
+  };
+  try {
+    await BuildingServices.update(buildingId, activateData);
+    snackbarText.value = "Building activated successfully.";
+    snackbar.value = true; // Show the snackbar
+    // Refresh the list of buildings after successful deletion
+    retrieveBuildings();
+    buildings.value = buildings.value.filter((c) => c.id !== buildingId);
+  } catch (error) {
+    console.error(error);
+    message.value = "Error activating building.";
+  }
+};
+
 
 const buildingHeaders = ref([
   { title: "Building Name", key: "title" },
   { title: "Abbreviation", key: "abbreviation", sortable: false },
   { title: "No. of Rooms", key: "noOfRooms", sortable: false },
-  { title: "Actions", key: "actions", sortable: false },
+  { title: "Edit", key: "edit", sortable: false },
+  { title: "Archive", key: "archive", sortable: false },
 ]);
 
+const archivedBuildingHeaders = ref([
+  { title: "Building Name", key: "title" },
+  { title: "Abbreviation", key: "abbreviation", sortable: false },
+  { title: "No. of Rooms", key: "noOfRooms", sortable: false },
+  { title: "Edit", key: "edit", sortable: false },
+  { title: "Activate", key: "activate", sortable: false },
+  { title: "Delete", key: "delete", sortable: false },
+]);
+
+const filteredBuildings = computed(() => {
+  if (selectedStatus.value === "Active") {
+    return buildings.value.filter(
+      (buildings) => buildings.activeStatus === true
+    );
+  } else if (selectedStatus.value === "Archived") {
+    return buildings.value.filter(
+      (buildings) => buildings.activeStatus === false
+    );
+  } else {
+    return buildings.value;
+  }
+});
 // Rooms Section
 
 // Retrieve Rooms from Database
@@ -132,7 +196,7 @@ const retrieveRooms = async () => {
     // Assuming you've already fetched buildings at this point
     const roomsResponse = await RoomServices.getAll();
     const enrichedRooms = roomsResponse.data.map((room) => {
-      // Find the category for each type
+      // Find the building for each type
       const building = buildings.value.find((c) => c.key === room.buildingId);
       return {
         ...room,
@@ -231,11 +295,68 @@ const openAddRoomDialog = () => {
   showAddRoomDialog.value = true;
 };
 
+const archiveRoom = async (roomId) => {
+  const archiveData = {
+    activeStatus: false, // The new value for the activeStatus field
+  };
+  try {
+    await RoomServices.update(roomId, archiveData);
+    snackbarText.value = "Room archived successfully.";
+    snackbar.value = true; // Show the snackbar
+    // Refresh the list of rooms after successful deletion
+    retrieveRooms();
+    rooms.value = rooms.value.filter((c) => c.id !== roomId);
+  } catch (error) {
+    console.error(error);
+    message.value = "Error archiving room.";
+  }
+};
+
+const activateRoom = async (roomId) => {
+  const activateData = {
+    activeStatus: true, // The new value for the activeStatus field
+  };
+  try {
+    await RoomServices.update(roomId, activateData);
+    snackbarText.value = "Room activated successfully.";
+    snackbar.value = true; // Show the snackbar
+    // Refresh the list of Rooms after successful deletion
+    retrieveRooms();
+    rooms.value = rooms.value.filter((c) => c.id !== roomId);
+  } catch (error) {
+    console.error(error);
+    message.value = "Error activating room.";
+  }
+};
+
+
 const roomHeaders = ref([
   { title: "Room No.", key: "title" },
   { title: "Building", key: "buildingName" },
-  { title: "Actions", key: "actions", sortable: false },
+  { title: "Edit", key: "edit", sortable: false }, 
+  { title: "Archive", key: "archive", sortable: false },
 ]);
+
+const archivedRoomHeaders = ref([
+  { title: "Room No.", key: "title" },
+  { title: "Building", key: "buildingName" },
+  { title: "Edit", key: "edit", sortable: false },
+  { title: "Activate", key: "activate", sortable: false },
+  { title: "Delete", key: "delete", sortable: false },
+]);
+const filteredRooms = computed(() => {
+  if (selectedStatus.value === "Active") {
+    return rooms.value.filter(
+      (rooms) => rooms.activeStatus === true
+    );
+  } else if (selectedStatus.value === "Archived") {
+    return rooms.value.filter(
+      (rooms) => rooms.activeStatus === false
+    );
+  } else {
+    return rooms.value;
+  }
+});
 
 // Misc Section
 const openDeleteConfirmDialog = (item) => {
@@ -253,24 +374,65 @@ const confirmDelete = async () => {
   itemToDelete.value = null; // Reset after deletion
 };
 
+const openArchiveDialog = (item) => {
+  itemToArchive.value = item;
+  showArchiveDialog.value = true;
+};
+
+const confirmArchive = async () => {
+  if (itemToArchive.value.type === "building") {
+    await archiveBuilding(itemToArchive.value.id);
+  } else if (itemToArchive.value.type === "room") {
+    await archiveRoom(itemToArchive.value.id);
+  }
+  showArchiveDialog.value = false;
+  itemToArchive.value = null; // Reset after deletion
+};
+
+const openActivateDialog = (item) => {
+  itemToActivate.value = item;
+  showActivateDialog.value = true;
+};
+
+const confirmActivate = async () => {
+  if (itemToActivate.value.type === "building") {
+    await activateBuilding(itemToActivate.value.id);
+  } else if (itemToActivate.value.type === "room") {
+    await activateRoom(itemToActivate.value.id);
+  } 
+  showActivateDialog.value = false;
+  itemToActivate.value = null; // Reset after deletion
+};
+
+
 // Watch for changes on selectedTab and fetch data accordingly
 watch(selectedTab, (newValue) => {
   if (newValue === "Buildings") {
-    retrieveBuildings();
+    watch(selectedStatus, (statusValue) => {
+      if (statusValue === "Active") {
+        retrieveBuildings();
+      } else if (statusValue === "Archived") {
+        //retrieveInactiveAssetCategories();
+      }
+    });
   } else if (newValue === "Rooms") {
-    retrieveBuildings();
-    retrieveRooms();
-  }
+    watch(selectedStatus, (statusValue) => {
+      if (statusValue === "Active") {
+        retrieveBuildings();
+        retrieveRooms();
+      } else if (statusValue === "Archived") {
+        //retrieveInactiveAssetCategories();
+        //retrieveInactiveAssetTypes();
+      }
+    });
+  } 
 });
-
 // Call this once to load the default tab's data when the component mounts
 onMounted(() => {
-  if (selectedTab.value === "Buildings") {
-    retrieveBuildings();
-  } else if (selectedTab.value === "Rooms") {
+ 
     retrieveBuildings();
     retrieveRooms();
-  }
+  
 });
 </script>
 
@@ -283,8 +445,12 @@ onMounted(() => {
             <v-toolbar-title>Facility Management</v-toolbar-title>
           </v-toolbar>
           <v-tabs v-model="selectedTab" background-color="primary" dark>
-            <v-tab value="Buildings">Buildings</v-tab>
-            <v-tab value="Rooms">Rooms</v-tab>
+            <v-tab value="Buildings" color="primary">Buildings</v-tab>
+            <v-tab value="Rooms" color="primary">Rooms</v-tab>
+          </v-tabs>
+          <v-tabs v-model="selectedStatus" background-color="primary" dark>
+            <v-tab value="Active" color="primary">Active</v-tab>
+            <v-tab value="Archived" color="primary">Archived</v-tab>
           </v-tabs>
         </v-col>
       </v-row>
@@ -292,11 +458,11 @@ onMounted(() => {
       <v-row>
         <v-col cols="12">
           <v-fade-transition mode="out-in">
-            <!-- Buildings Section -->
-            <div v-if="selectedTab === 'Buildings'">
+            <!-- Active Buildings Section -->
+            <div v-if="selectedTab === 'Buildings' && selectedStatus === 'Active' ">
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
-                  <span>Buildings</span>
+                  <span>Active Buildings</span>
                   <v-btn color="primary" @click="showAddBuildingDialog = true">
                     Add New Building
                   </v-btn>
@@ -304,16 +470,71 @@ onMounted(() => {
                 <v-card-text>
                   <v-data-table
                     :headers="buildingHeaders"
-                    :items="buildings"
+                    :items="filteredBuildings"
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 15, 20]"
                   >
-                    <template v-slot:item.actions="{ item }">
+                    <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editBuilding(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
+                    </template>
+                    <template v-slot:item.archive="{ item }">
+                      <v-btn
+                        icon
+                        @click="
+                          openArchiveDialog({
+                            id: item.key,
+                            type: 'building',
+                          })
+                        "
+                      >
+                        <v-icon>mdi-arrow-down-box</v-icon>
+                      </v-btn>
+                    </template>
+                  </v-data-table>
+                </v-card-text>
+              </v-card>
+            </div>
+
+            <!-- Archived Buildings Section -->
+            <div v-if="selectedTab === 'Buildings' && selectedStatus === 'Archived' ">
+              <v-card>
+                <v-card-title class="d-flex justify-space-between align-center">
+                  <span>Archived Buildings</span>
+                  
+                </v-card-title>
+                <v-card-text>
+                  <v-data-table
+                    :headers="archivedBuildingHeaders"
+                    :items="filteredBuildings"
+                    item-key="key"
+                    class="elevation-1"
+                    :items-per-page="5"
+                    :items-per-page-options="[5, 10, 15, 20]"
+                   
+                  >
+                  <template v-slot:item.edit="{ item }">
+                      <v-btn icon @click="editBuilding(item)">
+                        <v-icon>mdi-pencil</v-icon>
+                      </v-btn>
+                    </template>
+                    <template v-slot:item.activate="{ item }">
+                      <v-btn
+                        icon
+                        @click="
+                          openActivateDialog({
+                            id: item.key,
+                            type: 'building',
+                          })
+                        "
+                      >
+                        <v-icon>mdi-arrow-up-box</v-icon>
+                      </v-btn>
+                    </template>
+                    <template v-slot:item.delete="{ item }">
                       <v-btn
                         icon
                         @click="
@@ -331,8 +552,8 @@ onMounted(() => {
               </v-card>
             </div>
 
-            <!-- Rooms Section -->
-            <div v-if="selectedTab === 'Rooms'">
+            <!-- Active rooms Section -->
+            <div v-if="selectedTab === 'Rooms' && selectedStatus === 'Active'">
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Rooms</span>
@@ -343,21 +564,77 @@ onMounted(() => {
                 <v-card-text>
                   <v-data-table
                     :headers="roomHeaders"
-                    :items="rooms"
+                    :items="filteredRooms"
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 15, 20]"
                   >
-                    <template v-slot:item.actions="{ item }">
+                  <template v-slot:item.edit="{ item }">
+                      <v-btn icon @click="editBuilding(item)">
+                        <v-icon>mdi-pencil</v-icon>
+                      </v-btn>
+                    </template>
+                    <template v-slot:item.archive="{ item }">
+                      <v-btn
+                        icon
+                        @click="
+                          openArchiveDialog({
+                            id: item.key,
+                            type: 'room',
+                          })
+                        "
+                      >
+                        <v-icon>mdi-arrow-down-box</v-icon>
+                      </v-btn>
+                    </template>
+                  </v-data-table>
+                </v-card-text>
+              </v-card>
+            </div>
+             <!-- Archived rooms Section -->
+            <div v-if="selectedTab === 'Rooms' && selectedStatus === 'Archived'">
+              <v-card>
+                <v-card-title class="d-flex justify-space-between align-center">
+                  <span>Rooms</span>
+                  <v-btn color="primary" @click="openAddRoomDialog">
+                    Add New Room
+                  </v-btn>
+                </v-card-title>
+                <v-card-text>
+                  <v-data-table
+                  :headers="archivedRoomHeaders"
+                    :items="filteredRooms"
+                    item-key="key"
+                    class="elevation-1"
+                    :items-per-page="5"
+                    :items-per-page-options="[5, 10, 15, 20]"
+                    
+                  >
+                  <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editRoom(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
+                    </template>
+                    <template v-slot:item.activate="{ item }">
+                      <v-btn
+                        icon
+                        @click="
+                          openActivateDialog({
+                            id: item.key,
+                            type: 'room',
+                          })
+                        "
+                      >
+                        <v-icon>mdi-arrow-up-box</v-icon>
+                      </v-btn>
+                    </template>
+                    <template v-slot:item.delete="{ item }">
                       <v-btn
                         icon
                         @click="
                           openDeleteConfirmDialog({
-                            id: item.roomId,
+                            id: item.key,
                             type: 'room',
                           })
                         "
@@ -487,6 +764,51 @@ onMounted(() => {
             >Cancel</v-btn
           >
           <v-btn color="primary" text @click="confirmDelete">Delete</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!-- Confirm Delete Dialog -->
+    <v-dialog v-model="showDeleteConfirmDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="text-h5">Confirm Deletion</v-card-title>
+        <v-card-text>Are you sure you want to delete this item?</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="cancelgrey"
+            text
+            @click="showDeleteConfirmDialog = false"
+            >Cancel</v-btn
+          >
+          <v-btn color="primary" text @click="confirmDelete">Delete</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!-- Confirm Archive Dialog -->
+    <v-dialog v-model="showArchiveDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="text-h5">Confirm Archive</v-card-title>
+        <v-card-text>Are you sure you want to archive this item? </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="cancelgrey" text @click="showArchiveDialog = false"
+            >Cancel</v-btn
+          >
+          <v-btn color="saveblue" text @click="confirmArchive">Archive</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!-- Confirm Activate Dialog -->
+    <v-dialog v-model="showActivateDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="text-h5">Confirm Activate</v-card-title>
+        <v-card-text>Are you sure you want to activate this item? </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="cancelgrey" text @click="showActivateDialog = false"
+            >Cancel</v-btn
+          >
+          <v-btn color="saveblue" text @click="confirmActivate">Activate</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
