@@ -2,10 +2,11 @@
 import AssetCategoryServices from "../services/assetCategoryServices";
 import AssetTypeServices from "../services/assetTypeServices";
 import AssetProfileServices from "../services/assetProfileServices";
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 
 const message = ref("");
 const selectedTab = ref("Profiles");
+const selectedStatus = ref("Active");
 const assetCategories = ref([]);
 const assetTypes = ref([]);
 const assetProfiles = ref([]);
@@ -21,7 +22,11 @@ const validCategory = ref(false);
 const validType = ref(false);
 const validProfile = ref(false);
 const showDeleteConfirmDialog = ref(false);
+const showArchiveDialog = ref(false);
+const showActivateDialog = ref(false);
 const itemToDelete = ref(null);
+const itemToArchive = ref(null);
+const itemToActivate = ref(null);
 const snackbar = ref(false);
 const snackbarText = ref("");
 const rules = {
@@ -53,6 +58,7 @@ const retrieveAssetCategories = async () => {
       title: category.categoryName,
       key: category.categoryId,
       description: category.desc,
+      activeStatus: category.activeStatus,
     }));
   } catch (error) {
     console.error("Error loading categories:", error);
@@ -63,6 +69,7 @@ const editCategory = (category) => {
   newCategory.value = {
     title: category.title,
     description: category.description,
+    activeStatus: category.activeStatus,
     categoryId: category.key,
   };
   editingCategory.value = true;
@@ -118,6 +125,44 @@ const deleteCategory = async (categoryId) => {
   }
 };
 
+const archiveCategory = async (categoryId) => {
+  const archiveData = {
+    activeStatus: false, // The new value for the activeStatus field
+  };
+  try {
+    await AssetCategoryServices.update(categoryId, archiveData);
+    snackbarText.value = "Category archived successfully.";
+    snackbar.value = true; // Show the snackbar
+    // Refresh the list of categories after successful deletion
+    retrieveAssetCategories();
+    assetCategories.value = assetCategories.value.filter(
+      (c) => c.id !== categoryId
+    );
+  } catch (error) {
+    console.error(error);
+    message.value = "Error archiving category.";
+  }
+};
+
+const activateCategory = async (categoryId) => {
+  const activateData = {
+    activeStatus: true, // The new value for the activeStatus field
+  };
+  try {
+    await AssetCategoryServices.update(categoryId, activateData);
+    snackbarText.value = "Category activated successfully.";
+    snackbar.value = true; // Show the snackbar
+    // Refresh the list of categories after successful deletion
+    retrieveAssetCategories();
+    assetCategories.value = assetCategories.value.filter(
+      (c) => c.id !== categoryId
+    );
+  } catch (error) {
+    console.error(error);
+    message.value = "Error archiving category.";
+  }
+};
+
 const closeCategoryDialog = () => {
   showAddCategoryDialog.value = false;
   editingCategory.value = false;
@@ -127,8 +172,30 @@ const closeCategoryDialog = () => {
 const categoryHeaders = ref([
   { title: "Category Name", key: "title" },
   { title: "Description", key: "description", sortable: false },
-  { title: "Actions", key: "actions", sortable: false },
+  { title: "Edit", key: "edit", sortable: false },
+  { title: "Archive", key: "archive", sortable: false },
 ]);
+const inactiveCategoryHeaders = ref([
+  { title: "Category Name", key: "title" },
+  { title: "Description", key: "description", sortable: false },
+  { title: "Edit", key: "edit", sortable: false },
+  { title: "Activate", key: "activate", sortable: false },
+  { title: "Delete", key: "delete", sortable: false },
+]);
+
+const filteredAssetCategories = computed(() => {
+  if (selectedStatus.value === "Active") {
+    return assetCategories.value.filter(
+      (category) => category.activeStatus === true
+    );
+  } else if (selectedStatus.value === "Inactive") {
+    return assetCategories.value.filter(
+      (category) => category.activeStatus === false
+    );
+  } else {
+    return assetCategories.value;
+  }
+});
 
 // Asset Types Section
 
@@ -148,6 +215,7 @@ const retrieveAssetTypes = async () => {
         key: type.typeId, // Keeping your original key assignment
         title: type.typeName, // Assuming you're mapping typeName to title
         description: type.desc, // Direct mapping
+        activeStatus: type.activeStatus,
         categoryId: type.categoryId,
       };
     });
@@ -238,11 +306,65 @@ const openAddTypeDialog = () => {
   showAddTypeDialog.value = true;
 };
 
+const filteredAssetTypes = computed(() => {
+  if (selectedStatus.value === "Active") {
+    return assetTypes.value.filter((types) => types.activeStatus === true);
+  } else if (selectedStatus.value === "Inactive") {
+    return assetTypes.value.filter((types) => types.activeStatus === false);
+  } else {
+    return assetTypes.value;
+  }
+});
+
+const archiveType = async (typeId) => {
+  const archiveData = {
+    activeStatus: false, // The new value for the activeStatus field
+  };
+  try {
+    await AssetTypeServices.update(typeId, archiveData);
+    snackbarText.value = "Type archived successfully.";
+    snackbar.value = true; // Show the snackbar
+    // Refresh the list of types after successful deletion
+    retrieveAssetTypes();
+    assetTypes.value = assetTypes.value.filter((c) => c.id !== typeId);
+  } catch (error) {
+    console.error(error);
+    message.value = "Error archiving type.";
+  }
+};
+
+const activateType = async (typeId) => {
+  const activateData = {
+    activeStatus: true, // The new value for the activeStatus field
+  };
+  try {
+    await AssetTypeServices.update(typeId, activateData);
+    snackbarText.value = "Type activated successfully.";
+    snackbar.value = true; // Show the snackbar
+    // Refresh the list of categories after successful deletion
+    retrieveAssetTypes();
+    assetTypes.value = assetTypes.value.filter((c) => c.id !== typeId);
+  } catch (error) {
+    console.error(error);
+    message.value = "Error archiving type.";
+  }
+};
+
 const typeHeaders = ref([
   { title: "Type Name", key: "title" },
   { title: "Description", key: "description" },
   { title: "Category", key: "categoryName" },
-  { title: "Actions", key: "actions", sortable: false },
+  { title: "Edit", key: "edit" },
+  { title: "Archive", key: "archive", sortable: false },
+]);
+
+const inactiveTypeHeaders = ref([
+  { title: "Type Name", key: "title" },
+  { title: "Description", key: "description" },
+  { title: "Category", key: "categoryName" },
+  { title: "Edit", key: "edit", sortable: false },
+  { title: "Activate", key: "activate", sortable: false },
+  { title: "Delete", key: "delete", sortable: false },
 ]);
 
 // Profiles Section
@@ -256,6 +378,7 @@ const retrieveAssetProfiles = async () => {
       return {
         ...profile,
         typeName: type ? type.title : "Unknown Type",
+        key: profile.profileId,
       };
     });
   } catch (error) {
@@ -335,11 +458,69 @@ const deleteProfile = async (profileId) => {
   }
 };
 
+const filteredAssetProfiles = computed(() => {
+  if (selectedStatus.value === "Active") {
+    return assetProfiles.value.filter(
+      (profiles) => profiles.activeStatus === true
+    );
+  } else if (selectedStatus.value === "Inactive") {
+    return assetProfiles.value.filter(
+      (profiles) => profiles.activeStatus === false
+    );
+  } else {
+    return assetProfiles.value;
+  }
+});
+
+const archiveProfile = async (profileId) => {
+  const archiveData = {
+    activeStatus: false, // The new value for the activeStatus field
+  };
+  try {
+    await AssetProfileServices.update(profileId, archiveData);
+    snackbarText.value = "Profile archived successfully.";
+    snackbar.value = true; // Show the snackbar
+    // Refresh the list of profiles after successful deletion
+    retrieveAssetProfiles();
+    assetProfiles.value = assetProfiles.value.filter((c) => c.id !== profileId);
+  } catch (error) {
+    console.error(error);
+    message.value = "Error archiving profile.";
+  }
+};
+
+const activateProfile = async (profileId) => {
+  const activateData = {
+    activeStatus: true, // The new value for the activeStatus field
+  };
+  try {
+    await AssetProfileServices.update(profileId, activateData);
+    snackbarText.value = "Profile activated successfully.";
+    snackbar.value = true; // Show the snackbar
+    // Refresh the list of categories after successful deletion
+    retrieveAssetProfiles();
+    assetProfiles.value = assetProfiles.value.filter((c) => c.id !== profileId);
+  } catch (error) {
+    console.error(error);
+    message.value = "Error archiving profile.";
+  }
+};
+
 const profileHeaders = ref([
   { title: "Profile Name", key: "profileName" },
   { title: "Description", key: "desc" },
   { title: "Type", key: "typeName" },
-  { title: "Actions", key: "actions", sortable: false },
+  { title: "Edit", key: "edit", sortable: false },
+  { title: "Archive", key: "archive", sortable: false },
+]);
+
+const inactiveProfileHeaders = ref([
+  { title: "Profile Name", key: "profileName" },
+  { title: "Description", key: "desc" },
+  { title: "Type", key: "typeName" },
+  { title: "Edit", key: "edit", sortable: false },
+  { title: "Activate", key: "activate", sortable: false },
+  { title: "Delete", key: "delete", sortable: false },
 ]);
 
 // Misc Section
@@ -354,24 +535,79 @@ const confirmDelete = async () => {
     await deleteCategory(itemToDelete.value.id);
   } else if (itemToDelete.value.type === "type") {
     await deleteType(itemToDelete.value.id);
-  } else if (itemToDelete.value.type === "profile") {
+  } else if (itemToDelete.value.profile === "profile") {
     await deleteProfile(itemToDelete.value.id);
   }
   showDeleteConfirmDialog.value = false;
   itemToDelete.value = null; // Reset after deletion
 };
 
+const openArchiveDialog = (item) => {
+  itemToArchive.value = item;
+  showArchiveDialog.value = true;
+};
+
+const confirmArchive = async () => {
+  if (itemToArchive.value.type === "category") {
+    await archiveCategory(itemToArchive.value.id);
+  } else if (itemToArchive.value.type === "type") {
+    await archiveType(itemToArchive.value.id);
+  } else if (itemToArchive.value.type === "profile") {
+    await archiveProfile(itemToArchive.value.id);
+  }
+  showArchiveDialog.value = false;
+  itemToArchive.value = null; // Reset after deletion
+};
+
+const openActivateDialog = (item) => {
+  itemToActivate.value = item;
+  showActivateDialog.value = true;
+};
+
+const confirmActivate = async () => {
+  if (itemToActivate.value.type === "category") {
+    await activateCategory(itemToActivate.value.id);
+  } else if (itemToActivate.value.type === "type") {
+    await activateType(itemToActivate.value.id);
+  } else if (itemToActivate.value.type === "profile") {
+    await activateProfile(itemToActivate.value.id);
+  }
+  showActivateDialog.value = false;
+  itemToActivate.value = null; // Reset after deletion
+};
+
 // Watch for changes on selectedTab and fetch data accordingly
 watch(selectedTab, (newValue) => {
   if (newValue === "Categories") {
-    retrieveAssetCategories();
+    watch(selectedStatus, (statusValue) => {
+      if (statusValue === "Active") {
+        retrieveAssetCategories();
+      } else if (statusValue === "Inactive") {
+        //retrieveInactiveAssetCategories();
+      }
+    });
   } else if (newValue === "Types") {
-    retrieveAssetCategories();
-    retrieveAssetTypes();
+    watch(selectedStatus, (statusValue) => {
+      if (statusValue === "Active") {
+        retrieveAssetCategories();
+        retrieveAssetTypes();
+      } else if (statusValue === "Inactive") {
+        //retrieveInactiveAssetCategories();
+        //retrieveInactiveAssetTypes();
+      }
+    });
   } else if (newValue === "Profiles") {
-    retrieveAssetCategories();
-    retrieveAssetTypes();
-    retrieveAssetProfiles();
+    watch(selectedStatus, (statusValue) => {
+      if (statusValue === "Active") {
+        retrieveAssetCategories();
+        retrieveAssetTypes();
+        retrieveAssetProfiles();
+      } else if (statusValue === "Inactive") {
+        //retrieveInactiveAssetCategories();
+        //retrieveInactiveAssetTypes();
+        //retrieveInactiveAssetProfiles();
+      }
+    });
   }
 });
 
@@ -398,15 +634,21 @@ onMounted(async () => {
           </v-tabs>
         </v-col>
       </v-row>
+      <v-tabs v-model="selectedStatus" background-color="primary" dark>
+        <v-tab value="Active">Active</v-tab>
+        <v-tab value="Inactive">Archived</v-tab>
+      </v-tabs>
 
       <v-row>
         <v-col cols="12">
           <v-fade-transition mode="out-in">
-            <!-- Categories Section -->
-            <div v-if="selectedTab === 'Categories'">
+            <!-- Active Categories Section -->
+            <div
+              v-if="selectedTab === 'Categories' && selectedStatus === 'Active'"
+            >
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
-                  <span>Asset Categories</span>
+                  <span>Active Categories</span>
                   <v-btn color="primary" @click="showAddCategoryDialog = true">
                     Add New Category
                   </v-btn>
@@ -414,16 +656,72 @@ onMounted(async () => {
                 <v-card-text>
                   <v-data-table
                     :headers="categoryHeaders"
-                    :items="assetCategories"
+                    :items="filteredAssetCategories"
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 15, 20]"
                   >
-                    <template v-slot:item.actions="{ item }">
+                    <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editCategory(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
+                    </template>
+                    <template v-slot:item.archive="{ item }">
+                      <v-btn
+                        icon
+                        @click="
+                          openArchiveDialog({
+                            id: item.key,
+                            type: 'category',
+                          })
+                        "
+                      >
+                        <v-icon>mdi-arrow-down-box</v-icon>
+                      </v-btn>
+                    </template>
+                  </v-data-table>
+                </v-card-text>
+              </v-card>
+            </div>
+            <!-- Inactive Categories Section -->
+            <div
+              v-if="
+                selectedTab === 'Categories' && selectedStatus === 'Inactive'
+              "
+            >
+              <v-card>
+                <v-card-title class="d-flex justify-space-between align-center">
+                  <span>Archived Categories</span>
+                </v-card-title>
+                <v-card-text>
+                  <v-data-table
+                    :headers="inactiveCategoryHeaders"
+                    :items="filteredAssetCategories"
+                    item-key="key"
+                    class="elevation-1"
+                    :items-per-page="5"
+                    :items-per-page-options="[5, 10, 15, 20]"
+                  >
+                    <template v-slot:item.edit="{ item }">
+                      <v-btn icon @click="editCategory(item)">
+                        <v-icon>mdi-pencil</v-icon>
+                      </v-btn>
+                    </template>
+                    <template v-slot:item.activate="{ item }">
+                      <v-btn
+                        icon
+                        @click="
+                          openActivateDialog({
+                            id: item.key,
+                            type: 'category',
+                          })
+                        "
+                      >
+                        <v-icon>mdi-arrow-up-box</v-icon>
+                      </v-btn>
+                    </template>
+                    <template v-slot:item.delete="{ item }">
                       <v-btn
                         icon
                         @click="
@@ -441,11 +739,11 @@ onMounted(async () => {
               </v-card>
             </div>
 
-            <!-- Types Section -->
-            <div v-if="selectedTab === 'Types'">
+            <!-- Active Types Section -->
+            <div v-if="selectedTab === 'Types' && selectedStatus === 'Active'">
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
-                  <span>Asset Types</span>
+                  <span>Active Types</span>
                   <v-btn color="primary" @click="openAddTypeDialog">
                     Add New Type
                   </v-btn>
@@ -453,21 +751,76 @@ onMounted(async () => {
                 <v-card-text>
                   <v-data-table
                     :headers="typeHeaders"
-                    :items="assetTypes"
+                    :items="filteredAssetTypes"
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 15, 20]"
                   >
-                    <template v-slot:item.actions="{ item }">
+                    <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editType(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
+                    </template>
+                    <template v-slot:item.archive="{ item }">
+                      <v-btn
+                        icon
+                        @click="
+                          openArchiveDialog({
+                            id: item.key,
+                            type: 'type',
+                          })
+                        "
+                      >
+                        <v-icon>mdi-arrow-down-box</v-icon>
+                      </v-btn>
+                    </template>
+                  </v-data-table>
+                </v-card-text>
+              </v-card>
+            </div>
+
+            <!-- Inactive Types Section -->
+            <div
+              v-if="selectedTab === 'Types' && selectedStatus === 'Inactive'"
+            >
+              <v-card>
+                <v-card-title class="d-flex justify-space-between align-center">
+                  <span>Asset Types</span>
+                </v-card-title>
+                <v-card-text>
+                  <v-data-table
+                    :headers="inactiveTypeHeaders"
+                    :items="filteredAssetTypes"
+                    item-key="key"
+                    class="elevation-1"
+                    :items-per-page="5"
+                    :items-per-page-options="[5, 10, 15, 20]"
+                  >
+                    <template v-slot:item.edit="{ item }">
+                      <v-btn icon @click="editType(item)">
+                        <v-icon>mdi-pencil</v-icon>
+                      </v-btn>
+                    </template>
+                    <template v-slot:item.activate="{ item }">
+                      <v-btn
+                        icon
+                        @click="
+                          openActivateDialog({
+                            id: item.key,
+                            type: 'type',
+                          })
+                        "
+                      >
+                        <v-icon>mdi-arrow-up-box</v-icon>
+                      </v-btn>
+                    </template>
+                    <template v-slot:item.delete="{ item }">
                       <v-btn
                         icon
                         @click="
                           openDeleteConfirmDialog({
-                            id: item.typeId,
+                            id: item.key,
                             type: 'type',
                           })
                         "
@@ -480,11 +833,13 @@ onMounted(async () => {
               </v-card>
             </div>
 
-            <!-- Profiles Section -->
-            <div v-if="selectedTab === 'Profiles'">
+            <!-- Active profiles Section -->
+            <div
+              v-if="selectedTab === 'Profiles' && selectedStatus === 'Active'"
+            >
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
-                  <span>Asset Profiles</span>
+                  <span>Active Profiles</span>
                   <v-btn color="primary" @click="openAddProfileDialog"
                     >Add New Profile</v-btn
                   >
@@ -492,21 +847,76 @@ onMounted(async () => {
                 <v-card-text>
                   <v-data-table
                     :headers="profileHeaders"
-                    :items="assetProfiles"
+                    :items="filteredAssetProfiles"
                     item-key="profileId"
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 15, 20]"
                   >
-                    <template v-slot:item.actions="{ item }">
+                    <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editProfile(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
+                    </template>
+                    <template v-slot:item.archive="{ item }">
+                      <v-btn
+                        icon
+                        @click="
+                          openArchiveDialog({
+                            id: item.key,
+                            type: 'profile',
+                          })
+                        "
+                      >
+                        <v-icon>mdi-arrow-down-box</v-icon>
+                      </v-btn>
+                    </template>
+                  </v-data-table>
+                </v-card-text>
+              </v-card>
+            </div>
+
+            <!-- Inactive profiles Section -->
+            <div
+              v-if="selectedTab === 'Profiles' && selectedStatus === 'Inactive'"
+            >
+              <v-card>
+                <v-card-title class="d-flex justify-space-between align-center">
+                  <span>Archived Profiles</span>
+                </v-card-title>
+                <v-card-text>
+                  <v-data-table
+                    :headers="inactiveProfileHeaders"
+                    :items="filteredAssetProfiles"
+                    item-key="profileId"
+                    class="elevation-1"
+                    :items-per-page="5"
+                    :items-per-page-options="[5, 10, 15, 20]"
+                  >
+                    <template v-slot:item.edit="{ item }">
+                      <v-btn icon @click="editProfile(item)">
+                        <v-icon>mdi-pencil</v-icon>
+                      </v-btn>
+                    </template>
+                    <template v-slot:item.activate="{ item }">
+                      <v-btn
+                        icon
+                        @click="
+                          openActivateDialog({
+                            id: item.key,
+                            type: 'profile',
+                          })
+                        "
+                      >
+                        <v-icon>mdi-arrow-up-box</v-icon>
+                      </v-btn>
+                    </template>
+                    <template v-slot:item.delete="{ item }">
                       <v-btn
                         icon
                         @click="
                           openDeleteConfirmDialog({
-                            id: item.profileId,
+                            id: item.key,
                             type: 'profile',
                           })
                         "
@@ -681,6 +1091,34 @@ onMounted(async () => {
             >Cancel</v-btn
           >
           <v-btn color="primary" text @click="confirmDelete">Delete</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!-- Confirm Archive Dialog -->
+    <v-dialog v-model="showArchiveDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="text-h5">Confirm Archive</v-card-title>
+        <v-card-text>Are you sure you want to archive this item? </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="cancelgrey" text @click="showArchiveDialog = false"
+            >Cancel</v-btn
+          >
+          <v-btn color="saveblue" text @click="confirmArchive">Archive</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!-- Confirm Activate Dialog -->
+    <v-dialog v-model="showActivateDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="text-h5">Confirm Activate</v-card-title>
+        <v-card-text>Are you sure you want to activate this item? </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="cancelgrey" text @click="showActivateDialog = false"
+            >Cancel</v-btn
+          >
+          <v-btn color="saveblue" text @click="confirmActivate">Activate</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

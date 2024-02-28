@@ -83,7 +83,7 @@ onMounted(() => {
         <template v-if="isAdmin">
           <v-btn text :to="{ name: 'adminDashboard' }">Admin Dashboard</v-btn>
           <v-btn>
-            Maintain
+            Manage
             <v-menu activator="parent" open-on-hover>
               <v-list>
                 <v-list-item v-for="(item, index) in maintenanceActions" :key="index" :value="index"
