@@ -535,7 +535,7 @@ const confirmDelete = async () => {
     await deleteCategory(itemToDelete.value.id);
   } else if (itemToDelete.value.type === "type") {
     await deleteType(itemToDelete.value.id);
-  } else if (itemToDelete.value.profile === "profile") {
+  } else if (itemToDelete.value.type === "profile") {
     await deleteProfile(itemToDelete.value.id);
   }
   showDeleteConfirmDialog.value = false;
