@@ -74,7 +74,7 @@ onMounted(() => {
       <router-link :to="store.getters.isAdmin ? { name: 'adminDashboard' }
         : to = store.getters.isRoleAssigned ? { name: 'userDashboard' }
           : { name: 'unassignedDashboard' }">
-        <v-img class="mx-2" :src="logoURL" height="60" width="60" contain></v-img>
+        <v-img class="mx-2" :src="logoURL" height="" width="60" contain></v-img>
       </router-link>
       <v-toolbar-title class="mx-5">{{ title }}</v-toolbar-title>
       <v-spacer></v-spacer>

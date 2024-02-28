@@ -21,9 +21,9 @@ export default {
 </script>
 
 <template>
-  <v-footer color="primary" class="flex-grow-0 flex-shrink-0 pa-0 ma-0" height=68>
+  <v-footer color="primary" class="flex-grow-0 flex-shrink-0 pa-0 ma-0" height=60>
     <v-row justify="space-between" class="mx-0">
-      <v-col justify="left">
+      <v-col class="pl-7">
         Oklahoma Christian University — {{ new Date().getFullYear() }}
       </v-col>
     </v-row>
