@@ -2,25 +2,31 @@
 import AssetCategoryServices from "../services/assetCategoryServices";
 import AssetTypeServices from "../services/assetTypeServices";
 import AssetProfileServices from "../services/assetProfileServices";
+import SerializedAssetServices from "../services/serializedAssetServices";
 import { ref, onMounted, watch, computed } from "vue";
 
 const message = ref("");
-const selectedTab = ref("Profiles");
+const selectedTab = ref("SerializedAssets");
 const selectedStatus = ref("Active");
 const assetCategories = ref([]);
 const assetTypes = ref([]);
 const assetProfiles = ref([]);
+const serializedAssets = ref([]);
 const showAddCategoryDialog = ref(false);
 const showAddTypeDialog = ref(false);
 const showAddProfileDialog = ref(false);
+const showAddSerializedAssetDialog = ref(false);
 const editingCategory = ref(false);
 const editingType = ref(false);
 const editingProfile = ref(false);
+const editingSerializedAsset = ref(false);
 const selectedCategoryId = ref("");
 const selectedTypeId = ref("");
+const selectedProfileId = ref("");
 const validCategory = ref(false);
 const validType = ref(false);
 const validProfile = ref(false);
+const validSerializedAsset = ref(false);
 const showDeleteConfirmDialog = ref(false);
 const showArchiveDialog = ref(false);
 const showActivateDialog = ref(false);
@@ -48,6 +54,11 @@ const newProfile = ref({
   profileName: "",
   desc: "",
   typeId: "",
+});
+const newSerializedAsset = ref({
+  serializedNumber: "",
+  notes: "",
+  profileId: "",
 });
 
 // Categories Section
@@ -309,14 +320,50 @@ const openAddTypeDialog = () => {
 };
 
 const filteredAssetTypes = computed(() => {
-  if (selectedStatus.value === "Active") {
-    return assetTypes.value.filter((types) => types.activeStatus === true);
-  } else if (selectedStatus.value === "Inactive") {
-    return assetTypes.value.filter((types) => types.activeStatus === false);
+  return assetTypes.value.filter((type) => {
+    // Filter by active status
+    let statusMatch = true;
+    if (selectedStatus.value === "Active") {
+      statusMatch = type.activeStatus === true;
+    } else if (selectedStatus.value === "Inactive") {
+      statusMatch = type.activeStatus === false;
+    }
+
+    // Filter by selected category (from v-autocomplete)
+    let categoryMatch = true;
+    if (selectedCategoryId.value) {
+      // Check if selectedCategoryId is not null before accessing its key
+      categoryMatch = type.categoryId === (selectedCategoryId.value ? selectedCategoryId.value.key : null);
+    }
+
+    // Filter by selected type (from v-autocomplete)
+    let typeMatch = true;
+    if (selectedTypeId.value) {
+      // Check if selectedTypeId is not null before accessing its key
+      typeMatch = type.key === (selectedTypeId.value ? selectedTypeId.value.key : null);
+    }
+
+    // Return types that match all the above criteria
+    return statusMatch && categoryMatch && typeMatch;
+  });
+});
+
+const filteredTypesForAutocomplete = computed(() => {
+  // Check if a category is selected
+  if (selectedCategoryId.value) {
+    // Return types that belong to the selected category
+    return assetTypes.value.filter(type => type.categoryId === selectedCategoryId.value.key);
   } else {
+    // If no category is selected, return all types
     return assetTypes.value;
   }
 });
+
+
+const onCategoryClear = () => {
+  selectedCategoryId.value = null;
+  // Call the method to clear the category filter or reset the data view
+};
 
 const archiveType = async (typeId) => {
   const archiveData = {
@@ -354,15 +401,15 @@ const activateType = async (typeId) => {
 
 const typeHeaders = ref([
   { title: "Type Name", key: "title" },
-  { title: "Description", key: "description" },
+  { title: "Description", key: "description", sortable: false},
   { title: "Category", key: "categoryName" },
-  { title: "Edit", key: "edit" },
+  { title: "Edit", key: "edit", sortable: false },
   { title: "Archive", key: "archive", sortable: false },
 ]);
 
 const inactiveTypeHeaders = ref([
   { title: "Type Name", key: "title" },
-  { title: "Description", key: "description" },
+  { title: "Description", key: "description", sortable: false },
   { title: "Category", key: "categoryName" },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Activate", key: "activate", sortable: false },
@@ -381,6 +428,7 @@ const retrieveAssetProfiles = async () => {
         ...profile,
         typeName: type ? type.title : "Unknown Type",
         key: profile.profileId,
+        title: profile.profileName
       };
     });
   } catch (error) {
@@ -510,7 +558,7 @@ const activateProfile = async (profileId) => {
 
 const profileHeaders = ref([
   { title: "Profile Name", key: "profileName" },
-  { title: "Description", key: "desc" },
+  { title: "Description", key: "desc", sortable: false },
   { title: "Type", key: "typeName" },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Archive", key: "archive", sortable: false },
@@ -518,12 +566,175 @@ const profileHeaders = ref([
 
 const inactiveProfileHeaders = ref([
   { title: "Profile Name", key: "profileName" },
-  { title: "Description", key: "desc" },
+  { title: "Description", key: "desc", sortable: false },
   { title: "Type", key: "typeName" },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Activate", key: "activate", sortable: false },
   { title: "Delete", key: "delete", sortable: false },
 ]);
+
+// Serialized Asset Section
+
+// Retrieve SerializedAssets from Database
+const retrieveSerializedAssets = async () => {
+  try {
+    const response = await SerializedAssetServices.getAll();
+    serializedAssets.value = response.data.map((serializedAsset) => {
+      const profile = assetProfiles.value.find((t) => t.key === serializedAsset.profileId);
+      return {
+        ...serializedAsset,
+        profileName: profile ? profile.profileName : "Unknown Profile",
+        key: serializedAsset.serializedAssetId,
+        profileId: serializedAsset.profileId, 
+      };
+    });
+  } catch (error) {
+    console.error("Error loading serialized assets:", error);
+    message.value = "Failed to load serializedAssets.";
+  }
+};
+
+// Open dialog to add a new profile
+const openAddSerializedAssetDialog = () => {
+  resetSerializedAssetForm();
+  showAddSerializedAssetDialog.value = true;
+};
+
+const closeSerializedAssetDialog = () => {
+  resetSerializedAssetForm(); // Resets form when closing or canceling the dialog
+  showAddSerializedAssetDialog.value = false;
+};
+
+// Reset the profile form to its default state
+const resetSerializedAssetForm = () => {
+  newSerializedAsset.value = { serializedNumber: "", notes: "", profileId: "" };
+  selectedProfileId.value = "";
+  validSerializedAsset.value = false;
+  editingSerializedAsset.value = false;
+};
+
+// Save asset (add or edit)
+const saveSerializedAsset = async () => {
+  const serializedAssetData = {
+    serializedNumber: newSerializedAsset.value.serializedNumber,
+    notes: newSerializedAsset.value.notes,
+    profileId: selectedProfileId.value,
+  };
+
+  try {
+    // Check if editing an existing serializedAsset (i.e., `id` is present)
+    if (editingSerializedAsset.value && newSerializedAsset.value.id) {
+      // Call update service if editing
+      await SerializedAssetServices.update(newSerializedAsset.value.id, serializedAssetData);
+      snackbarText.value = "Asset updated successfully.";
+    } else {
+      // Call create service if adding a new profile
+      await SerializedAssetServices.create(serializedAssetData);
+      snackbarText.value = "Asset added successfully.";
+    }
+    snackbar.value = true; // Show the snackbar
+    message.value = "Asset saved successfully.";
+    await retrieveSerializedAssets();
+  } catch (error) {
+    console.error("Error saving asset:", error);
+    message.value = `Error saving asset: ${error.message || "Unknown error"}`;
+  } finally {
+    resetSerializedAssetForm();
+    showAddSerializedAssetDialog.value = false;
+  }
+};
+
+// Edit asset
+const editSerializedAsset = (serializedAsset) => {
+  // Assign existing assets properties, including its unique identifier
+  newSerializedAsset.value = {
+    ...serializedAsset,
+    id: serializedAsset.serializedAssetId, // Adjust according to how profile IDs are named in your data
+  };
+  selectedProfileId.value = serializedAsset.profileId;
+  editingSerializedAsset.value = true;
+  showAddSerializedAssetDialog.value = true;
+};
+
+// Delete profile
+const deleteSerializedAsset = async (serializedAssetId) => {
+  try {
+    await SerializedAssetServices.delete(serializedAssetId);
+    snackbarText.value = "Asset deleted successfully.";
+    snackbar.value = true; // Show the snackbar
+    retrieveSerializedAssets();
+    message.value = "Asset deleted successfully.";
+  } catch (error) {
+    console.error("Error deleting asset:", error);
+    message.value = "Error deleting asset.";
+  }
+};
+
+const filteredSerializedAssets = computed(() => {
+  if (selectedStatus.value === "Active") {
+    return serializedAssets.value.filter(
+      (serializedAssets) => serializedAssets.activeStatus === true
+    );
+  } else if (selectedStatus.value === "Inactive") {
+    return serializedAssets.value.filter(
+      (serializedAssets) => serializedAssets.activeStatus === false
+    );
+  } else {
+    return serializedAssets.value;
+  }
+});
+
+const archiveSerializedAsset = async (serializedAssetId) => {
+  const archiveData = {
+    activeStatus: false, // The new value for the activeStatus field
+  };
+  try {
+    await SerializedAssetServices.update(serializedAssetId, archiveData);
+    snackbarText.value = "Asset archived successfully.";
+    snackbar.value = true; // Show the snackbar
+    // Refresh the list of assets after successful deletion
+    retrieveSerializedAssets();
+    serializedAssets.value = serializedAssets.value.filter((c) => c.id !== serializedAssetId);
+  } catch (error) {
+    console.error(error);
+    message.value = "Error archiving asset.";
+  }
+};
+
+const activateSerializedAsset = async (serializedAssetId) => {
+  const activateData = {
+    activeStatus: true, // The new value for the activeStatus field
+  };
+  try {
+    await SerializedAssetServices.update(serializedAssetId, activateData);
+    snackbarText.value = "Asset activated successfully.";
+    snackbar.value = true; // Show the snackbar
+    // Refresh the list of categories after successful deletion
+    retrieveSerializedAssets();
+    serializedAssets.value = serializedAssets.value.filter((c) => c.id !== serializedAssetsId);
+  } catch (error) {
+    console.error(error);
+    message.value = "Error archiving asset.";
+  }
+};
+
+
+const serializedAssetHeaders = ref([
+ // { title: "Asset Name", key: "assetName" },
+  { title: "Name", key: "profileName" },
+  { title: "Serial Number", key: "serializedNumber" },
+  { title: "Edit", key: "edit", sortable: false },
+  { title: "Archive", key: "archive", sortable: false },
+]);
+
+const inactiveSerializedAssetHeaders = ref([
+  { title: "Asset Name", key: "assetName" },
+  { title: "Edit", key: "edit", sortable: false },
+  { title: "Activate", key: "activate", sortable: false },
+  { title: "Delete", key: "delete", sortable: false },
+]);
+
+
 
 // Misc Section
 
@@ -539,6 +750,9 @@ const confirmDelete = async () => {
     await deleteType(itemToDelete.value.id);
   } else if (itemToDelete.value.type === "profile") {
     await deleteProfile(itemToDelete.value.id);
+  }
+  else if (itemToDelete.value.type === "serializedAsset") {
+    await deleteSerializedAsset(itemToDelete.value.id);
   }
   showDeleteConfirmDialog.value = false;
   itemToDelete.value = null; // Reset after deletion
@@ -557,6 +771,9 @@ const confirmArchive = async () => {
   } else if (itemToArchive.value.type === "profile") {
     await archiveProfile(itemToArchive.value.id);
   }
+  else if (itemToArchive.value.type === "serializedAsset") {
+    await archiveSerializedAsset(itemToArchive.value.id);
+  }
   showArchiveDialog.value = false;
   itemToArchive.value = null; // Reset after deletion
 };
@@ -574,6 +791,9 @@ const confirmActivate = async () => {
   } else if (itemToActivate.value.type === "profile") {
     await activateProfile(itemToActivate.value.id);
   }
+  else if (itemToActivate.value.type === "serializedAsset") {
+    await activateSerializedAsset(itemToActivate.value.id);
+  }
   showActivateDialog.value = false;
   itemToActivate.value = null; // Reset after deletion
 };
@@ -585,7 +805,6 @@ watch(selectedTab, (newValue) => {
       if (statusValue === "Active") {
         retrieveAssetCategories();
       } else if (statusValue === "Inactive") {
-        //retrieveInactiveAssetCategories();
       }
     });
   } else if (newValue === "Types") {
@@ -594,8 +813,6 @@ watch(selectedTab, (newValue) => {
         retrieveAssetCategories();
         retrieveAssetTypes();
       } else if (statusValue === "Inactive") {
-        //retrieveInactiveAssetCategories();
-        //retrieveInactiveAssetTypes();
       }
     });
   } else if (newValue === "Profiles") {
@@ -605,19 +822,34 @@ watch(selectedTab, (newValue) => {
         retrieveAssetTypes();
         retrieveAssetProfiles();
       } else if (statusValue === "Inactive") {
-        //retrieveInactiveAssetCategories();
-        //retrieveInactiveAssetTypes();
-        //retrieveInactiveAssetProfiles();
+      }
+    });
+  } else if (newValue === "SerializedAssets") {
+    watch(selectedStatus, (statusValue) => {
+      if (statusValue === "Active") {
+        retrieveAssetCategories();
+        retrieveAssetTypes();
+        retrieveAssetProfiles();
+        retrieveSerializedAssets();
+      } else if (statusValue === "Inactive") {
       }
     });
   }
 });
+
+watch(selectedCategoryId, (newValue, oldValue) => {
+  if (newValue !== oldValue) {
+    selectedTypeId.value = null; // Reset selected type when category changes
+  }
+});
+
 
 // Call this once to load the default tab's data when the component mounts
 onMounted(async () => {
   await retrieveAssetCategories();
   await retrieveAssetTypes(); // Ensure types are loaded before profiles
   await retrieveAssetProfiles(); // Now safe to load profiles
+  await retrieveSerializedAssets(); // Now safe to load profiles
 });
 </script>
 
@@ -630,9 +862,10 @@ onMounted(async () => {
             <v-toolbar-title>Asset Management</v-toolbar-title>
           </v-toolbar>
           <v-tabs v-model="selectedTab" background-color="primary" dark>
-            <v-tab color="primary" value="Profiles">Asset Profiles</v-tab>
-            <v-tab color="primary" value="Types">Asset Types</v-tab>
-            <v-tab color="primary" value="Categories">Asset Categories</v-tab>
+            <v-tab color="primary" value="SerializedAssets">Assets</v-tab>
+            <v-tab color="primary" value="Profiles">Profiles</v-tab>
+            <v-tab color="primary" value="Types">Types</v-tab>
+            <v-tab color="primary" value="Categories">Categories</v-tab> 
           </v-tabs>
         </v-col>
       </v-row>
@@ -640,6 +873,35 @@ onMounted(async () => {
         <v-tab color="primary" value="Active">Active</v-tab>
         <v-tab color="primary" value="Inactive">Archived</v-tab>
       </v-tabs>
+
+      <!-- Place the filters outside the conditional blocks -->
+      <div v-if="selectedTab === 'Types'">
+        <v-row>
+          <v-col cols="12">
+            <v-autocomplete
+              v-model="selectedCategoryId"
+              :items="assetCategories"
+              item-text="title"
+              item-value="key"
+              label="Filter by Category"
+              return-object
+              clearable
+              small-chips
+              @clear="onCategoryClear"
+            ></v-autocomplete>
+
+            <v-autocomplete
+              v-model="selectedTypeId"
+              :items="filteredTypesForAutocomplete"
+              item-text="title"
+              item-value="key"
+              label="Filter by Type"
+              return-object
+              clearable
+            ></v-autocomplete>
+          </v-col>
+        </v-row>
+      </div>
 
       <v-row>
         <v-col cols="12">
@@ -664,7 +926,6 @@ onMounted(async () => {
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 15, 20]"
                   >
-                  
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editCategory(item)">
                         <v-icon>mdi-pencil</v-icon>
@@ -931,6 +1192,107 @@ onMounted(async () => {
                 </v-card-text>
               </v-card>
             </div>
+              <!-- Active serialized assets Section -->
+              <div
+              v-if="selectedTab === 'SerializedAssets' && selectedStatus === 'Active'"
+            >
+              <v-card>
+                <v-card-title class="d-flex justify-space-between align-center">
+                  <span>Active Assets</span>
+                  <v-btn color="primary" @click="openAddSerializedAssetDialog">
+                    Add New Asset
+                  </v-btn>
+                </v-card-title>
+                <v-card-text>
+                  <v-data-table
+                    :headers="serializedAssetHeaders"
+                    :items="filteredSerializedAssets"
+                    item-key="serializedAssetId"
+                    class="elevation-1"
+                    :items-per-page="5"
+                    :items-per-page-options="[5, 10, 15, 20]"
+                  >
+                  <template v-slot:item.assetName="{ item }">
+            {{ item.profileName }} {{ item.serializedNumber }}
+                </template>
+                    <template v-slot:item.edit="{ item }">
+                      <v-btn icon @click="editSerializedAsset(item)">
+                        <v-icon>mdi-pencil</v-icon>
+                      </v-btn>
+                    </template>
+                    <template v-slot:item.archive="{ item }">
+                      <v-btn
+                        icon
+                        @click="
+                          openArchiveDialog({
+                            id: item.key,
+                            type: 'serializedAsset',
+                          })
+                        "
+                      >
+                        <v-icon>mdi-arrow-down-box</v-icon>
+                      </v-btn>
+                    </template>
+                  </v-data-table>
+                </v-card-text>
+              </v-card>
+            </div>
+       
+             <!-- Inactive serialized assets Section -->
+             <div
+              v-if="selectedTab === 'SerializedAssets' && selectedStatus === 'Inactive'"
+            >
+              <v-card>
+                <v-card-title class="d-flex justify-space-between align-center">
+                  <span>Active Serial Assets</span>
+                 
+                </v-card-title>
+                <v-card-text>
+                  <v-data-table
+                    :headers="inactiveSerializedAssetHeaders"
+                    :items="filteredSerializedAssets"
+                    item-key="serializedAssetId"
+                    class="elevation-1"
+                    :items-per-page="5"
+                    :items-per-page-options="[5, 10, 15, 20]"
+                  >
+                  <template v-slot:item.assetName="{ item }">
+            {{ item.profileName }} {{ item.serializedNumber }}
+                </template>
+                    <template v-slot:item.edit="{ item }">
+                      <v-btn icon @click="editSerializedAsset(item)">
+                        <v-icon>mdi-pencil</v-icon>
+                      </v-btn>
+                    </template>
+                    <template v-slot:item.activate="{ item }">
+                      <v-btn
+                        icon
+                        @click="
+                          openActivateDialog({
+                            id: item.key,
+                            type: 'serializedAsset',
+                          })
+                        " >
+                        <v-icon>mdi-arrow-down-box</v-icon>
+                      </v-btn>
+                    </template>
+                    <template v-slot:item.delete="{ item }">
+                      <v-btn
+                        icon
+                        @click="
+                          openDeleteConfirmDialog({
+                            id: item.key,
+                            type: 'serializedAsset',
+                          })
+                        "
+                      >
+                        <v-icon color="primary">mdi-delete</v-icon>
+                      </v-btn>
+                    </template>
+                  </v-data-table>
+                </v-card-text>
+              </v-card>
+            </div>
           </v-fade-transition>
         </v-col>
       </v-row>
@@ -1079,6 +1441,62 @@ onMounted(async () => {
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Add/Edit serializedAsset Dialog -->
+    <v-dialog v-model="showAddSerializedAssetDialog" max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="headline"
+            >{{ editingSerializedAsset ? "Edit" : "Add" }} Asset</span
+          >
+        </v-card-title>
+        <v-card-text>
+          <v-form ref="formSerializedAsset" v-model="validSerializedAsset">
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <v-text-field
+                    label="Serial Number"
+                    v-model="newSerializedAsset.serializedNumber"
+                    :rules="[rules.required]"
+                    required
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    label="Notes"
+                    v-model="newSerializedAsset.notes"
+                    :rules="[rules.required]"
+                    required
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <!-- Asset Profile Selection -->
+                  <v-select
+                    label="Profile"
+                    :items="assetProfiles"
+                    item-text="title"
+                    item-value="key"
+                    v-model="selectedProfileId"
+                    :rules="[rules.required]"
+                    required
+                  ></v-select>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="cancelgrey" text @click="closeSerializedAssetDialog">Cancel</v-btn
+          >
+          <v-btn color="saveblue" @click="saveSerializedAsset" :disabled="!validSerializedAsset"
+            >Save</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <!-- Confirm Delete Dialog -->
     <v-dialog v-model="showDeleteConfirmDialog" max-width="500px">
       <v-card>
