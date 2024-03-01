@@ -14,6 +14,7 @@ const snackbar = ref(false);
 const snackbarText = ref("");
 const rules = {
   required: (value) => !!value || "Required.",
+  maxNameLength: (value) => value.length <= 80,
   maxCounter: (value) => value.length <= 7,
   minCounter: (value) => value.length >= 7 || "ID number must be 7 numbers long",
   email: value => {
@@ -228,14 +229,16 @@ onMounted(() => {
                   <v-text-field
                     label="First Name"
                     v-model="newPerson.title"
-                    :rules="[rules.required]"
+                    :rules="[rules.required, rules.maxNameLength]"
+                    maxlength="80"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     label="Last Name"
                     v-model="newPerson.lName"
-                    :rules="[rules.required]"
+                    :rules="[rules.required, rules.maxNameLength]"
+                    maxlength="80"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
