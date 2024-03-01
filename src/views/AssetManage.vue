@@ -37,6 +37,8 @@ const snackbar = ref(false);
 const snackbarText = ref("");
 const rules = {
   required: (value) => !!value || "Required.",
+  maxDescLength: (value) => value.length <= 255,
+  maxNameLength: (value) => value.length <= 50
 };
 
 const newCategory = ref({
@@ -1307,14 +1309,14 @@ onMounted(async () => {
             <v-text-field
               label="Category Name"
               v-model="newCategory.title"
-              :rules="[rules.required]"
-              required
+              :rules="[rules.required, rules.maxNameLength]"
+              maxLength="50"
             ></v-text-field>
             <v-text-field
               label="Description"
               v-model="newCategory.description"
-              :rules="[rules.required]"
-              required
+              :rules="[rules.required, rules.maxDescLength]"
+              maxlength="255"
             ></v-text-field>
           </v-form>
         </v-card-text>
@@ -1347,16 +1349,16 @@ onMounted(async () => {
                   <v-text-field
                     label="Type Name"
                     v-model="newType.title"
-                    :rules="[rules.required]"
-                    required
+                    :rules="[rules.required, rules.maxNameLength]"
+                    maxlength="50"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     label="Type Description"
                     v-model="newType.description"
-                    :rules="[rules.required]"
-                    required
+                    :rules="[rules.required, rules.maxDescLength]"
+                    maxlength="255"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -1401,16 +1403,16 @@ onMounted(async () => {
                   <v-text-field
                     label="Profile Name"
                     v-model="newProfile.profileName"
-                    :rules="[rules.required]"
-                    required
+                    :rules="[rules.required, rules.maxNameLength]"
+                    maxlength="50"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     label="Description"
                     v-model="newProfile.desc"
-                    :rules="[rules.required]"
-                    required
+                    :rules="[rules.required, rules.maxDescLength]"
+                    maxlength="255"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -1422,7 +1424,6 @@ onMounted(async () => {
                     item-value="key"
                     v-model="selectedTypeId"
                     :rules="[rules.required]"
-                    required
                   ></v-select>
                 </v-col>
               </v-row>

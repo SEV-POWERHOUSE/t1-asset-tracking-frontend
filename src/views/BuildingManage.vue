@@ -25,6 +25,17 @@ const snackbar = ref(false);
 const snackbarText = ref("");
 const rules = {
   required: (value) => !!value || "Required.",
+  maxNameLength: (value) => value.length <= 255,
+  roomNumber: (value) => /^[a-zA-Z0-9]{2,4}$/.test(value) || "Room number must be between 2 and 4 characters long.", 
+  numberOfRooms: value => {
+    const intValue = parseInt(value);
+    return Number.isInteger(intValue) && intValue >= 0 && intValue <= 400 || "Number of rooms cannot be greater than 400"
+  },
+  buildingAbbreviation: value => {
+            const pattern =
+              /^[a-zA-Z]{2,3}$/
+            return pattern.test(value) || 'Building Abbreviation must be 2 or 3 characters';
+  }
 };
 const newBuilding = ref({
   title: "",
@@ -566,8 +577,10 @@ onMounted(() => {
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 15, 20]"
                   >
-                    <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editBuilding(item)">
+
+                  <template v-slot:item.edit="{ item }">
+                      <v-btn icon @click="editRoom(item)">
+
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
@@ -664,24 +677,24 @@ onMounted(() => {
                   <v-text-field
                     label="Building Name"
                     v-model="newBuilding.title"
-                    :rules="[rules.required]"
-                    required
+                    :rules="[rules.required, rules.maxNameLength]"
+                    maxlength="255"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     label="Building abbreviation"
                     v-model="newBuilding.abbreviation"
-                    :rules="[rules.required]"
-                    required
+                    maxlength="3"
+                    :rules="[rules.required, rules.buildingAbbreviation]"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     label="No. of Rooms"
                     v-model="newBuilding.noOfRooms"
-                    :rules="[rules.required]"
-                    required
+                    maxlength="3"
+                    :rules="[rules.required, rules.numberOfRooms]"
                   ></v-text-field>
                 </v-col>
               </v-row>
@@ -717,8 +730,8 @@ onMounted(() => {
                   <v-text-field
                     label="Room No"
                     v-model="newRoom.title"
-                    :rules="[rules.required]"
-                    required
+                    maxlength="4"
+                    :rules="[rules.required, rules.roomNumber]"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -730,7 +743,6 @@ onMounted(() => {
                     item-text="title"
                     item-value="key"
                     :rules="[rules.required]"
-                    required
                   ></v-select>
                 </v-col>
               </v-row>
