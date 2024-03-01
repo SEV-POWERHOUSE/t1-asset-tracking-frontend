@@ -14,6 +14,13 @@ const snackbar = ref(false);
 const snackbarText = ref("");
 const rules = {
   required: (value) => !!value || "Required.",
+  maxCounter: (value) => value.length <= 7,
+  minCounter: (value) => value.length >= 7 || "ID number must be 7 numbers long",
+  email: value => {
+            const pattern =
+              /^[a-zA-Z]+(?:\.[a-zA-Z]+)?@(?:eagles\.)?oc\.edu$/
+            return pattern.test(value) || 'e-mail must be eagles.oc.edu or oc.edu.'
+  }
 };
 
 const newPerson = ref({
@@ -222,7 +229,6 @@ onMounted(() => {
                     label="First Name"
                     v-model="newPerson.title"
                     :rules="[rules.required]"
-                    required
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -230,21 +236,24 @@ onMounted(() => {
                     label="Last Name"
                     v-model="newPerson.lName"
                     :rules="[rules.required]"
-                    required
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     label="Email"
                     v-model="newPerson.email"
-                    :rules="[rules.required]"
-                    required
+                    placeholder="first.last@oc.edu or first.last@eagles.oc.edu"
+                    :rules="[rules.required, rules.email]"
                   ></v-text-field>
+                </v-col>
+                <v-col cols="12">
                   <v-text-field
                     label="ID No."
                     v-model="newPerson.idNumber"
-                    :rules="[rules.required]"
-                    required
+                    hint="Please enter your 7 digit ID number"
+                    :rules="[rules.required, rules.maxCounter, rules.minCounter]"
+                    maxlength="7"
+                    counter
                   ></v-text-field>
                 </v-col>
               </v-row>
