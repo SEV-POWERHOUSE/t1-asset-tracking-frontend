@@ -157,19 +157,18 @@ const activateBuilding = async (buildingId) => {
   }
 };
 
-
 const buildingHeaders = ref([
   { title: "Building Name", key: "title" },
-  { title: "Abbreviation", key: "abbreviation", sortable: false },
-  { title: "No. of Rooms", key: "noOfRooms", sortable: false },
+  { title: "Abbreviation", key: "abbreviation" },
+  { title: "No. of Rooms", key: "noOfRooms" },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Archive", key: "archive", sortable: false },
 ]);
 
 const archivedBuildingHeaders = ref([
   { title: "Building Name", key: "title" },
-  { title: "Abbreviation", key: "abbreviation", sortable: false },
-  { title: "No. of Rooms", key: "noOfRooms", sortable: false },
+  { title: "Abbreviation", key: "abbreviation" },
+  { title: "No. of Rooms", key: "noOfRooms" },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Activate", key: "activate", sortable: false },
   { title: "Delete", key: "delete", sortable: false },
@@ -329,11 +328,10 @@ const activateRoom = async (roomId) => {
   }
 };
 
-
 const roomHeaders = ref([
   { title: "Room No.", key: "title" },
   { title: "Building", key: "buildingName" },
-  { title: "Edit", key: "edit", sortable: false }, 
+  { title: "Edit", key: "edit", sortable: false },
   { title: "Archive", key: "archive", sortable: false },
 ]);
 
@@ -344,15 +342,12 @@ const archivedRoomHeaders = ref([
   { title: "Activate", key: "activate", sortable: false },
   { title: "Delete", key: "delete", sortable: false },
 ]);
+
 const filteredRooms = computed(() => {
   if (selectedStatus.value === "Active") {
-    return rooms.value.filter(
-      (rooms) => rooms.activeStatus === true
-    );
+    return rooms.value.filter((rooms) => rooms.activeStatus === true);
   } else if (selectedStatus.value === "Archived") {
-    return rooms.value.filter(
-      (rooms) => rooms.activeStatus === false
-    );
+    return rooms.value.filter((rooms) => rooms.activeStatus === false);
   } else {
     return rooms.value;
   }
@@ -399,11 +394,10 @@ const confirmActivate = async () => {
     await activateBuilding(itemToActivate.value.id);
   } else if (itemToActivate.value.type === "room") {
     await activateRoom(itemToActivate.value.id);
-  } 
+  }
   showActivateDialog.value = false;
   itemToActivate.value = null; // Reset after deletion
 };
-
 
 // Watch for changes on selectedTab and fetch data accordingly
 watch(selectedTab, (newValue) => {
@@ -425,14 +419,12 @@ watch(selectedTab, (newValue) => {
         //retrieveInactiveAssetTypes();
       }
     });
-  } 
+  }
 });
 // Call this once to load the default tab's data when the component mounts
 onMounted(() => {
- 
-    retrieveBuildings();
-    retrieveRooms();
-  
+  retrieveBuildings();
+  retrieveRooms();
 });
 </script>
 
@@ -459,7 +451,9 @@ onMounted(() => {
         <v-col cols="12">
           <v-fade-transition mode="out-in">
             <!-- Active Buildings Section -->
-            <div v-if="selectedTab === 'Buildings' && selectedStatus === 'Active' ">
+            <div
+              v-if="selectedTab === 'Buildings' && selectedStatus === 'Active'"
+            >
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Active Buildings</span>
@@ -500,11 +494,14 @@ onMounted(() => {
             </div>
 
             <!-- Archived Buildings Section -->
-            <div v-if="selectedTab === 'Buildings' && selectedStatus === 'Archived' ">
+            <div
+              v-if="
+                selectedTab === 'Buildings' && selectedStatus === 'Archived'
+              "
+            >
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Archived Buildings</span>
-                  
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
@@ -514,9 +511,8 @@ onMounted(() => {
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 15, 20]"
-                   
                   >
-                  <template v-slot:item.edit="{ item }">
+                    <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editBuilding(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
@@ -570,7 +566,7 @@ onMounted(() => {
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 15, 20]"
                   >
-                  <template v-slot:item.edit="{ item }">
+                    <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editBuilding(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
@@ -592,8 +588,10 @@ onMounted(() => {
                 </v-card-text>
               </v-card>
             </div>
-             <!-- Archived rooms Section -->
-            <div v-if="selectedTab === 'Rooms' && selectedStatus === 'Archived'">
+            <!-- Archived rooms Section -->
+            <div
+              v-if="selectedTab === 'Rooms' && selectedStatus === 'Archived'"
+            >
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Rooms</span>
@@ -603,15 +601,14 @@ onMounted(() => {
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
-                  :headers="archivedRoomHeaders"
+                    :headers="archivedRoomHeaders"
                     :items="filteredRooms"
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 15, 20]"
-                    
                   >
-                  <template v-slot:item.edit="{ item }">
+                    <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editRoom(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>

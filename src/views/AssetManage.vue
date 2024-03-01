@@ -399,15 +399,15 @@ const activateType = async (typeId) => {
 
 const typeHeaders = ref([
   { title: "Type Name", key: "title" },
-  { title: "Description", key: "description" },
+  { title: "Description", key: "description", sortable: false},
   { title: "Category", key: "categoryName" },
-  { title: "Edit", key: "edit" },
+  { title: "Edit", key: "edit", sortable: false },
   { title: "Archive", key: "archive", sortable: false },
 ]);
 
 const inactiveTypeHeaders = ref([
   { title: "Type Name", key: "title" },
-  { title: "Description", key: "description" },
+  { title: "Description", key: "description", sortable: false },
   { title: "Category", key: "categoryName" },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Activate", key: "activate", sortable: false },
@@ -556,7 +556,7 @@ const activateProfile = async (profileId) => {
 
 const profileHeaders = ref([
   { title: "Profile Name", key: "profileName" },
-  { title: "Description", key: "desc" },
+  { title: "Description", key: "desc", sortable: false },
   { title: "Type", key: "typeName" },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Archive", key: "archive", sortable: false },
@@ -564,7 +564,7 @@ const profileHeaders = ref([
 
 const inactiveProfileHeaders = ref([
   { title: "Profile Name", key: "profileName" },
-  { title: "Description", key: "desc" },
+  { title: "Description", key: "desc", sortable: false },
   { title: "Type", key: "typeName" },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Activate", key: "activate", sortable: false },
