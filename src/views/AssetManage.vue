@@ -318,14 +318,50 @@ const openAddTypeDialog = () => {
 };
 
 const filteredAssetTypes = computed(() => {
-  if (selectedStatus.value === "Active") {
-    return assetTypes.value.filter((types) => types.activeStatus === true);
-  } else if (selectedStatus.value === "Inactive") {
-    return assetTypes.value.filter((types) => types.activeStatus === false);
+  return assetTypes.value.filter((type) => {
+    // Filter by active status
+    let statusMatch = true;
+    if (selectedStatus.value === "Active") {
+      statusMatch = type.activeStatus === true;
+    } else if (selectedStatus.value === "Inactive") {
+      statusMatch = type.activeStatus === false;
+    }
+
+    // Filter by selected category (from v-autocomplete)
+    let categoryMatch = true;
+    if (selectedCategoryId.value) {
+      // Check if selectedCategoryId is not null before accessing its key
+      categoryMatch = type.categoryId === (selectedCategoryId.value ? selectedCategoryId.value.key : null);
+    }
+
+    // Filter by selected type (from v-autocomplete)
+    let typeMatch = true;
+    if (selectedTypeId.value) {
+      // Check if selectedTypeId is not null before accessing its key
+      typeMatch = type.key === (selectedTypeId.value ? selectedTypeId.value.key : null);
+    }
+
+    // Return types that match all the above criteria
+    return statusMatch && categoryMatch && typeMatch;
+  });
+});
+
+const filteredTypesForAutocomplete = computed(() => {
+  // Check if a category is selected
+  if (selectedCategoryId.value) {
+    // Return types that belong to the selected category
+    return assetTypes.value.filter(type => type.categoryId === selectedCategoryId.value.key);
   } else {
+    // If no category is selected, return all types
     return assetTypes.value;
   }
 });
+
+
+const onCategoryClear = () => {
+  selectedCategoryId.value = null;
+  // Call the method to clear the category filter or reset the data view
+};
 
 const archiveType = async (typeId) => {
   const archiveData = {
@@ -799,6 +835,13 @@ watch(selectedTab, (newValue) => {
   }
 });
 
+watch(selectedCategoryId, (newValue, oldValue) => {
+  if (newValue !== oldValue) {
+    selectedTypeId.value = null; // Reset selected type when category changes
+  }
+});
+
+
 // Call this once to load the default tab's data when the component mounts
 onMounted(async () => {
   await retrieveAssetCategories();
@@ -829,6 +872,35 @@ onMounted(async () => {
         <v-tab color="primary" value="Inactive">Archived</v-tab>
       </v-tabs>
 
+      <!-- Place the filters outside the conditional blocks -->
+      <div v-if="selectedTab === 'Types'">
+        <v-row>
+          <v-col cols="12">
+            <v-autocomplete
+              v-model="selectedCategoryId"
+              :items="assetCategories"
+              item-text="title"
+              item-value="key"
+              label="Filter by Category"
+              return-object
+              clearable
+              small-chips
+              @clear="onCategoryClear"
+            ></v-autocomplete>
+
+            <v-autocomplete
+              v-model="selectedTypeId"
+              :items="filteredTypesForAutocomplete"
+              item-text="title"
+              item-value="key"
+              label="Filter by Type"
+              return-object
+              clearable
+            ></v-autocomplete>
+          </v-col>
+        </v-row>
+      </div>
+
       <v-row>
         <v-col cols="12">
           <v-fade-transition mode="out-in">
@@ -852,7 +924,6 @@ onMounted(async () => {
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 15, 20]"
                   >
-                  
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editCategory(item)">
                         <v-icon>mdi-pencil</v-icon>
