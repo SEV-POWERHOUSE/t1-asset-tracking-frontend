@@ -14,7 +14,7 @@ const snackbar = ref(false);
 const snackbarText = ref("");
 const rules = {
   required: (value) => !!value || "Required.",
-  maxNameLength: (value) => value.length <= 80,
+  maxNameLength: (value) => value.length <= 40 || "Name cannot exceed 40 characters",
   maxCounter: (value) => value.length <= 7,
   minCounter: (value) => value.length >= 7 || "ID number must be 7 numbers long",
   idNumber: (value) => /^[0-9]{7}$/.test(value) || "ID number must contain only numbers",
@@ -229,7 +229,7 @@ onMounted(async () => {
                     label="First Name"
                     v-model="newPerson.title"
                     :rules="[rules.required, rules.maxNameLength]"
-                    maxlength="80"
+                    maxlength="40"
                     counter
                   ></v-text-field>
                 </v-col>
@@ -238,7 +238,7 @@ onMounted(async () => {
                     label="Last Name"
                     v-model="newPerson.lName"
                     :rules="[rules.required, rules.maxNameLength]"
-                    maxlength="80"
+                    maxlength="40"
                     counter
                   ></v-text-field>
                 </v-col>
@@ -248,6 +248,7 @@ onMounted(async () => {
                     v-model="newPerson.email"
                     placeholder="first.last@oc.edu or first.last@eagles.oc.edu"
                     :rules="[rules.required, rules.email]"
+                    maxlength="70"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
