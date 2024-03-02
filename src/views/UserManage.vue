@@ -373,7 +373,6 @@ onMounted(async () => {
     </v-dialog>
     <v-snackbar v-model="snackbar" :timeout="3000" class="custom-snackbar">
       {{ snackbarText }}
-      <!-- <v-btn color="pink" text @click="snackbar = false">Close</v-btn> -->
     </v-snackbar>
   </div>
 </template>
