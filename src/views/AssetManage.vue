@@ -1485,7 +1485,7 @@ onMounted(async () => {
                   <v-text-field
                     label="Notes"
                     v-model="newSerializedAsset.notes"
-                    :rules="[rules.required, rules.maxNameLength]"
+                    :rules="[rules.required, rules.maxDescLength]"
                     maxlength="255"
                     counter
                   ></v-text-field>
