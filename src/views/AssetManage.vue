@@ -38,7 +38,8 @@ const snackbarText = ref("");
 const rules = {
   required: (value) => !!value || "Required.",
   maxDescLength: (value) => value.length <= 255,
-  maxNameLength: (value) => value.length <= 50
+  maxNameLength: (value) => value.length <= 50,
+  serialNumber: (value) => /^[a-zA-Z0-9]{20}$/.test(value) || "Room number must be between 2 and 4 characters long."
 };
 
 const newCategory = ref({
@@ -1408,14 +1409,6 @@ onMounted(async () => {
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
-                  <v-text-field
-                    label="Description"
-                    v-model="newProfile.desc"
-                    :rules="[rules.required, rules.maxDescLength]"
-                    maxlength="255"
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12">
                   <!-- Asset Type Selection -->
                   <v-select
                     label="Type"
@@ -1425,6 +1418,14 @@ onMounted(async () => {
                     v-model="selectedTypeId"
                     :rules="[rules.required]"
                   ></v-select>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    label="Description"
+                    v-model="newProfile.desc"
+                    :rules="[rules.required, rules.maxDescLength]"
+                    maxlength="255"
+                  ></v-text-field>
                 </v-col>
               </v-row>
             </v-container>
@@ -1463,14 +1464,6 @@ onMounted(async () => {
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
-                  <v-text-field
-                    label="Notes"
-                    v-model="newSerializedAsset.notes"
-                    :rules="[rules.required]"
-                    required
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12">
                   <!-- Asset Profile Selection -->
                   <v-select
                     label="Profile"
@@ -1481,6 +1474,14 @@ onMounted(async () => {
                     :rules="[rules.required]"
                     required
                   ></v-select>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    label="Notes"
+                    v-model="newSerializedAsset.notes"
+                    :rules="[rules.required]"
+                    required
+                  ></v-text-field>
                 </v-col>
               </v-row>
             </v-container>

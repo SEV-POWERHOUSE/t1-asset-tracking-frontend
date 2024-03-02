@@ -21,6 +21,7 @@ const showAddUserRoleDialog = ref(false);
 const validUserRole = ref(false);
 const rules = {
   required: (value) => !!value || "Required.",
+  maxNameLength: (value) => value.length <= 50,
 };
 
 // Refs for general use
@@ -396,8 +397,8 @@ onMounted(() => {
             <v-text-field
               label="Role Name"
               v-model="newUserRole.name"
-              :rules="[rules.required]"
-              required
+              :rules="[rules.required, rules.maxNameLength]"
+              maxlength="50"
             ></v-text-field>
           </v-form>
         </v-card-text>
