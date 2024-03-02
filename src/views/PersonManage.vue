@@ -17,7 +17,7 @@ const rules = {
   maxNameLength: (value) => value.length <= 80,
   maxCounter: (value) => value.length <= 7,
   minCounter: (value) => value.length >= 7 || "ID number must be 7 numbers long",
-  idNumber: (value) => /^[0-9]{7}$/.test(value) || "Room number must be between 2 and 4 characters long.",
+  idNumber: (value) => /^[0-9]{7}$/.test(value) || "ID number must contain only numbers",
   email: value => {
             const pattern =
               /^[a-zA-Z]+(?:\.[a-zA-Z]+)?@(?:eagles\.)?oc\.edu$/
