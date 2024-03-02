@@ -1312,12 +1312,14 @@ onMounted(async () => {
               v-model="newCategory.title"
               :rules="[rules.required, rules.maxNameLength]"
               maxLength="50"
+              counter
             ></v-text-field>
             <v-text-field
               label="Description"
               v-model="newCategory.description"
               :rules="[rules.required, rules.maxDescLength]"
               maxlength="255"
+              counter
             ></v-text-field>
           </v-form>
         </v-card-text>
@@ -1352,6 +1354,7 @@ onMounted(async () => {
                     v-model="newType.title"
                     :rules="[rules.required, rules.maxNameLength]"
                     maxlength="50"
+                    counter
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -1360,6 +1363,7 @@ onMounted(async () => {
                     v-model="newType.description"
                     :rules="[rules.required, rules.maxDescLength]"
                     maxlength="255"
+                    counter
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -1406,6 +1410,7 @@ onMounted(async () => {
                     v-model="newProfile.profileName"
                     :rules="[rules.required, rules.maxNameLength]"
                     maxlength="50"
+                    counter
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -1425,6 +1430,7 @@ onMounted(async () => {
                     v-model="newProfile.desc"
                     :rules="[rules.required, rules.maxDescLength]"
                     maxlength="255"
+                    counter
                   ></v-text-field>
                 </v-col>
               </v-row>

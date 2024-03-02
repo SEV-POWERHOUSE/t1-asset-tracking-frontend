@@ -25,7 +25,7 @@ const snackbar = ref(false);
 const snackbarText = ref("");
 const rules = {
   required: (value) => !!value || "Required.",
-  maxNameLength: (value) => value.length <= 255,
+  maxNameLength: (value) => value.length <= 80,
   roomNumber: (value) => /^[a-zA-Z0-9]{2,4}$/.test(value) || "Room number must be between 2 and 4 characters long.", 
   numberOfRooms: value => {
     const intValue = parseInt(value);
@@ -678,23 +678,26 @@ onMounted(async () => {
                     label="Building Name"
                     v-model="newBuilding.title"
                     :rules="[rules.required, rules.maxNameLength]"
-                    maxlength="255"
+                    maxlength="80"
+                    counter
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     label="Building abbreviation"
                     v-model="newBuilding.abbreviation"
-                    maxlength="3"
                     :rules="[rules.required, rules.buildingAbbreviation]"
+                    maxlength="3"
+                    counter
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     label="No. of Rooms"
                     v-model="newBuilding.noOfRooms"
-                    maxlength="3"
                     :rules="[rules.required, rules.numberOfRooms]"
+                    maxlength="3"
+                    counter
                   ></v-text-field>
                 </v-col>
               </v-row>

@@ -17,6 +17,7 @@ const rules = {
   maxNameLength: (value) => value.length <= 80,
   maxCounter: (value) => value.length <= 7,
   minCounter: (value) => value.length >= 7 || "ID number must be 7 numbers long",
+  idNumber: (value) => /^[0-9]{7}$/.test(value) || "ID number must contain only numbers",
   email: value => {
             const pattern =
               /^[a-zA-Z]+(?:\.[a-zA-Z]+)?@(?:eagles\.)?oc\.edu$/
@@ -229,6 +230,7 @@ onMounted(async () => {
                     v-model="newPerson.title"
                     :rules="[rules.required, rules.maxNameLength]"
                     maxlength="80"
+                    counter
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -237,6 +239,7 @@ onMounted(async () => {
                     v-model="newPerson.lName"
                     :rules="[rules.required, rules.maxNameLength]"
                     maxlength="80"
+                    counter
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -252,7 +255,12 @@ onMounted(async () => {
                     label="ID No."
                     v-model="newPerson.idNumber"
                     hint="Please enter your 7 digit ID number"
-                    :rules="[rules.required, rules.maxCounter, rules.minCounter]"
+                    :rules="[
+                      rules.required, 
+                      rules.maxCounter, 
+                      rules.minCounter,
+                      rules.idNumber
+                      ]"
                     maxlength="7"
                     counter
                   ></v-text-field>
