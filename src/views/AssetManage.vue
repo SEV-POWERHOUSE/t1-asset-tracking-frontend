@@ -39,7 +39,7 @@ const rules = {
   required: (value) => !!value || "Required.",
   maxDescLength: (value) => value.length <= 255,
   maxNameLength: (value) => value.length <= 50,
-  serialNumber: (value) => /^[a-zA-Z0-9]{20}$/.test(value) || "Serial Number cannot exceed 20 characters"
+  serialNumberLength: (value) => value.length <=20,
 };
 
 const newCategory = ref({
@@ -1465,7 +1465,7 @@ onMounted(async () => {
                   <v-text-field
                     label="Serial Number"
                     v-model="newSerializedAsset.serializedNumber"
-                    :rules="[rules.required, rules.serialNumber]"
+                    :rules="[rules.required, rules.serialNumberLength]"
                     maxlength="20"
                     counter
                   ></v-text-field>
