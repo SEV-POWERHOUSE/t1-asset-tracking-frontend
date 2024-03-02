@@ -14,7 +14,7 @@ const snackbar = ref(false);
 const snackbarText = ref("");
 const rules = {
   required: (value) => !!value || "Required.",
-  maxNameLength: (value) => value.length <= 80,
+  maxNameLength: (value) => value.length <= 40 || "Name cannot exceed 40 characters",
   maxCounter: (value) => value.length <= 7,
   minCounter: (value) => value.length >= 7 || "ID number must be 7 numbers long",
   idNumber: (value) => /^[0-9]{7}$/.test(value) || "ID number must contain only numbers",
