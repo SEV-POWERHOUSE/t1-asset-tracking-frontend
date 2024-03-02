@@ -433,9 +433,9 @@ watch(selectedTab, (newValue) => {
   }
 });
 // Call this once to load the default tab's data when the component mounts
-onMounted(() => {
-  retrieveBuildings();
-  retrieveRooms();
+onMounted(async () => {
+  await retrieveBuildings();
+  await retrieveRooms();
 });
 </script>
 

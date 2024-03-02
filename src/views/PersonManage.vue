@@ -146,10 +146,8 @@ watch(selectedTab, (newValue) => {
 });
 
 // Call this once to load the default tab's data when the component mounts
-onMounted(() => {
-  if (selectedTab.value === "People") {
-    retrievePeople();
-  }
+onMounted(async () => {
+  await retrievePeople();
 });
 </script>
 
