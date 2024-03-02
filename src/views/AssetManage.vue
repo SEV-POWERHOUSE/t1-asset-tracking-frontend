@@ -39,7 +39,7 @@ const rules = {
   required: (value) => !!value || "Required.",
   maxDescLength: (value) => value.length <= 255,
   maxNameLength: (value) => value.length <= 50,
-  serialNumber: (value) => /^[a-zA-Z0-9]{20}$/.test(value) || "Room number must be between 2 and 4 characters long."
+  serialNumber: (value) => /^[a-zA-Z0-9]{20}$/.test(value) || "Serial Number cannot exceed 20 characters"
 };
 
 const newCategory = ref({
@@ -1465,8 +1465,9 @@ onMounted(async () => {
                   <v-text-field
                     label="Serial Number"
                     v-model="newSerializedAsset.serializedNumber"
-                    :rules="[rules.required]"
-                    required
+                    :rules="[rules.required, rules.serialNumber]"
+                    maxlength="20"
+                    counter
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -1478,15 +1479,15 @@ onMounted(async () => {
                     item-value="key"
                     v-model="selectedProfileId"
                     :rules="[rules.required]"
-                    required
                   ></v-select>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     label="Notes"
                     v-model="newSerializedAsset.notes"
-                    :rules="[rules.required]"
-                    required
+                    :rules="[rules.required, rules.maxNameLength]"
+                    maxlength="255"
+                    counter
                   ></v-text-field>
                 </v-col>
               </v-row>
