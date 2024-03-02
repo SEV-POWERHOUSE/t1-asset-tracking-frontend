@@ -733,8 +733,9 @@ onMounted(async () => {
                   <v-text-field
                     label="Room No"
                     v-model="newRoom.title"
-                    maxlength="4"
                     :rules="[rules.required, rules.roomNumber]"
+                    maxlength="4"
+                    counter
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">

@@ -229,7 +229,7 @@ onMounted(async () => {
                     label="First Name"
                     v-model="newPerson.title"
                     :rules="[rules.required, rules.maxNameLength]"
-                    maxlength="80"
+                    maxlength="40"
                     counter
                   ></v-text-field>
                 </v-col>
@@ -238,7 +238,7 @@ onMounted(async () => {
                     label="Last Name"
                     v-model="newPerson.lName"
                     :rules="[rules.required, rules.maxNameLength]"
-                    maxlength="80"
+                    maxlength="40"
                     counter
                   ></v-text-field>
                 </v-col>
@@ -248,6 +248,7 @@ onMounted(async () => {
                     v-model="newPerson.email"
                     placeholder="first.last@oc.edu or first.last@eagles.oc.edu"
                     :rules="[rules.required, rules.email]"
+                    maxlength="70"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
