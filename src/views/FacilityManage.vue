@@ -136,6 +136,7 @@ const closeBuildingDialog = () => {
   editingBuilding.value = false;
   newBuilding.value = { name: "", abbreviation: "", noOfRooms: "" };
 };
+
 const archiveBuilding = async (buildingId) => {
   const archiveData = {
     activeStatus: false, // The new value for the activeStatus field
