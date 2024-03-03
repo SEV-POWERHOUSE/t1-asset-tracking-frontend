@@ -12,6 +12,8 @@ const roleNameToIdMap = ref({});
 const changedUserRoles = ref({});
 const snackbar = ref(false);
 const snackbarText = ref("");
+const usersSortBy = ref([{ key: 'fName', order: 'asc'}]);
+const userRolesSortBy = ref([{ key: 'name', order: 'asc'}]);
 
 // Refs for User Roles tab
 const roles = ref([]);
@@ -28,9 +30,6 @@ const rules = {
 const selectedTab = ref("Users");
 const isUsersTabActive = computed(() => selectedTab.value === "Users");
 const isUserRolesTabActive = computed(() => selectedTab.value === "User Roles");
-const isDevToolsTabActive = computed(() => selectedTab.value === "Dev Tools");
-const store = useStore(); // Use the store
-const isDev = computed(() => store.getters.isDev);
 const itemToDelete = ref(null);
 const showDeleteConfirmDialog = ref(false);
 
@@ -92,7 +91,7 @@ const hasChanges = computed(() => {
 // Define headers for v-data-table.
 const userHeaders = [
   { title: "Name", key: "fName" },
-  { title: "Change Role", key: "changeRole", sortable: false },
+  { title: "Change Role", key: "selectedRoleName" },
 ];
 
 // User Roles Section
@@ -257,6 +256,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="usersSortBy"
                   >
                     <template v-slot:item="{ item }">
                       <tr>
@@ -300,6 +300,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="userRolesSortBy"
                   >
                     <template v-slot:item.actions="{ item }">
                       <v-btn icon @click="editUserRole(item)">

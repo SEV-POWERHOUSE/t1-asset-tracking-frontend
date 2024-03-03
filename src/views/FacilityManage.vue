@@ -23,6 +23,8 @@ const itemToArchive = ref(null);
 const itemToActivate = ref(null);
 const snackbar = ref(false);
 const snackbarText = ref("");
+const buildingsSortBy = ref([{ key: 'title', order: 'asc'}]);
+const roomsSortBy = ref([{ key: 'title', order: 'asc'}]);
 const rules = {
   required: (value) => !!value || "Required.",
   maxNameLength: (value) => value.length <= 80,
@@ -480,6 +482,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="buildingsSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editBuilding(item)">
@@ -522,6 +525,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="buildingsSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editBuilding(item)">
@@ -576,6 +580,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="roomsSortBy"
                   >
 
                   <template v-slot:item.edit="{ item }">
@@ -620,6 +625,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="roomsSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editRoom(item)">
@@ -827,7 +833,6 @@ onMounted(async () => {
     </v-dialog>
     <v-snackbar v-model="snackbar" :timeout="3000" class="custom-snackbar">
       {{ snackbarText }}
-      <!-- <v-btn color="pink" text @click="snackbar = false">Close</v-btn> -->
     </v-snackbar>
   </div>
 </template>

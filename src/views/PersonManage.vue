@@ -12,6 +12,7 @@ const showDeleteConfirmDialog = ref(false);
 const itemToDelete = ref(null);
 const snackbar = ref(false);
 const snackbarText = ref("");
+const personSortBy = ref([{ key: 'title', order:'asc'}]);
 const rules = {
   required: (value) => !!value || "Required.",
   maxNameLength: (value) => value.length <= 40 || "Name cannot exceed 40 characters",
@@ -186,6 +187,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="personSortBy"
                   >
                     <template v-slot:item.actions="{ item }">
                       <v-btn icon @click="editPerson(item)">
@@ -248,7 +250,8 @@ onMounted(async () => {
                     v-model="newPerson.email"
                     placeholder="first.last@oc.edu or first.last@eagles.oc.edu"
                     :rules="[rules.required, rules.email]"
-                    maxlength="70"
+                    maxlength="40"
+                    counter
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
