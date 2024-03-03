@@ -479,7 +479,7 @@ onMounted(async () => {
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editBuilding(item)">
@@ -521,7 +521,7 @@ onMounted(async () => {
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editBuilding(item)">
@@ -575,7 +575,7 @@ onMounted(async () => {
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
                   >
 
                   <template v-slot:item.edit="{ item }">
@@ -619,7 +619,7 @@ onMounted(async () => {
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editRoom(item)">

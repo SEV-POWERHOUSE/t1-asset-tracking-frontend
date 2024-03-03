@@ -132,7 +132,7 @@ const items = ref([
             class="elevation-1 mb-4"
             caption="Asset Profiles"
             :items-per-page="5"
-            :items-per-page-options="[5, 10, 15, 20]"
+            :items-per-page-options="[5, 10, 20, 50, -1]"
           >
             <!-- Custom Header Slot -->
             <template v-slot:header="{ props: { headers } }">
