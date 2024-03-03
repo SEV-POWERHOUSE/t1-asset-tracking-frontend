@@ -35,6 +35,10 @@ const itemToArchive = ref(null);
 const itemToActivate = ref(null);
 const snackbar = ref(false);
 const snackbarText = ref("");
+const categoriesSortBy = ref([{ key: 'title', order:'asc'}]);
+const typesSortBy = ref([{ key: 'title', order:'asc'}]);
+const profilesSortBy = ref([{ key: 'profileName', order:'asc'}]);
+const assetsSortBy = ref([{ key: 'profileName', order:'asc'}]);
 const rules = {
   required: (value) => !!value || "Required.",
   maxDescLength: (value) => value.length <= 255,
@@ -933,6 +937,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="categoriesSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editCategory(item)">
@@ -974,6 +979,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="categoriesSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editCategory(item)">
@@ -1028,6 +1034,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="typesSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editType(item)">
@@ -1068,6 +1075,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="typesSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editType(item)">
@@ -1124,6 +1132,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="profilesSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editProfile(item)">
@@ -1164,6 +1173,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="profilesSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editProfile(item)">
@@ -1222,6 +1232,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="assetsSortBy"
                   >
                     <template v-slot:item.assetName="{ item }">
                       {{ item.profileName }} {{ item.serializedNumber }}
@@ -1268,6 +1279,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="assetsSortBy"
                   >
                     <template v-slot:item.assetName="{ item }">
                       {{ item.profileName }} {{ item.serializedNumber }}
