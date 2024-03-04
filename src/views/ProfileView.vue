@@ -8,6 +8,7 @@ const message = ref("");
 const people = ref([]);
 const serializedAssets = ref([]);
 const assetProfiles = ref([]);
+const selectedTab = ref("");
 const selectedStatus = ref("Active");
 const selectedProfileId = ref("");
 const showAddSerializedAssetDialog = ref(false);
@@ -265,12 +266,16 @@ const goBack = () => {
   router.go(-1); // Go back one step in the history
 };
 
+
+
 // Call this once to load the default tab's data when the component mounts
 onMounted(async () => {
     console.log("Attempting to get assetProfile with profileId: " + props.profileId)
     const assetProfile = await AssetProfileServices.getById(props.profileId);
     await retrieveProfileDetails();
     await retrieveAssetsForProfile();
+
+    
  
 });
 </script>
@@ -281,11 +286,13 @@ onMounted(async () => {
       <v-row>
         <v-col cols="12">
           <v-toolbar>
-            <v-btn icon @click="goBack">
-                <v-icon>mdi-arrow-left</v-icon>
-             </v-btn>
-            <v-toolbar-title>{{profileDetails.profileName}}</v-toolbar-title> 
-          </v-toolbar>
+  <v-btn icon @click="goBack">
+    <v-icon>mdi-arrow-left</v-icon>
+  </v-btn>
+  <v-toolbar-title>{{ profileDetails.profileName }}</v-toolbar-title>
+  <v-spacer></v-spacer> <!-- Add this line -->
+  <span class="profile-description">{{ profileDetails.desc }}</span> <!-- Add your profile description here -->
+</v-toolbar>
 
           <v-tabs v-model="selectedStatus" background-color="primary" dark>
         <v-tab color="primary" value="Active">Active</v-tab>
