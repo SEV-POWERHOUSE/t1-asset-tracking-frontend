@@ -10,6 +10,7 @@ const roleNameToIdMap = ref({});
 const changedUserRoles = ref({});
 const snackbar = ref(false);
 const snackbarText = ref("");
+const usersSortBy = ref([{ key: 'fName', order:'asc'}]);
 
 // Define headers for v-data-table.
 const headers = [
@@ -117,6 +118,8 @@ onMounted(fetchDevUsersAndRoles);
             :items="users"
             item-key="id"
             class="elevation-1"
+            :items-per-page-options="[5, 10, 20, 50, -1]"
+            v-model:sort-by="usersSortBy"
           >
             <template v-slot:item="{ item }">
               <tr>
@@ -137,7 +140,6 @@ onMounted(fetchDevUsersAndRoles);
     </v-container>
     <v-snackbar v-model="snackbar" :timeout="3000" class="custom-snackbar">
       {{ snackbarText }}
-      <!-- <v-btn color="pink" text @click="snackbar = false">Close</v-btn> -->
     </v-snackbar>
   </div>
 </template>

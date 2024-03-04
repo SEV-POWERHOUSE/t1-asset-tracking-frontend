@@ -23,8 +23,21 @@ const itemToArchive = ref(null);
 const itemToActivate = ref(null);
 const snackbar = ref(false);
 const snackbarText = ref("");
+const buildingsSortBy = ref([{ key: 'title', order: 'asc'}]);
+const roomsSortBy = ref([{ key: 'title', order: 'asc'}]);
 const rules = {
   required: (value) => !!value || "Required.",
+  maxNameLength: (value) => value.length <= 80,
+  roomNumber: (value) => /^[a-zA-Z0-9]{2,4}$/.test(value) || "Room number must be between 2 and 4 characters long.", 
+  numberOfRooms: value => {
+    const intValue = parseInt(value);
+    return Number.isInteger(intValue) && intValue >= 0 && intValue <= 400 || "Number of rooms cannot be greater than 400"
+  },
+  buildingAbbreviation: value => {
+            const pattern =
+              /^[a-zA-Z]{2,3}$/
+            return pattern.test(value) || 'Building Abbreviation must be 2 or 3 characters';
+  }
 };
 const newBuilding = ref({
   title: "",
@@ -123,6 +136,7 @@ const closeBuildingDialog = () => {
   editingBuilding.value = false;
   newBuilding.value = { name: "", abbreviation: "", noOfRooms: "" };
 };
+
 const archiveBuilding = async (buildingId) => {
   const archiveData = {
     activeStatus: false, // The new value for the activeStatus field
@@ -422,9 +436,9 @@ watch(selectedTab, (newValue) => {
   }
 });
 // Call this once to load the default tab's data when the component mounts
-onMounted(() => {
-  retrieveBuildings();
-  retrieveRooms();
+onMounted(async () => {
+  await retrieveBuildings();
+  await retrieveRooms();
 });
 </script>
 
@@ -468,7 +482,8 @@ onMounted(() => {
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="buildingsSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editBuilding(item)">
@@ -510,7 +525,8 @@ onMounted(() => {
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="buildingsSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editBuilding(item)">
@@ -564,10 +580,13 @@ onMounted(() => {
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="roomsSortBy"
                   >
-                    <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editBuilding(item)">
+
+                  <template v-slot:item.edit="{ item }">
+                      <v-btn icon @click="editRoom(item)">
+
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
@@ -606,7 +625,8 @@ onMounted(() => {
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="roomsSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editRoom(item)">
@@ -664,24 +684,27 @@ onMounted(() => {
                   <v-text-field
                     label="Building Name"
                     v-model="newBuilding.title"
-                    :rules="[rules.required]"
-                    required
+                    :rules="[rules.required, rules.maxNameLength]"
+                    maxlength="80"
+                    counter
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     label="Building abbreviation"
                     v-model="newBuilding.abbreviation"
-                    :rules="[rules.required]"
-                    required
+                    :rules="[rules.required, rules.buildingAbbreviation]"
+                    maxlength="3"
+                    counter
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     label="No. of Rooms"
                     v-model="newBuilding.noOfRooms"
-                    :rules="[rules.required]"
-                    required
+                    :rules="[rules.required, rules.numberOfRooms]"
+                    maxlength="3"
+                    counter
                   ></v-text-field>
                 </v-col>
               </v-row>
@@ -717,8 +740,9 @@ onMounted(() => {
                   <v-text-field
                     label="Room No"
                     v-model="newRoom.title"
-                    :rules="[rules.required]"
-                    required
+                    :rules="[rules.required, rules.roomNumber]"
+                    maxlength="4"
+                    counter
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -730,7 +754,6 @@ onMounted(() => {
                     item-text="title"
                     item-value="key"
                     :rules="[rules.required]"
-                    required
                   ></v-select>
                 </v-col>
               </v-row>
@@ -811,7 +834,6 @@ onMounted(() => {
     </v-dialog>
     <v-snackbar v-model="snackbar" :timeout="3000" class="custom-snackbar">
       {{ snackbarText }}
-      <!-- <v-btn color="pink" text @click="snackbar = false">Close</v-btn> -->
     </v-snackbar>
   </div>
 </template>

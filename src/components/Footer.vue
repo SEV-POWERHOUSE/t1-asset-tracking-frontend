@@ -10,8 +10,6 @@ export default {
       logoURL.value = ocLogo;
     });
 
-    console.log(ocLogo); // Ensure the correct URL is logged
-
     return {
       logoURL
     };

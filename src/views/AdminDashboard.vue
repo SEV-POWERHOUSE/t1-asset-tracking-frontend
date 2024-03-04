@@ -4,6 +4,7 @@ import { ref, onMounted, watch } from "vue";
 const showCheckoutDialog = ref(false);
 const people = ref([]);
 const recentCheckouts = ref([]);
+const activitySortBy = ref([{ key: 'dateTime', order:'desc'}]);
 
 const closeCheckoutDialog = () => {
   //resetForm(); // Resets form when closing or canceling the dialog
@@ -40,26 +41,6 @@ const items = ref([
   },
   {
     item: "SMART Board",
-    assignment: "HSH 212",
-    dateTime: "February 25 12:18 P.M.",
-  },
-  {
-    item: "RTAC",
-    assignment: "Beam Library",
-    dateTime: "February 27 10:53 A.M.",
-  },
-  {
-    item: "Playstation 5",
-    assignment: "Zane Fike",
-    dateTime: "February 20 12:05 P.M.",
-  },
-  {
-    item: "Overhead Projector",
-    assignment: "PEC 223",
-    dateTime: "February 23 8:19 A.M.",
-  },
-  {
-    item: "Smartboard",
     assignment: "HSH 212",
     dateTime: "February 25 12:18 P.M.",
   },
@@ -132,7 +113,8 @@ const items = ref([
             class="elevation-1 mb-4"
             caption="Asset Profiles"
             :items-per-page="5"
-            :items-per-page-options="[5, 10, 15, 20]"
+            :items-per-page-options="[5, 10, 20, 50, -1]"
+            v-model:sort-by="activitySortBy"
           >
             <!-- Custom Header Slot -->
             <template v-slot:header="{ props: { headers } }">

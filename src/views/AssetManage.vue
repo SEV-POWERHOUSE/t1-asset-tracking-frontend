@@ -36,8 +36,15 @@ const itemToArchive = ref(null);
 const itemToActivate = ref(null);
 const snackbar = ref(false);
 const snackbarText = ref("");
+const categoriesSortBy = ref([{ key: 'title', order:'asc'}]);
+const typesSortBy = ref([{ key: 'title', order:'asc'}]);
+const profilesSortBy = ref([{ key: 'profileName', order:'asc'}]);
+const assetsSortBy = ref([{ key: 'profileName', order:'asc'}]);
 const rules = {
   required: (value) => !!value || "Required.",
+  maxDescLength: (value) => value.length <= 255,
+  maxNameLength: (value) => value.length <= 50,
+  serialNumberLength: (value) => value.length <= 20,
 };
 
 const newCategory = ref({
@@ -332,14 +339,17 @@ const filteredAssetTypes = computed(() => {
     let categoryMatch = true;
     if (selectedCategoryId.value) {
       // Check if selectedCategoryId is not null before accessing its key
-      categoryMatch = type.categoryId === (selectedCategoryId.value ? selectedCategoryId.value.key : null);
+      categoryMatch =
+        type.categoryId ===
+        (selectedCategoryId.value ? selectedCategoryId.value.key : null);
     }
 
     // Filter by selected type (from v-autocomplete)
     let typeMatch = true;
     if (selectedTypeId.value) {
       // Check if selectedTypeId is not null before accessing its key
-      typeMatch = type.key === (selectedTypeId.value ? selectedTypeId.value.key : null);
+      typeMatch =
+        type.key === (selectedTypeId.value ? selectedTypeId.value.key : null);
     }
 
     // Return types that match all the above criteria
@@ -351,13 +361,14 @@ const filteredTypesForAutocomplete = computed(() => {
   // Check if a category is selected
   if (selectedCategoryId.value) {
     // Return types that belong to the selected category
-    return assetTypes.value.filter(type => type.categoryId === selectedCategoryId.value.key);
+    return assetTypes.value.filter(
+      (type) => type.categoryId === selectedCategoryId.value.key
+    );
   } else {
     // If no category is selected, return all types
     return assetTypes.value;
   }
 });
-
 
 const onCategoryClear = () => {
   selectedCategoryId.value = null;
@@ -400,7 +411,7 @@ const activateType = async (typeId) => {
 
 const typeHeaders = ref([
   { title: "Type Name", key: "title" },
-  { title: "Description", key: "description", sortable: false},
+  { title: "Description", key: "description", sortable: false },
   { title: "Category", key: "categoryName" },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Archive", key: "archive", sortable: false },
@@ -427,7 +438,7 @@ const retrieveAssetProfiles = async () => {
         ...profile,
         typeName: type ? type.title : "Unknown Type",
         key: profile.profileId,
-        title: profile.profileName
+        title: profile.profileName,
       };
     });
   } catch (error) {
@@ -585,12 +596,14 @@ const retrieveSerializedAssets = async () => {
   try {
     const response = await SerializedAssetServices.getAll();
     serializedAssets.value = response.data.map((serializedAsset) => {
-      const profile = assetProfiles.value.find((t) => t.key === serializedAsset.profileId);
+      const profile = assetProfiles.value.find(
+        (t) => t.key === serializedAsset.profileId
+      );
       return {
         ...serializedAsset,
         profileName: profile ? profile.profileName : "Unknown Profile",
         key: serializedAsset.serializedAssetId,
-        profileId: serializedAsset.profileId, 
+        profileId: serializedAsset.profileId,
       };
     });
   } catch (error) {
@@ -630,7 +643,10 @@ const saveSerializedAsset = async () => {
     // Check if editing an existing serializedAsset (i.e., `id` is present)
     if (editingSerializedAsset.value && newSerializedAsset.value.id) {
       // Call update service if editing
-      await SerializedAssetServices.update(newSerializedAsset.value.id, serializedAssetData);
+      await SerializedAssetServices.update(
+        newSerializedAsset.value.id,
+        serializedAssetData
+      );
       snackbarText.value = "Asset updated successfully.";
     } else {
       // Call create service if adding a new profile
@@ -699,7 +715,9 @@ const archiveSerializedAsset = async (serializedAssetId) => {
     snackbar.value = true; // Show the snackbar
     // Refresh the list of assets after successful deletion
     retrieveSerializedAssets();
-    serializedAssets.value = serializedAssets.value.filter((c) => c.id !== serializedAssetId);
+    serializedAssets.value = serializedAssets.value.filter(
+      (c) => c.id !== serializedAssetId
+    );
   } catch (error) {
     console.error(error);
     message.value = "Error archiving asset.";
@@ -716,16 +734,17 @@ const activateSerializedAsset = async (serializedAssetId) => {
     snackbar.value = true; // Show the snackbar
     // Refresh the list of categories after successful deletion
     retrieveSerializedAssets();
-    serializedAssets.value = serializedAssets.value.filter((c) => c.id !== serializedAssetsId);
+    serializedAssets.value = serializedAssets.value.filter(
+      (c) => c.id !== serializedAssetsId
+    );
   } catch (error) {
     console.error(error);
     message.value = "Error archiving asset.";
   }
 };
 
-
 const serializedAssetHeaders = ref([
- // { title: "Asset Name", key: "assetName" },
+  // { title: "Asset Name", key: "assetName" },
   { title: "Name", key: "profileName" },
   { title: "Serial Number", key: "serializedNumber" },
   { title: "Edit", key: "edit", sortable: false },
@@ -733,13 +752,12 @@ const serializedAssetHeaders = ref([
 ]);
 
 const inactiveSerializedAssetHeaders = ref([
-  { title: "Asset Name", key: "assetName" },
+  { title: "Name", key: "profileName" },
+  { title: "Serial Number", key: "serializedNumber" },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Activate", key: "activate", sortable: false },
   { title: "Delete", key: "delete", sortable: false },
 ]);
-
-
 
 // Misc Section
 
@@ -755,8 +773,7 @@ const confirmDelete = async () => {
     await deleteType(itemToDelete.value.id);
   } else if (itemToDelete.value.type === "profile") {
     await deleteProfile(itemToDelete.value.id);
-  }
-  else if (itemToDelete.value.type === "serializedAsset") {
+  } else if (itemToDelete.value.type === "serializedAsset") {
     await deleteSerializedAsset(itemToDelete.value.id);
   }
   showDeleteConfirmDialog.value = false;
@@ -775,8 +792,7 @@ const confirmArchive = async () => {
     await archiveType(itemToArchive.value.id);
   } else if (itemToArchive.value.type === "profile") {
     await archiveProfile(itemToArchive.value.id);
-  }
-  else if (itemToArchive.value.type === "serializedAsset") {
+  } else if (itemToArchive.value.type === "serializedAsset") {
     await archiveSerializedAsset(itemToArchive.value.id);
   }
   showArchiveDialog.value = false;
@@ -795,8 +811,7 @@ const confirmActivate = async () => {
     await activateType(itemToActivate.value.id);
   } else if (itemToActivate.value.type === "profile") {
     await activateProfile(itemToActivate.value.id);
-  }
-  else if (itemToActivate.value.type === "serializedAsset") {
+  } else if (itemToActivate.value.type === "serializedAsset") {
     await activateSerializedAsset(itemToActivate.value.id);
   }
   showActivateDialog.value = false;
@@ -848,7 +863,6 @@ watch(selectedCategoryId, (newValue, oldValue) => {
   }
 });
 
-
 // Call this once to load the default tab's data when the component mounts
 onMounted(async () => {
   await retrieveAssetCategories();
@@ -870,7 +884,7 @@ onMounted(async () => {
             <v-tab color="primary" value="SerializedAssets">Assets</v-tab>
             <v-tab color="primary" value="Profiles">Profiles</v-tab>
             <v-tab color="primary" value="Types">Types</v-tab>
-            <v-tab color="primary" value="Categories">Categories</v-tab> 
+            <v-tab color="primary" value="Categories">Categories</v-tab>
           </v-tabs>
         </v-col>
       </v-row>
@@ -929,7 +943,8 @@ onMounted(async () => {
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="categoriesSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editCategory(item)">
@@ -970,7 +985,8 @@ onMounted(async () => {
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="categoriesSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editCategory(item)">
@@ -1024,7 +1040,8 @@ onMounted(async () => {
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="typesSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editType(item)">
@@ -1064,7 +1081,8 @@ onMounted(async () => {
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="typesSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editType(item)">
@@ -1120,7 +1138,8 @@ onMounted(async () => {
                     item-key="profileId"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="profilesSortBy"
                   >
                   <template v-slot:item.view="{ item }">
                     <v-btn icon @click="viewProfile(item.profileId)">
@@ -1165,7 +1184,8 @@ onMounted(async () => {
                     item-key="profileId"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="profilesSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editProfile(item)">
@@ -1202,9 +1222,12 @@ onMounted(async () => {
                 </v-card-text>
               </v-card>
             </div>
-              <!-- Active serialized assets Section -->
-              <div
-              v-if="selectedTab === 'SerializedAssets' && selectedStatus === 'Active'"
+            <!-- Active serialized assets Section -->
+            <div
+              v-if="
+                selectedTab === 'SerializedAssets' &&
+                selectedStatus === 'Active'
+              "
             >
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
@@ -1220,11 +1243,12 @@ onMounted(async () => {
                     item-key="serializedAssetId"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="assetsSortBy"
                   >
-                  <template v-slot:item.assetName="{ item }">
-            {{ item.profileName }} {{ item.serializedNumber }}
-                </template>
+                    <template v-slot:item.assetName="{ item }">
+                      {{ item.profileName }} {{ item.serializedNumber }}
+                    </template>
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editSerializedAsset(item)">
                         <v-icon>mdi-pencil</v-icon>
@@ -1247,15 +1271,17 @@ onMounted(async () => {
                 </v-card-text>
               </v-card>
             </div>
-       
-             <!-- Inactive serialized assets Section -->
-             <div
-              v-if="selectedTab === 'SerializedAssets' && selectedStatus === 'Inactive'"
+
+            <!-- Inactive serialized assets Section -->
+            <div
+              v-if="
+                selectedTab === 'SerializedAssets' &&
+                selectedStatus === 'Inactive'
+              "
             >
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Active Serial Assets</span>
-                 
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
@@ -1264,11 +1290,12 @@ onMounted(async () => {
                     item-key="serializedAssetId"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="assetsSortBy"
                   >
-                  <template v-slot:item.assetName="{ item }">
-            {{ item.profileName }} {{ item.serializedNumber }}
-                </template>
+                    <template v-slot:item.assetName="{ item }">
+                      {{ item.profileName }} {{ item.serializedNumber }}
+                    </template>
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editSerializedAsset(item)">
                         <v-icon>mdi-pencil</v-icon>
@@ -1282,7 +1309,8 @@ onMounted(async () => {
                             id: item.key,
                             type: 'serializedAsset',
                           })
-                        " >
+                        "
+                      >
                         <v-icon>mdi-arrow-down-box</v-icon>
                       </v-btn>
                     </template>
@@ -1319,14 +1347,16 @@ onMounted(async () => {
             <v-text-field
               label="Category Name"
               v-model="newCategory.title"
-              :rules="[rules.required]"
-              required
+              :rules="[rules.required, rules.maxNameLength]"
+              maxLength="50"
+              counter
             ></v-text-field>
             <v-text-field
               label="Description"
               v-model="newCategory.description"
-              :rules="[rules.required]"
-              required
+              :rules="[rules.required, rules.maxDescLength]"
+              maxlength="255"
+              counter
             ></v-text-field>
           </v-form>
         </v-card-text>
@@ -1359,16 +1389,18 @@ onMounted(async () => {
                   <v-text-field
                     label="Type Name"
                     v-model="newType.title"
-                    :rules="[rules.required]"
-                    required
+                    :rules="[rules.required, rules.maxNameLength]"
+                    maxlength="50"
+                    counter
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     label="Type Description"
                     v-model="newType.description"
-                    :rules="[rules.required]"
-                    required
+                    :rules="[rules.required, rules.maxDescLength]"
+                    maxlength="255"
+                    counter
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -1413,16 +1445,9 @@ onMounted(async () => {
                   <v-text-field
                     label="Profile Name"
                     v-model="newProfile.profileName"
-                    :rules="[rules.required]"
-                    required
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12">
-                  <v-text-field
-                    label="Description"
-                    v-model="newProfile.desc"
-                    :rules="[rules.required]"
-                    required
+                    :rules="[rules.required, rules.maxNameLength]"
+                    maxlength="50"
+                    counter
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -1434,8 +1459,16 @@ onMounted(async () => {
                     item-value="key"
                     v-model="selectedTypeId"
                     :rules="[rules.required]"
-                    required
                   ></v-select>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    label="Description"
+                    v-model="newProfile.desc"
+                    :rules="[rules.required, rules.maxDescLength]"
+                    maxlength="255"
+                    counter
+                  ></v-text-field>
                 </v-col>
               </v-row>
             </v-container>
@@ -1469,16 +1502,9 @@ onMounted(async () => {
                   <v-text-field
                     label="Serial Number"
                     v-model="newSerializedAsset.serializedNumber"
-                    :rules="[rules.required]"
-                    required
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12">
-                  <v-text-field
-                    label="Notes"
-                    v-model="newSerializedAsset.notes"
-                    :rules="[rules.required]"
-                    required
+                    :rules="[rules.required, rules.serialNumberLength]"
+                    maxlength="20"
+                    counter
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -1490,8 +1516,16 @@ onMounted(async () => {
                     item-value="key"
                     v-model="selectedProfileId"
                     :rules="[rules.required]"
-                    required
                   ></v-select>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    label="Notes"
+                    v-model="newSerializedAsset.notes"
+                    :rules="[rules.required, rules.maxDescLength]"
+                    maxlength="255"
+                    counter
+                  ></v-text-field>
                 </v-col>
               </v-row>
             </v-container>
@@ -1499,9 +1533,13 @@ onMounted(async () => {
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="cancelgrey" text @click="closeSerializedAssetDialog">Cancel</v-btn
+          <v-btn color="cancelgrey" text @click="closeSerializedAssetDialog"
+            >Cancel</v-btn
           >
-          <v-btn color="saveblue" @click="saveSerializedAsset" :disabled="!validSerializedAsset"
+          <v-btn
+            color="saveblue"
+            @click="saveSerializedAsset"
+            :disabled="!validSerializedAsset"
             >Save</v-btn
           >
         </v-card-actions>
@@ -1555,7 +1593,6 @@ onMounted(async () => {
     </v-dialog>
     <v-snackbar v-model="snackbar" :timeout="3000" class="custom-snackbar">
       {{ snackbarText }}
-      <!-- <v-btn color="pink" text @click="snackbar = false">Close</v-btn> -->
     </v-snackbar>
   </div>
 </template>

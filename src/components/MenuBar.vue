@@ -30,7 +30,7 @@ const maintenanceActions = [
   },
   {
     title: "Facilities",
-    component: "buildingManage",
+    component: "facilityManage",
   },
   {
     title: "People",
@@ -61,6 +61,7 @@ const logout = () => {
       console.log("error", error);
     });
 };
+
 
 onMounted(() => {
   logoURL.value = ocLogo;

@@ -7,7 +7,7 @@ import UserDashboard from "./views/UserDashboard.vue";
 import DevTools from "./views/DevTools.vue";
 import UserManage from "./views/UserManage.vue";
 import AssetManage from "./views/AssetManage.vue";
-import BuildingManage from "./views/BuildingManage.vue";
+import FacilityManage from "./views/FacilityManage.vue";
 import PersonManage from "./views/PersonManage.vue";
 import ProfileView from "./views/ProfileView.vue";
 const router = createRouter({
@@ -83,9 +83,9 @@ const router = createRouter({
       // }
     },
     {
-      path: "/buildingManage",
-      name: "buildingManage",
-      component: BuildingManage,
+      path: "/facilityManage",
+      name: "facilityManage",
+      component: FacilityManage,
       // meta: {
       //   breadCrumb: [
       //     { text: 'Admin Dashboard'},

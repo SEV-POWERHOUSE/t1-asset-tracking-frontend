@@ -1,21 +1,37 @@
 <script setup>
 import PersonServices from "../services/personServices";
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 
 const message = ref("");
 const selectedTab = ref("People");
+const selectedStatus = ref("Active");
 const people = ref([]);
 const showAddPersonDialog = ref(false);
 const editingPerson = ref(false);
 const validPerson = ref(false);
 const showDeleteConfirmDialog = ref(false);
+const showArchiveDialog = ref(false);
+const showActivateDialog = ref(false);
 const itemToDelete = ref(null);
+const itemToArchive = ref(null);
+const itemToActivate = ref(null);
 const snackbar = ref(false);
 const snackbarText = ref("");
+const personSortBy = ref([{ key: "title", order: "asc" }]);
 const rules = {
   required: (value) => !!value || "Required.",
+  maxNameLength: (value) =>
+    value.length <= 40 || "Name cannot exceed 40 characters",
+  maxCounter: (value) => value.length <= 7,
+  minCounter: (value) =>
+    value.length >= 7 || "ID number must be 7 numbers long",
+  idNumber: (value) =>
+    /^[0-9]{7}$/.test(value) || "ID number must contain only numbers",
+  email: (value) => {
+    const pattern = /^[a-zA-Z]+(?:\.[a-zA-Z]+)?@(?:eagles\.)?oc\.edu$/;
+    return pattern.test(value) || "e-mail must be eagles.oc.edu or oc.edu.";
+  },
 };
-
 const newPerson = ref({
   title: "",
   lName: "",
@@ -25,7 +41,7 @@ const newPerson = ref({
 
 // People Section
 
-// Retrieve Buildings from Database
+// Retrieve People from Database
 const retrievePeople = async () => {
   try {
     const response = await PersonServices.getAll();
@@ -35,6 +51,7 @@ const retrievePeople = async () => {
       lName: person.lName,
       email: person.email,
       idNumber: person.idNumber,
+      activeStatus: person.activeStatus,
     }));
   } catch (error) {
     console.error("Error loading people:", error);
@@ -93,7 +110,7 @@ const deletePerson = async (personId) => {
     await PersonServices.delete(personId);
     snackbarText.value = "Person deleted successfully.";
     snackbar.value = true; // Show the snackbar
-    // Refresh the list of buildings after successful deletion
+    // Refresh the list of people after successful deletion
     retrievePeople();
     people.value = people.value.filter((t) => t.personId !== personId);
   } catch (error) {
@@ -108,13 +125,68 @@ const closePersonDialog = () => {
   newPerson.value = { fName: "", lName: "", email: "", idNumber: "" };
 };
 
+const archivePerson = async (personId) => {
+  const archiveData = {
+    activeStatus: false, // The new value for the activeStatus field
+  };
+  try {
+    await PersonServices.update(personId, archiveData);
+    snackbarText.value = "Person archived successfully.";
+    snackbar.value = true; // Show the snackbar
+    // Refresh the list of people after successful deletion
+    retrievePeople();
+    people.value = people.value.filter((c) => c.id !== personId);
+  } catch (error) {
+    console.error(error);
+    message.value = "Error archiving person.";
+  }
+};
+
+const activatePerson = async (personId) => {
+  const activateData = {
+    activeStatus: true, // The new value for the activeStatus field
+  };
+  try {
+    await PersonServices.update(personId, activateData);
+    snackbarText.value = "Person activated successfully.";
+    snackbar.value = true; // Show the snackbar
+    // Refresh the list of people after successful deletion
+    retrievePeople();
+    people.value = people.value.filter((c) => c.id !== personId);
+  } catch (error) {
+    console.error(error);
+    message.value = "Error activating person.";
+  }
+};
+
 const personHeaders = ref([
   { title: "First Name", key: "title" },
-  { title: "Last Name", key: "lName"},
-  { title: "Email", key: "email"},
-  { title: "ID", key: "idNumber"},
-  { title: "Actions", key: "actions", sortable: false },
+  { title: "Last Name", key: "lName" },
+  { title: "Email", key: "email" },
+  { title: "ID", key: "idNumber" },
+  { title: "Edit", key: "edit", sortable: false },
+  { title: "Archive", key: "archive", sortable: false },
 ]);
+
+const archivedPersonHeaders = ref([
+  { title: "First Name", key: "title" },
+  { title: "Last Name", key: "lName" },
+  { title: "Email", key: "email" },
+  { title: "ID", key: "idNumber" },
+  { title: "Edit", key: "edit", sortable: false },
+  { title: "Activate", key: "activate", sortable: false },
+  { title: "Delete", key: "delete", sortable: false },
+]);
+
+const filteredPeople = computed(() => {
+  if (selectedStatus.value === "Active") {
+    return people.value.filter((people) => people.activeStatus === true);
+  } else if (selectedStatus.value === "Archived") {
+    return people.value.filter((people) => people.activeStatus === false);
+  } else {
+    return people.value;
+  }
+});
 
 // Misc Section
 const openDeleteConfirmDialog = (item) => {
@@ -130,6 +202,32 @@ const confirmDelete = async () => {
   itemToDelete.value = null; // Reset after deletion
 };
 
+const openArchiveDialog = (item) => {
+  itemToArchive.value = item;
+  showArchiveDialog.value = true;
+};
+
+const confirmArchive = async () => {
+  if (itemToArchive.value.type === "person") {
+    await archivePerson(itemToArchive.value.id);
+  }
+  showArchiveDialog.value = false;
+  itemToArchive.value = null; // Reset after deletion
+};
+
+const openActivateDialog = (item) => {
+  itemToActivate.value = item;
+  showActivateDialog.value = true;
+};
+
+const confirmActivate = async () => {
+  if (itemToActivate.value.type === "person") {
+    await activatePerson(itemToActivate.value.id);
+  }
+  showActivateDialog.value = false;
+  itemToActivate.value = null; // Reset after deletion
+};
+
 // Watch for changes on selectedTab and fetch data accordingly
 watch(selectedTab, (newValue) => {
   if (newValue === "People") {
@@ -138,10 +236,8 @@ watch(selectedTab, (newValue) => {
 });
 
 // Call this once to load the default tab's data when the component mounts
-onMounted(() => {
-  if (selectedTab.value === "People") {
-    retrievePeople();
-  }
+onMounted(async () => {
+  await retrievePeople();
 });
 </script>
 
@@ -154,7 +250,11 @@ onMounted(() => {
             <v-toolbar-title>People Management</v-toolbar-title>
           </v-toolbar>
           <v-tabs v-model="selectedTab" background-color="primary" dark>
-            <v-tab value="People">People</v-tab>
+            <v-tab value="People" color="primary">People</v-tab>
+          </v-tabs>
+          <v-tabs v-model="selectedStatus" background-color="primary" dark>
+            <v-tab value="Active" color="primary">Active</v-tab>
+            <v-tab value="Archived" color="primary">Archived</v-tab>
           </v-tabs>
         </v-col>
       </v-row>
@@ -162,11 +262,11 @@ onMounted(() => {
       <v-row>
         <v-col cols="12">
           <v-fade-transition mode="out-in">
-            <!-- People Section -->
-            <div v-if="selectedTab === 'People'">
+            <!-- Active People Section -->
+            <div v-if="selectedTab === 'People' && selectedStatus === 'Active'">
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
-                  <span>People</span>
+                  <span>Active People</span>
                   <v-btn color="primary" @click="showAddPersonDialog = true">
                     Add New Person
                   </v-btn>
@@ -174,16 +274,72 @@ onMounted(() => {
                 <v-card-text>
                   <v-data-table
                     :headers="personHeaders"
-                    :items="people"
+                    :items="filteredPeople"
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="personSortBy"
                   >
-                    <template v-slot:item.actions="{ item }">
+                    <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editPerson(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
+                    </template>
+                    <template v-slot:item.archive="{ item }">
+                      <v-btn
+                        icon
+                        @click="
+                          openArchiveDialog({
+                            id: item.key,
+                            type: 'person',
+                          })
+                        "
+                      >
+                        <v-icon>mdi-arrow-down-box</v-icon>
+                      </v-btn>
+                    </template>
+                  </v-data-table>
+                </v-card-text>
+              </v-card>
+            </div>
+            <!-- Archived People Section -->
+            <div
+              v-if="selectedTab === 'People' && selectedStatus === 'Archived'"
+            >
+              <v-card>
+                <v-card-title class="d-flex justify-space-between align-center">
+                  <span>Archived People</span>
+                </v-card-title>
+                <v-card-text>
+                  <v-data-table
+                    :headers="archivedPersonHeaders"
+                    :items="filteredPeople"
+                    item-key="key"
+                    class="elevation-1"
+                    :items-per-page="5"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="personSortBy"
+                  >
+                    <template v-slot:item.edit="{ item }">
+                      <v-btn icon @click="editPerson(item)">
+                        <v-icon>mdi-pencil</v-icon>
+                      </v-btn>
+                    </template>
+                    <template v-slot:item.activate="{ item }">
+                      <v-btn
+                        icon
+                        @click="
+                          openActivateDialog({
+                            id: item.key,
+                            type: 'person',
+                          })
+                        "
+                      >
+                        <v-icon>mdi-arrow-up-box</v-icon>
+                      </v-btn>
+                    </template>
+                    <template v-slot:item.delete="{ item }">
                       <v-btn
                         icon
                         @click="
@@ -221,30 +377,43 @@ onMounted(() => {
                   <v-text-field
                     label="First Name"
                     v-model="newPerson.title"
-                    :rules="[rules.required]"
-                    required
+                    :rules="[rules.required, rules.maxNameLength]"
+                    maxlength="40"
+                    counter
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     label="Last Name"
                     v-model="newPerson.lName"
-                    :rules="[rules.required]"
-                    required
+                    :rules="[rules.required, rules.maxNameLength]"
+                    maxlength="40"
+                    counter
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     label="Email"
                     v-model="newPerson.email"
-                    :rules="[rules.required]"
-                    required
+                    placeholder="first.last@oc.edu or first.last@eagles.oc.edu"
+                    :rules="[rules.required, rules.email]"
+                    maxlength="40"
+                    counter
                   ></v-text-field>
+                </v-col>
+                <v-col cols="12">
                   <v-text-field
                     label="ID No."
                     v-model="newPerson.idNumber"
-                    :rules="[rules.required]"
-                    required
+                    hint="Please enter your 7 digit ID number"
+                    :rules="[
+                      rules.required,
+                      rules.maxCounter,
+                      rules.minCounter,
+                      rules.idNumber,
+                    ]"
+                    maxlength="7"
+                    counter
                   ></v-text-field>
                 </v-col>
               </v-row>
@@ -279,9 +448,36 @@ onMounted(() => {
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <!-- Confirm Archive Dialog -->
+    <v-dialog v-model="showArchiveDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="text-h5">Confirm Archive</v-card-title>
+        <v-card-text>Are you sure you want to archive this item? </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="cancelgrey" text @click="showArchiveDialog = false"
+            >Cancel</v-btn
+          >
+          <v-btn color="saveblue" text @click="confirmArchive">Archive</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!-- Confirm Activate Dialog -->
+    <v-dialog v-model="showActivateDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="text-h5">Confirm Activate</v-card-title>
+        <v-card-text>Are you sure you want to activate this item? </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="cancelgrey" text @click="showActivateDialog = false"
+            >Cancel</v-btn
+          >
+          <v-btn color="saveblue" text @click="confirmActivate">Activate</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-snackbar v-model="snackbar" :timeout="3000" class="custom-snackbar">
       {{ snackbarText }}
-      <!-- <v-btn color="pink" text @click="snackbar = false">Close</v-btn> -->
     </v-snackbar>
   </div>
 </template>

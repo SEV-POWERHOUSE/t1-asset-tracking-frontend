@@ -12,6 +12,8 @@ const roleNameToIdMap = ref({});
 const changedUserRoles = ref({});
 const snackbar = ref(false);
 const snackbarText = ref("");
+const usersSortBy = ref([{ key: 'fName', order: 'asc'}]);
+const userRolesSortBy = ref([{ key: 'name', order: 'asc'}]);
 
 // Refs for User Roles tab
 const roles = ref([]);
@@ -21,15 +23,13 @@ const showAddUserRoleDialog = ref(false);
 const validUserRole = ref(false);
 const rules = {
   required: (value) => !!value || "Required.",
+  maxNameLength: (value) => value.length <= 40 || "Name cannot exceed 40 characters",
 };
 
 // Refs for general use
 const selectedTab = ref("Users");
 const isUsersTabActive = computed(() => selectedTab.value === "Users");
 const isUserRolesTabActive = computed(() => selectedTab.value === "User Roles");
-const isDevToolsTabActive = computed(() => selectedTab.value === "Dev Tools");
-const store = useStore(); // Use the store
-const isDev = computed(() => store.getters.isDev);
 const itemToDelete = ref(null);
 const showDeleteConfirmDialog = ref(false);
 
@@ -91,15 +91,15 @@ const hasChanges = computed(() => {
 // Define headers for v-data-table.
 const userHeaders = [
   { title: "Name", key: "fName" },
-  { title: "Change Role", key: "changeRole", sortable: false },
+  { title: "Change Role", key: "selectedRoleName" },
 ];
 
 // User Roles Section
 
 const retrieveUserRoles = async () => {
   try {
-    const response = await userRoleServices.getAll(); // Assuming this is the correct method to fetch user roles
-    roles.value = response.data; // Update the roles ref with fetched data
+    const response = await userRoleServices.getAll();
+    roles.value = response.data;
   } catch (error) {
     console.error("Failed to retrieve user roles:", error);
   }
@@ -210,36 +210,10 @@ watch(isUserRolesTabActive, async (isActive) => {
   }
 });
 
-// Watcher for the "Dev Tools" tab
-// watch(
-//   [users, isDevToolsTabActive],
-//   ([newUsers, isUsersActive]) => {
-//     if (isUsersActive) {
-//       // Logic specific to the "Users" tab
-//       newUsers.forEach((user) => {
-//         if (
-//           user.selectedRoleName &&
-//           roleNameToIdMap.value[user.selectedRoleName] !== user.userRoleId
-//         ) {
-//           changedUserRoles.value[user.id] =
-//             roleNameToIdMap.value[user.selectedRoleName];
-//         }
-//       });
-//     }
-//   },
-//   { deep: true }
-// );
-
 // Call this once to load the default tab's data when the component mounts
-onMounted(() => {
-  if (selectedTab.value === "Users") {
-    fetchUsersAndRoles();
-  } else if (selectedTab.value === "User Roles") {
-    retrieveUserRoles();
-  }
-  // else if (selectedTab.value === "Dev Tools") {
-  //   fetchUsersAndRoles();
-  // }
+onMounted(async () => {
+  await fetchUsersAndRoles();
+  await retrieveUserRoles();
 });
 </script>
 
@@ -254,8 +228,6 @@ onMounted(() => {
           <v-tabs v-model="selectedTab" background-color="primary" dark>
             <v-tab value="Users">Users</v-tab>
             <v-tab value="User Roles">User Roles</v-tab>
-            <!-- Conditionally render the Dev Tools tab based on isDev -->
-            <!-- <v-tab v-if="isDev" value="Dev Tools">Dev Tools</v-tab> -->
           </v-tabs>
         </v-col>
       </v-row>
@@ -283,7 +255,8 @@ onMounted(() => {
                     item-key="id"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="usersSortBy"
                   >
                     <template v-slot:item="{ item }">
                       <tr>
@@ -326,7 +299,8 @@ onMounted(() => {
                     item-key="id"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
+                    v-model:sort-by="userRolesSortBy"
                   >
                     <template v-slot:item.actions="{ item }">
                       <v-btn icon @click="editUserRole(item)">
@@ -340,46 +314,6 @@ onMounted(() => {
                 </v-card-text>
               </v-card>
             </div>
-
-            <!-- Dev Tools Section -->
-            <!-- <div v-if="selectedTab === 'Dev Tools' && isDev">
-              <v-card>
-                <v-card-title>Dev Tools</v-card-title>
-                <v-card-text>
-                  <v-data-table
-                    :headers="userHeaders"
-                    :items="users"
-                    item-key="id"
-                    class="elevation-1"
-                  >
-                    <template v-slot:item="{ item }">
-                      <tr>
-                        <td>{{ item.fName }} {{ item.lName }}</td>
-                        <td>
-                          {{
-                            userRoles.find(
-                              (role) => role.id === item.userRoleId
-                            )?.name
-                          }}
-                        </td>
-                        <td>
-                          <v-select
-                            v-model="item.selectedRoleName"
-                            :items="roleNames"
-                            label="Select Role"
-                          ></v-select>
-                        </td>
-                      </tr>
-                    </template>
-                  </v-data-table>
-                </v-card-text>
-                <v-card-text>
-                  <v-btn color="secondary" @click="saveAllUserRoleChanges"
-                    >Save All Changes</v-btn
-                  >
-                </v-card-text>
-              </v-card>
-            </div> -->
           </v-fade-transition>
         </v-col>
       </v-row>
@@ -396,8 +330,9 @@ onMounted(() => {
             <v-text-field
               label="Role Name"
               v-model="newUserRole.name"
-              :rules="[rules.required]"
-              required
+              :rules="[rules.required, rules.maxNameLength]"
+              maxlength="40"
+              counter
             ></v-text-field>
           </v-form>
         </v-card-text>
@@ -440,7 +375,6 @@ onMounted(() => {
     </v-dialog>
     <v-snackbar v-model="snackbar" :timeout="3000" class="custom-snackbar">
       {{ snackbarText }}
-      <!-- <v-btn color="pink" text @click="snackbar = false">Close</v-btn> -->
     </v-snackbar>
   </div>
 </template>
