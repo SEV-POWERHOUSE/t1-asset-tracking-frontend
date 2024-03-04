@@ -195,6 +195,6 @@ const items = ref([
 }
 
 .checkout-button-container {
-  padding-top: 20px; /* Adjust the padding as needed */
+  padding-top: 20px; 
 }
 </style>
