@@ -4,6 +4,7 @@ import AssetTypeServices from "../services/assetTypeServices";
 import AssetProfileServices from "../services/assetProfileServices";
 import SerializedAssetServices from "../services/serializedAssetServices";
 import { ref, onMounted, watch, computed } from "vue";
+import router from '../router';
 
 const message = ref("");
 const selectedTab = ref("SerializedAssets");
@@ -506,6 +507,12 @@ const deleteProfile = async (profileId) => {
   }
 };
 
+function viewProfile(profileId){
+  console.log("Pushing to asset view with profileId: " + profileId)
+  router.push({ name: 'profileView', params: { profileId: profileId }});
+
+}
+
 const filteredAssetProfiles = computed(() => {
   if (selectedStatus.value === "Active") {
     return assetProfiles.value.filter(
@@ -556,9 +563,9 @@ const activateProfile = async (profileId) => {
 
 const profileHeaders = ref([
   { title: "Profile Name", key: "profileName" },
-  { title: "Description", key: "desc", sortable: false },
   { title: "Type", key: "typeName" },
-  { title: "Edit", key: "edit", sortable: false },
+  { title: "Assets", key: "" },
+  { title: "View Assets", key: "view" },
   { title: "Archive", key: "archive", sortable: false },
 ]);
 
@@ -1115,6 +1122,11 @@ onMounted(async () => {
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 15, 20]"
                   >
+                  <template v-slot:item.view="{ item }">
+                    <v-btn icon @click="viewProfile(item.profileId)">
+                        <v-icon>mdi-eye</v-icon>
+                      </v-btn>
+                    </template>
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editProfile(item)">
                         <v-icon>mdi-pencil</v-icon>
