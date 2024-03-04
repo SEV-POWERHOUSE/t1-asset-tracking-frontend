@@ -863,8 +863,16 @@ watch(selectedCategoryId, (newValue, oldValue) => {
   }
 });
 
+watch(selectedTab, (newValue) => {
+  localStorage.setItem('selectedTab', newValue);
+});
+
 // Call this once to load the default tab's data when the component mounts
 onMounted(async () => {
+  const savedTab = localStorage.getItem('selectedTab');
+  if (savedTab) {
+    selectedTab.value = savedTab;
+  }
   await retrieveAssetCategories();
   await retrieveAssetTypes(); // Ensure types are loaded before profiles
   await retrieveAssetProfiles(); // Now safe to load profiles
