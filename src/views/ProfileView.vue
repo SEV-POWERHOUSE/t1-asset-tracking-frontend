@@ -308,7 +308,7 @@ onMounted(async () => {
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Active {{profileDetails.profileName}}</span>
-                  <v-btn color="primary" @click="showAddPersonDialog = true">
+                  <v-btn color="primary" @click="showAddSerializedAssetDialog = true">
                     Add New {{profileDetails.profileName}}
                   </v-btn>
                 </v-card-title>
@@ -341,9 +341,6 @@ onMounted(async () => {
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Active {{profileDetails.profileName}}'s</span>
-                  <v-btn color="primary" @click="showAddPersonDialog = true">
-                    Add New {{profileDetails.profileName}}
-                  </v-btn>
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
@@ -420,18 +417,6 @@ onMounted(async () => {
                     :rules="[rules.required]"
                     required
                   ></v-text-field>
-                </v-col>
-                <v-col cols="12">
-                  <!-- Asset Profile Selection -->
-                  <v-select
-                    label="Profile"
-                    :items="assetProfiles"
-                    item-text="title"
-                    item-value="key"
-                    v-model="selectedProfileId"
-                    :rules="[rules.required]"
-                    required
-                  ></v-select>
                 </v-col>
               </v-row>
             </v-container>
