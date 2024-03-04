@@ -589,7 +589,6 @@ const profileHeaders = ref([
 
 const inactiveProfileHeaders = ref([
   { title: "Profile Name", key: "profileName" },
-  { title: "Description", key: "desc", sortable: false },
   { title: "Type", key: "typeName" },
   { title: "# of Assets", key: "assets" },
   { title: "View Assets", key: "view" },

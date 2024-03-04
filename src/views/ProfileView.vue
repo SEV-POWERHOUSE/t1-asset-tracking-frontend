@@ -290,15 +290,13 @@ onMounted(async () => {
     <v-icon>mdi-arrow-left</v-icon>
   </v-btn>
   <v-toolbar-title>{{ profileDetails.profileName }}</v-toolbar-title>
-  <v-spacer></v-spacer> <!-- Add this line -->
-  <span class="profile-description">{{ profileDetails.desc }}</span> <!-- Add your profile description here -->
+ 
 </v-toolbar>
 
           <v-tabs v-model="selectedStatus" background-color="primary" dark>
         <v-tab color="primary" value="Active">Active</v-tab>
         <v-tab color="primary" value="Archived">Archived</v-tab>
       </v-tabs>
-         
         </v-col>
       </v-row>
 
