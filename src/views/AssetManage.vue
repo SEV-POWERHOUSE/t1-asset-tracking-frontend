@@ -4,7 +4,7 @@ import AssetTypeServices from "../services/assetTypeServices";
 import AssetProfileServices from "../services/assetProfileServices";
 import SerializedAssetServices from "../services/serializedAssetServices";
 import { ref, onMounted, watch, computed } from "vue";
-import router from '../router';
+import router from "../router";
 
 const message = ref("");
 const selectedTab = ref("SerializedAssets");
@@ -36,10 +36,10 @@ const itemToArchive = ref(null);
 const itemToActivate = ref(null);
 const snackbar = ref(false);
 const snackbarText = ref("");
-const categoriesSortBy = ref([{ key: 'title', order:'asc'}]);
-const typesSortBy = ref([{ key: 'title', order:'asc'}]);
-const profilesSortBy = ref([{ key: 'profileName', order:'asc'}]);
-const assetsSortBy = ref([{ key: 'profileName', order:'asc'}]);
+const categoriesSortBy = ref([{ key: "title", order: "asc" }]);
+const typesSortBy = ref([{ key: "title", order: "asc" }]);
+const profilesSortBy = ref([{ key: "profileName", order: "asc" }]);
+const assetsSortBy = ref([{ key: "profileName", order: "asc" }]);
 const rules = {
   required: (value) => !!value || "Required.",
   maxDescLength: (value) => value.length <= 255,
@@ -432,13 +432,20 @@ const inactiveTypeHeaders = ref([
 const retrieveAssetProfiles = async () => {
   try {
     const response = await AssetProfileServices.getAll();
+    const serializedAssetsResponse = await SerializedAssetServices.getAll();
+    const serializedAssetsData = serializedAssetsResponse.data;
+
     assetProfiles.value = response.data.map((profile) => {
       const type = assetTypes.value.find((t) => t.key === profile.typeId);
+      const assetsCount = serializedAssetsData.filter(
+        (asset) => asset.profileId === profile.profileId
+      ).length;
       return {
         ...profile,
         typeName: type ? type.title : "Unknown Type",
         key: profile.profileId,
         title: profile.profileName,
+        assetsCount: assetsCount, // Add the count of serialized assets
       };
     });
   } catch (error) {
@@ -518,10 +525,9 @@ const deleteProfile = async (profileId) => {
   }
 };
 
-function viewProfile(profileId){
-  console.log("Pushing to asset view with profileId: " + profileId)
-  router.push({ name: 'profileView', params: { profileId: profileId }});
-
+function viewProfile(profileId) {
+  console.log("Pushing to asset view with profileId: " + profileId);
+  router.push({ name: "profileView", params: { profileId: profileId } });
 }
 
 const filteredAssetProfiles = computed(() => {
@@ -575,8 +581,9 @@ const activateProfile = async (profileId) => {
 const profileHeaders = ref([
   { title: "Profile Name", key: "profileName" },
   { title: "Type", key: "typeName" },
-  { title: "Assets", key: "" },
+  { title: "# of Assets", key: "assets" },
   { title: "View Assets", key: "view" },
+  { title: "Edit", key: "edit", sortable: false },
   { title: "Archive", key: "archive", sortable: false },
 ]);
 
@@ -584,6 +591,8 @@ const inactiveProfileHeaders = ref([
   { title: "Profile Name", key: "profileName" },
   { title: "Description", key: "desc", sortable: false },
   { title: "Type", key: "typeName" },
+  { title: "# of Assets", key: "assets" },
+  { title: "View Assets", key: "view" },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Activate", key: "activate", sortable: false },
   { title: "Delete", key: "delete", sortable: false },
@@ -864,14 +873,20 @@ watch(selectedCategoryId, (newValue, oldValue) => {
 });
 
 watch(selectedTab, (newValue) => {
-  localStorage.setItem('selectedTab', newValue);
+  localStorage.setItem("selectedTab", newValue);
+});
+
+watch(selectedStatus, (newValue) => {
+  localStorage.setItem("selectedStatus", newValue);
 });
 
 // Call this once to load the default tab's data when the component mounts
 onMounted(async () => {
-  const savedTab = localStorage.getItem('selectedTab');
+  const savedTab = localStorage.getItem("selectedTab");
+  const savedStatus = localStorage.getItem("selectedStatus");
   if (savedTab) {
     selectedTab.value = savedTab;
+    selectedStatus.value = savedStatus;
   }
   await retrieveAssetCategories();
   await retrieveAssetTypes(); // Ensure types are loaded before profiles
@@ -1149,10 +1164,18 @@ onMounted(async () => {
                     :items-per-page-options="[5, 10, 20, 50, -1]"
                     v-model:sort-by="profilesSortBy"
                   >
-                  <template v-slot:item.view="{ item }">
-                    <v-btn icon @click="viewProfile(item.profileId)">
-                        <v-icon>mdi-eye</v-icon>
-                      </v-btn>
+                    <template v-slot:item.assets="{ item }">
+                      {{ item.assetsCount }}
+                    </template>
+                    <template v-slot:item.view="{ item }">
+                      <div
+                        class="d-flex align-center justify-start"
+                        style="padding-left: 10%"
+                      >
+                        <v-btn icon @click="viewProfile(item.profileId)">
+                          <v-icon>mdi-eye</v-icon>
+                        </v-btn>
+                      </div>
                     </template>
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editProfile(item)">
@@ -1195,6 +1218,19 @@ onMounted(async () => {
                     :items-per-page-options="[5, 10, 20, 50, -1]"
                     v-model:sort-by="profilesSortBy"
                   >
+                    <template v-slot:item.assets="{ item }">
+                      {{ item.assetsCount }}
+                    </template>
+                    <template v-slot:item.view="{ item }">
+                      <div
+                        class="d-flex align-center justify-start"
+                        style="padding-left: 15%"
+                      >
+                        <v-btn icon @click="viewProfile(item.profileId)">
+                          <v-icon>mdi-eye</v-icon>
+                        </v-btn>
+                      </div>
+                    </template>
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editProfile(item)">
                         <v-icon>mdi-pencil</v-icon>
