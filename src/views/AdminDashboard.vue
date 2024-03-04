@@ -132,7 +132,7 @@ const items = ref([
             </template>
           </v-data-table>
 
-          <div class="text-center">
+          <div class="text-center checkout-button-container">
             <v-btn
               size="large"
               color="primary"
@@ -192,5 +192,9 @@ const items = ref([
 <style>
 .mb-4 {
   margin-bottom: 1.5rem;
+}
+
+.checkout-button-container {
+  padding-top: 20px; /* Adjust the padding as needed */
 }
 </style>
