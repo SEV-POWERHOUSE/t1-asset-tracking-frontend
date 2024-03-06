@@ -4,7 +4,7 @@ import RoomServices from "../services/roomServices";
 import { ref, onMounted, watch, computed } from "vue";
 
 const message = ref("");
-const selectedTab = ref("Buildings");
+const selectedTab = ref("Rooms");
 const selectedStatus = ref("Active");
 const buildings = ref([]);
 const rooms = ref([]);
@@ -13,6 +13,7 @@ const showAddRoomDialog = ref(false);
 const editingBuilding = ref(false);
 const editingRoom = ref(false);
 const selectedBuildingId = ref("");
+const selectedFilterBuildingId = ref("");
 const validBuilding = ref(false);
 const validRoom = ref(false);
 const showDeleteConfirmDialog = ref(false);
@@ -23,21 +24,27 @@ const itemToArchive = ref(null);
 const itemToActivate = ref(null);
 const snackbar = ref(false);
 const snackbarText = ref("");
-const buildingsSortBy = ref([{ key: 'title', order: 'asc'}]);
-const roomsSortBy = ref([{ key: 'title', order: 'asc'}]);
+const buildingsSortBy = ref([{ key: "title", order: "asc" }]);
+const roomsSortBy = ref([{ key: "title", order: "asc" }]);
 const rules = {
   required: (value) => !!value || "Required.",
   maxNameLength: (value) => value.length <= 80,
-  roomNumber: (value) => /^[a-zA-Z0-9]{2,4}$/.test(value) || "Room number must be between 2 and 4 characters long.", 
-  numberOfRooms: value => {
+  roomNumber: (value) =>
+    /^[a-zA-Z0-9]{2,4}$/.test(value) ||
+    "Room number must be between 2 and 4 characters long.",
+  numberOfRooms: (value) => {
     const intValue = parseInt(value);
-    return Number.isInteger(intValue) && intValue >= 0 && intValue <= 400 || "Number of rooms cannot be greater than 400"
+    return (
+      (Number.isInteger(intValue) && intValue >= 0 && intValue <= 400) ||
+      "Number of rooms cannot be greater than 400"
+    );
   },
-  buildingAbbreviation: value => {
-            const pattern =
-              /^[a-zA-Z]{2,3}$/
-            return pattern.test(value) || 'Building Abbreviation must be 2 or 3 characters';
-  }
+  buildingAbbreviation: (value) => {
+    const pattern = /^[a-zA-Z]{2,3}$/;
+    return (
+      pattern.test(value) || "Building Abbreviation must be 2 or 3 characters"
+    );
+  },
 };
 const newBuilding = ref({
   title: "",
@@ -250,7 +257,7 @@ const saveRoom = async () => {
   // Prepare the room data for saving
   const roomData = {
     roomNo: newRoom.value.title,
-    buildingId: selectedBuildingId.value, // Make sure this is getting set correctly
+    buildingId: selectedBuildingId.value.key, // Make sure this is getting set correctly
   };
 
   try {
@@ -358,14 +365,28 @@ const archivedRoomHeaders = ref([
 ]);
 
 const filteredRooms = computed(() => {
-  if (selectedStatus.value === "Active") {
-    return rooms.value.filter((rooms) => rooms.activeStatus === true);
-  } else if (selectedStatus.value === "Archived") {
-    return rooms.value.filter((rooms) => rooms.activeStatus === false);
-  } else {
-    return rooms.value;
-  }
+  return rooms.value.filter((room) => {
+    // Filter by selected building if any
+    const buildingMatch = selectedFilterBuildingId.value.key
+      ? room.buildingId === selectedFilterBuildingId.value.key
+      : true;
+
+    // Filter by active status
+    let statusMatch = true;
+    if (selectedStatus.value === "Active") {
+      statusMatch = room.activeStatus === true;
+    } else if (selectedStatus.value === "Archived") {
+      statusMatch = room.activeStatus === false;
+    }
+
+    return buildingMatch && statusMatch;
+  });
 });
+
+const clearBuildingFilter = () => {
+  selectedFilterBuildingId.value = '';
+};
+
 
 // Misc Section
 const openDeleteConfirmDialog = (item) => {
@@ -435,6 +456,7 @@ watch(selectedTab, (newValue) => {
     });
   }
 });
+
 // Call this once to load the default tab's data when the component mounts
 onMounted(async () => {
   await retrieveBuildings();
@@ -448,18 +470,52 @@ onMounted(async () => {
       <v-row>
         <v-col cols="12">
           <v-toolbar>
-            <v-toolbar-title>Facility Management</v-toolbar-title>
+            <v-toolbar-title>Asset Management</v-toolbar-title>
           </v-toolbar>
+        </v-col>
+      </v-row>
+
+      <v-row>
+        <v-col cols="12">
           <v-tabs v-model="selectedTab" background-color="primary" dark>
-            <v-tab value="Buildings" color="primary">Buildings</v-tab>
             <v-tab value="Rooms" color="primary">Rooms</v-tab>
-          </v-tabs>
-          <v-tabs v-model="selectedStatus" background-color="primary" dark>
-            <v-tab value="Active" color="primary">Active</v-tab>
-            <v-tab value="Archived" color="primary">Archived</v-tab>
+            <v-tab value="Buildings" color="primary">Buildings</v-tab>
           </v-tabs>
         </v-col>
       </v-row>
+
+      <!-- Introducing a spacer row for visual separation -->
+      <v-row class="my-1"></v-row>
+      <!-- Adjust 'my-3' class for desired spacing -->
+
+      <v-row>
+        <v-col cols="12">
+          <v-tabs v-model="selectedStatus" background-color="primary" dark>
+            <v-tab value="Active" color="primary">Active</v-tab>
+            <v-tab value="Inactive" color="primary">Archived</v-tab>
+          </v-tabs>
+        </v-col>
+      </v-row>
+
+      <!-- Rooms filter -->
+      <div v-if="selectedTab === 'Rooms'">
+        <v-row class="mt-3">
+          <!-- Added margin-top class here -->
+          <v-col cols="12">
+            <v-autocomplete
+              v-model="selectedFilterBuildingId"
+              :items="buildings"
+              item-text="title"
+              item-value="key"
+              label="Filter by Building"
+              return-object
+              clearable
+              @click:clear="clearBuildingFilter"
+              @change="retrieveRooms"
+            ></v-autocomplete>
+          </v-col>
+        </v-row>
+      </div>
 
       <v-row>
         <v-col cols="12">
@@ -568,7 +624,7 @@ onMounted(async () => {
             <div v-if="selectedTab === 'Rooms' && selectedStatus === 'Active'">
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
-                  <span>Rooms</span>
+                  <span>Active Rooms</span>
                   <v-btn color="primary" @click="openAddRoomDialog">
                     Add New Room
                   </v-btn>
@@ -583,10 +639,8 @@ onMounted(async () => {
                     :items-per-page-options="[5, 10, 20, 50, -1]"
                     v-model:sort-by="roomsSortBy"
                   >
-
-                  <template v-slot:item.edit="{ item }">
+                    <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editRoom(item)">
-
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
@@ -613,7 +667,7 @@ onMounted(async () => {
             >
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
-                  <span>Rooms</span>
+                  <span>Archived Rooms</span>
                   <v-btn color="primary" @click="openAddRoomDialog">
                     Add New Room
                   </v-btn>
@@ -747,14 +801,16 @@ onMounted(async () => {
                 </v-col>
                 <v-col cols="12">
                   <!-- Building Selection -->
-                  <v-select
+                  <v-autocomplete
                     label="Building"
                     :items="buildings"
                     v-model="selectedBuildingId"
                     item-text="title"
                     item-value="key"
                     :rules="[rules.required]"
-                  ></v-select>
+                    clearable
+                    return-object
+                  ></v-autocomplete>
                 </v-col>
               </v-row>
             </v-container>

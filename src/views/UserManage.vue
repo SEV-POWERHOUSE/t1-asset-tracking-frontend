@@ -12,8 +12,8 @@ const roleNameToIdMap = ref({});
 const changedUserRoles = ref({});
 const snackbar = ref(false);
 const snackbarText = ref("");
-const usersSortBy = ref([{ key: 'fName', order: 'asc'}]);
-const userRolesSortBy = ref([{ key: 'name', order: 'asc'}]);
+const usersSortBy = ref([{ key: "fName", order: "asc" }]);
+const userRolesSortBy = ref([{ key: "name", order: "asc" }]);
 
 // Refs for User Roles tab
 const roles = ref([]);
@@ -23,7 +23,8 @@ const showAddUserRoleDialog = ref(false);
 const validUserRole = ref(false);
 const rules = {
   required: (value) => !!value || "Required.",
-  maxNameLength: (value) => value.length <= 40 || "Name cannot exceed 40 characters",
+  maxNameLength: (value) =>
+    value.length <= 40 || "Name cannot exceed 40 characters",
 };
 
 // Refs for general use
@@ -225,9 +226,14 @@ onMounted(async () => {
           <v-toolbar>
             <v-toolbar-title>User Management</v-toolbar-title>
           </v-toolbar>
+        </v-col>
+      </v-row>
+
+      <v-row>
+        <v-col cols="12">
           <v-tabs v-model="selectedTab" background-color="primary" dark>
-            <v-tab value="Users">Users</v-tab>
-            <v-tab value="User Roles">User Roles</v-tab>
+            <v-tab value="Users" color="primary">Users</v-tab>
+            <v-tab value="User Roles" color="primary">User Roles</v-tab>
           </v-tabs>
         </v-col>
       </v-row>
@@ -262,12 +268,14 @@ onMounted(async () => {
                       <tr>
                         <td>{{ item.fName }} {{ item.lName }}</td>
                         <td>
-                          <v-select
+                          <v-autocomplete
                             v-model="item.selectedRoleName"
                             :items="roleNames"
                             label="Select Role"
                             class="select-fixed-width"
-                          ></v-select>
+                            return-object
+                            clearable
+                          ></v-autocomplete>
                         </td>
                       </tr>
                     </template>
