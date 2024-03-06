@@ -1008,14 +1008,13 @@ onMounted(async () => {
           <!-- Added margin-top class here -->
           <v-col cols="12" md="4">
             <v-autocomplete
-              v-model="selectedFilterCategoryId"
-              :items="assetCategories"
+              v-model="selectedFilterProfileId"
+              :items="filteredProfilesForAssetAutocomplete"
               item-text="title"
               item-value="key"
-              label="Filter by Category"
+              label="Filter by Profile"
               return-object
               clearable
-              @clear="onCategoryClear"
             ></v-autocomplete>
           </v-col>
           <v-col cols="12" md="4">
@@ -1032,13 +1031,14 @@ onMounted(async () => {
           </v-col>
           <v-col cols="12" md="4">
             <v-autocomplete
-              v-model="selectedFilterProfileId"
-              :items="filteredProfilesForAssetAutocomplete"
+              v-model="selectedFilterCategoryId"
+              :items="assetCategories"
               item-text="title"
               item-value="key"
-              label="Filter by Profile"
+              label="Filter by Category"
               return-object
               clearable
+              @clear="onCategoryClear"
             ></v-autocomplete>
           </v-col>
         </v-row>
@@ -1050,18 +1050,6 @@ onMounted(async () => {
           <!-- Added margin-top class here -->
           <v-col cols="12" md="6">
             <v-autocomplete
-              v-model="selectedFilterCategoryId"
-              :items="assetCategories"
-              item-text="title"
-              item-value="key"
-              label="Filter by Category"
-              return-object
-              clearable
-              @clear="onCategoryClear"
-            ></v-autocomplete>
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-autocomplete
               v-model="selectedFilterTypeId"
               :items="filteredTypesForProfileAutocomplete"
               item-text="title"
@@ -1070,6 +1058,18 @@ onMounted(async () => {
               return-object
               clearable
               @clear="onTypeClear"
+            ></v-autocomplete>
+          </v-col>
+          <v-col cols="12" md="6">
+            <v-autocomplete
+              v-model="selectedFilterCategoryId"
+              :items="assetCategories"
+              item-text="title"
+              item-value="key"
+              label="Filter by Category"
+              return-object
+              clearable
+              @clear="onCategoryClear"
             ></v-autocomplete>
           </v-col>
         </v-row>
