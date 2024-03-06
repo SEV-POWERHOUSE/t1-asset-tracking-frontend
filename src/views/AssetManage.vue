@@ -3,6 +3,7 @@ import AssetCategoryServices from "../services/assetCategoryServices";
 import AssetTypeServices from "../services/assetTypeServices";
 import AssetProfileServices from "../services/assetProfileServices";
 import SerializedAssetServices from "../services/serializedAssetServices";
+import DynamicTextFields from "../components/DynamicTextFields.vue"
 import { ref, onMounted, watch, computed } from "vue";
 import router from "../router";
 
@@ -1505,14 +1506,8 @@ onMounted(async () => {
                   ></v-select>
                 </v-col>
                 <v-col cols="12">
-                  <v-text-field
-                    label="Description"
-                    v-model="newProfile.desc"
-                    :rules="[rules.required, rules.maxDescLength]"
-                    maxlength="255"
-                    counter
-                  ></v-text-field>
-                </v-col>
+                <DynamicTextFields :selectedTypeId="selectedTypeId" />
+              </v-col>
               </v-row>
             </v-container>
           </v-form>
