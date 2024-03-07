@@ -247,17 +247,32 @@ onMounted(async () => {
       <v-row>
         <v-col cols="12">
           <v-toolbar>
-            <v-toolbar-title>People Management</v-toolbar-title>
+            <v-toolbar-title>Asset Management</v-toolbar-title>
           </v-toolbar>
+        </v-col>
+      </v-row>
+
+      <v-row>
+        <v-col cols="12">
           <v-tabs v-model="selectedTab" background-color="primary" dark>
             <v-tab value="People" color="primary">People</v-tab>
           </v-tabs>
+        </v-col>
+      </v-row>
+
+      <!-- Introducing a spacer row for visual separation -->
+      <v-row class="my-1"></v-row>
+      <!-- Adjust 'my-3' class for desired spacing -->
+
+      <v-row>
+        <v-col cols="12">
           <v-tabs v-model="selectedStatus" background-color="primary" dark>
             <v-tab value="Active" color="primary">Active</v-tab>
-            <v-tab value="Archived" color="primary">Archived</v-tab>
+            <v-tab value="Inactive" color="primary">Archived</v-tab>
           </v-tabs>
         </v-col>
       </v-row>
+
 
       <v-row>
         <v-col cols="12">

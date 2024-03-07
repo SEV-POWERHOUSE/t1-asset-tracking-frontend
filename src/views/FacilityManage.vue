@@ -4,7 +4,7 @@ import RoomServices from "../services/roomServices";
 import { ref, onMounted, watch, computed } from "vue";
 
 const message = ref("");
-const selectedTab = ref("Buildings");
+const selectedTab = ref("Rooms");
 const selectedStatus = ref("Active");
 const buildings = ref([]);
 const rooms = ref([]);
@@ -13,6 +13,7 @@ const showAddRoomDialog = ref(false);
 const editingBuilding = ref(false);
 const editingRoom = ref(false);
 const selectedBuildingId = ref("");
+const selectedFilterBuildingId = ref("");
 const validBuilding = ref(false);
 const validRoom = ref(false);
 const showDeleteConfirmDialog = ref(false);
@@ -256,7 +257,7 @@ const saveRoom = async () => {
   // Prepare the room data for saving
   const roomData = {
     roomNo: newRoom.value.title,
-    buildingId: selectedBuildingId.value, // Make sure this is getting set correctly
+    buildingId: selectedBuildingId.value.key, // Make sure this is getting set correctly
   };
 
   try {
@@ -364,14 +365,28 @@ const archivedRoomHeaders = ref([
 ]);
 
 const filteredRooms = computed(() => {
-  if (selectedStatus.value === "Active") {
-    return rooms.value.filter((rooms) => rooms.activeStatus === true);
-  } else if (selectedStatus.value === "Archived") {
-    return rooms.value.filter((rooms) => rooms.activeStatus === false);
-  } else {
-    return rooms.value;
-  }
+  return rooms.value.filter((room) => {
+    // Filter by selected building if any
+    const buildingMatch = selectedFilterBuildingId.value
+      ? room.buildingId === selectedFilterBuildingId.value.key
+      : true;
+
+    // Filter by active status
+    let statusMatch = true;
+    if (selectedStatus.value === "Active") {
+      statusMatch = room.activeStatus === true;
+    } else if (selectedStatus.value === "Archived") {
+      statusMatch = room.activeStatus === false;
+    }
+
+    return buildingMatch && statusMatch;
+  });
 });
+
+const onBuildingClear = () => {
+  // Reset dependent filters or selections here
+  selectedFilterBuildingId.value = "";
+};
 
 // Misc Section
 const openDeleteConfirmDialog = (item) => {
@@ -441,6 +456,7 @@ watch(selectedTab, (newValue) => {
     });
   }
 });
+
 // Call this once to load the default tab's data when the component mounts
 onMounted(async () => {
   await retrieveBuildings();
@@ -454,18 +470,51 @@ onMounted(async () => {
       <v-row>
         <v-col cols="12">
           <v-toolbar>
-            <v-toolbar-title>Facility Management</v-toolbar-title>
+            <v-toolbar-title>Asset Management</v-toolbar-title>
           </v-toolbar>
+        </v-col>
+      </v-row>
+
+      <v-row>
+        <v-col cols="12">
           <v-tabs v-model="selectedTab" background-color="primary" dark>
-            <v-tab value="Buildings" color="primary">Buildings</v-tab>
             <v-tab value="Rooms" color="primary">Rooms</v-tab>
-          </v-tabs>
-          <v-tabs v-model="selectedStatus" background-color="primary" dark>
-            <v-tab value="Active" color="primary">Active</v-tab>
-            <v-tab value="Archived" color="primary">Archived</v-tab>
+            <v-tab value="Buildings" color="primary">Buildings</v-tab>
           </v-tabs>
         </v-col>
       </v-row>
+
+      <!-- Introducing a spacer row for visual separation -->
+      <v-row class="my-1"></v-row>
+      <!-- Adjust 'my-3' class for desired spacing -->
+
+      <v-row>
+        <v-col cols="12">
+          <v-tabs v-model="selectedStatus" background-color="primary" dark>
+            <v-tab value="Active" color="primary">Active</v-tab>
+            <v-tab value="Inactive" color="primary">Archived</v-tab>
+          </v-tabs>
+        </v-col>
+      </v-row>
+
+      <!-- Rooms filter -->
+      <div v-if="selectedTab === 'Rooms'">
+        <v-row class="mt-3">
+          <!-- Added margin-top class here -->
+          <v-col cols="12">
+            <v-autocomplete
+              v-model="selectedFilterBuildingId"
+              :items="buildings"
+              item-text="title"
+              item-value="key"
+              label="Filter by Building"
+              return-object
+              clearable
+              @clear="onBuildingClear"
+            ></v-autocomplete>
+          </v-col>
+        </v-row>
+      </div>
 
       <v-row>
         <v-col cols="12">
@@ -585,7 +634,7 @@ onMounted(async () => {
             <div v-if="selectedTab === 'Rooms' && selectedStatus === 'Active'">
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
-                  <span>Rooms</span>
+                  <span>Active Rooms</span>
                   <v-btn color="primary" @click="openAddRoomDialog">
                     Add New Room
                   </v-btn>
@@ -601,7 +650,10 @@ onMounted(async () => {
                     v-model:sort-by="roomsSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
+
                       <v-btn icon class="table-icons" @click="editRoom(item)">
+
+
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
@@ -630,7 +682,7 @@ onMounted(async () => {
             >
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
-                  <span>Rooms</span>
+                  <span>Archived Rooms</span>
                   <v-btn color="primary" @click="openAddRoomDialog">
                     Add New Room
                   </v-btn>
@@ -767,7 +819,7 @@ onMounted(async () => {
                 </v-col>
                 <v-col cols="12">
                   <!-- Building Selection -->
-                  <v-select
+                  <v-autocomplete
                     label="Building"
                     :items="buildings"
                     v-model="selectedBuildingId"
@@ -775,7 +827,9 @@ onMounted(async () => {
                     item-value="key"
                     :rules="[rules.required]"
                     outlined
-                  ></v-select>
+                    clearable
+                    return-object
+                  ></v-autocomplete>
                 </v-col>
               </v-row>
             </v-container>
