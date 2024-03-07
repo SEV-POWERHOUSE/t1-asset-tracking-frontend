@@ -197,7 +197,7 @@ const categoryHeaders = ref([
   { title: "Edit", key: "edit", sortable: false },
   { title: "Archive", key: "archive", sortable: false },
 ]);
-const inactiveCategoryHeaders = ref([
+const archivedCategoryHeaders = ref([
   { title: "Category Name", key: "title" },
   { title: "Description", key: "description", sortable: false },
   { title: "Edit", key: "edit", sortable: false },
@@ -210,7 +210,7 @@ const filteredAssetCategories = computed(() => {
     return assetCategories.value.filter(
       (category) => category.activeStatus === true
     );
-  } else if (selectedStatus.value === "Inactive") {
+  } else if (selectedStatus.value === "Archived") {
     return assetCategories.value.filter(
       (category) => category.activeStatus === false
     );
@@ -334,7 +334,7 @@ const filteredAssetTypes = computed(() => {
     let statusMatch = true;
     if (selectedStatus.value === "Active") {
       statusMatch = type.activeStatus === true;
-    } else if (selectedStatus.value === "Inactive") {
+    } else if (selectedStatus.value === "Archived") {
       statusMatch = type.activeStatus === false;
     }
 
@@ -416,7 +416,7 @@ const typeHeaders = ref([
   { title: "Archive", key: "archive", sortable: false },
 ]);
 
-const inactiveTypeHeaders = ref([
+const archivedTypeHeaders = ref([
   { title: "Type Name", key: "title" },
   { title: "Description", key: "description", sortable: false },
   { title: "Category", key: "categoryName" },
@@ -629,7 +629,7 @@ const profileHeaders = ref([
   { title: "Archive", key: "archive", sortable: false },
 ]);
 
-const inactiveProfileHeaders = ref([
+const archivedProfileHeaders = ref([
   { title: "Profile Name", key: "profileName" },
   { title: "Type", key: "typeName" },
   { title: "# of Assets", key: "assets" },
@@ -823,7 +823,7 @@ const serializedAssetHeaders = ref([
   { title: "Archive", key: "archive", sortable: false },
 ]);
 
-const inactiveSerializedAssetHeaders = ref([
+const archivedSerializedAssetHeaders = ref([
   { title: "Name", key: "profileName" },
   { title: "Serial Number", key: "serializedNumber" },
   { title: "Edit", key: "edit", sortable: false },
@@ -896,7 +896,7 @@ watch(selectedTab, (newValue) => {
     watch(selectedStatus, (statusValue) => {
       if (statusValue === "Active") {
         retrieveAssetCategories();
-      } else if (statusValue === "Inactive") {
+      } else if (statusValue === "Archived") {
       }
     });
   } else if (newValue === "Types") {
@@ -904,7 +904,7 @@ watch(selectedTab, (newValue) => {
       if (statusValue === "Active") {
         retrieveAssetCategories();
         retrieveAssetTypes();
-      } else if (statusValue === "Inactive") {
+      } else if (statusValue === "Archived") {
       }
     });
   } else if (newValue === "Profiles") {
@@ -913,7 +913,7 @@ watch(selectedTab, (newValue) => {
         retrieveAssetCategories();
         retrieveAssetTypes();
         retrieveAssetProfiles();
-      } else if (statusValue === "Inactive") {
+      } else if (statusValue === "Archived") {
       }
     });
   } else if (newValue === "SerializedAssets") {
@@ -923,7 +923,7 @@ watch(selectedTab, (newValue) => {
         retrieveAssetTypes();
         retrieveAssetProfiles();
         retrieveSerializedAssets();
-      } else if (statusValue === "Inactive") {
+      } else if (statusValue === "Archived") {
       }
     });
   }
@@ -997,7 +997,7 @@ onMounted(async () => {
         <v-col cols="12">
           <v-tabs v-model="selectedStatus" background-color="primary" dark>
             <v-tab value="Active" color="primary">Active</v-tab>
-            <v-tab value="Inactive" color="primary">Archived</v-tab>
+            <v-tab value="Archived" color="primary">Archived</v-tab>
           </v-tabs>
         </v-col>
       </v-row>
@@ -1140,10 +1140,10 @@ onMounted(async () => {
                 </v-card-text>
               </v-card>
             </div>
-            <!-- Inactive Categories Section -->
+            <!-- Archived Categories Section -->
             <div
               v-if="
-                selectedTab === 'Categories' && selectedStatus === 'Inactive'
+                selectedTab === 'Categories' && selectedStatus === 'Archived'
               "
             >
               <v-card>
@@ -1152,7 +1152,7 @@ onMounted(async () => {
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
-                    :headers="inactiveCategoryHeaders"
+                    :headers="archivedCategoryHeaders"
                     :items="filteredAssetCategories"
                     item-key="key"
                     class="elevation-1"
@@ -1238,9 +1238,9 @@ onMounted(async () => {
               </v-card>
             </div>
 
-            <!-- Inactive Types Section -->
+            <!-- Archived Types Section -->
             <div
-              v-if="selectedTab === 'Types' && selectedStatus === 'Inactive'"
+              v-if="selectedTab === 'Types' && selectedStatus === 'Archived'"
             >
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
@@ -1248,7 +1248,7 @@ onMounted(async () => {
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
-                    :headers="inactiveTypeHeaders"
+                    :headers="archivedTypeHeaders"
                     :items="filteredAssetTypes"
                     item-key="key"
                     class="elevation-1"
@@ -1349,9 +1349,9 @@ onMounted(async () => {
               </v-card>
             </div>
 
-            <!-- Inactive profiles Section -->
+            <!-- Archived profiles Section -->
             <div
-              v-if="selectedTab === 'Profiles' && selectedStatus === 'Inactive'"
+              v-if="selectedTab === 'Profiles' && selectedStatus === 'Archived'"
             >
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
@@ -1359,7 +1359,7 @@ onMounted(async () => {
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
-                    :headers="inactiveProfileHeaders"
+                    :headers="archivedProfileHeaders"
                     :items="filteredAssetProfiles"
                     item-key="profileId"
                     class="elevation-1"
@@ -1465,11 +1465,11 @@ onMounted(async () => {
               </v-card>
             </div>
 
-            <!-- Inactive serialized assets Section -->
+            <!-- Archived serialized assets Section -->
             <div
               v-if="
                 selectedTab === 'SerializedAssets' &&
-                selectedStatus === 'Inactive'
+                selectedStatus === 'Archived'
               "
             >
               <v-card>
@@ -1478,7 +1478,7 @@ onMounted(async () => {
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
-                    :headers="inactiveSerializedAssetHeaders"
+                    :headers="archivedSerializedAssetHeaders"
                     :items="filteredSerializedAssets"
                     item-key="serializedAssetId"
                     class="elevation-1"

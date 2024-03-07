@@ -247,7 +247,7 @@ onMounted(async () => {
       <v-row>
         <v-col cols="12">
           <v-toolbar>
-            <v-toolbar-title>Asset Management</v-toolbar-title>
+            <v-toolbar-title>Person Management</v-toolbar-title>
           </v-toolbar>
         </v-col>
       </v-row>
@@ -268,7 +268,7 @@ onMounted(async () => {
         <v-col cols="12">
           <v-tabs v-model="selectedStatus" background-color="primary" dark>
             <v-tab value="Active" color="primary">Active</v-tab>
-            <v-tab value="Inactive" color="primary">Archived</v-tab>
+            <v-tab value="Archived" color="primary">Archived</v-tab>
           </v-tabs>
         </v-col>
       </v-row>
