@@ -384,9 +384,8 @@ const filteredRooms = computed(() => {
 });
 
 const clearBuildingFilter = () => {
-  selectedFilterBuildingId.value = '';
+  selectedFilterBuildingId.value = "";
 };
-
 
 // Misc Section
 const openDeleteConfirmDialog = (item) => {
