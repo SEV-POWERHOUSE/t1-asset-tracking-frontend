@@ -917,7 +917,7 @@ onMounted(async () => {
 
       <!-- Place the filters outside the conditional blocks -->
       <div v-if="selectedTab === 'Types'">
-        <v-row>
+        <v-row class="mt-3">
           <v-col cols="12">
             <v-autocomplete
               v-model="selectedCategoryId"
@@ -927,6 +927,7 @@ onMounted(async () => {
               label="Filter by Category"
               return-object
               clearable
+              variant="outlined"
               small-chips
               @clear="onCategoryClear"
             ></v-autocomplete>
@@ -939,6 +940,7 @@ onMounted(async () => {
               label="Filter by Type"
               return-object
               clearable
+              variant="outlined"
             ></v-autocomplete>
           </v-col>
         </v-row>
@@ -969,13 +971,18 @@ onMounted(async () => {
                     v-model:sort-by="categoriesSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editCategory(item)">
+                      <v-btn
+                        icon
+                        class="table-icons"
+                        @click="editCategory(item)"
+                      >
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.archive="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openArchiveDialog({
                             id: item.key,
@@ -1011,13 +1018,18 @@ onMounted(async () => {
                     v-model:sort-by="categoriesSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editCategory(item)">
+                      <v-btn
+                        icon
+                        class="table-icons"
+                        @click="editCategory(item)"
+                      >
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.activate="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openActivateDialog({
                             id: item.key,
@@ -1031,6 +1043,7 @@ onMounted(async () => {
                     <template v-slot:item.delete="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openDeleteConfirmDialog({
                             id: item.key,
@@ -1066,13 +1079,14 @@ onMounted(async () => {
                     v-model:sort-by="typesSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editType(item)">
+                      <v-btn icon class="table-icons" @click="editType(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.archive="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openArchiveDialog({
                             id: item.key,
@@ -1107,13 +1121,14 @@ onMounted(async () => {
                     v-model:sort-by="typesSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editType(item)">
+                      <v-btn icon class="table-icons" @click="editType(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.activate="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openActivateDialog({
                             id: item.key,
@@ -1127,6 +1142,7 @@ onMounted(async () => {
                     <template v-slot:item.delete="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openDeleteConfirmDialog({
                             id: item.key,
@@ -1163,27 +1179,33 @@ onMounted(async () => {
                     :items-per-page-options="[5, 10, 20, 50, -1]"
                     v-model:sort-by="profilesSortBy"
                   >
-                    <template v-slot:item.assets="{ item }">
-                      {{ item.assetsCount }}
-                    </template>
                     <template v-slot:item.view="{ item }">
                       <div
                         class="d-flex align-center justify-start"
                         style="padding-left: 10%"
                       >
-                        <v-btn icon @click="viewProfile(item.profileId)">
+                        <v-btn
+                          icon
+                          class="table-icons"
+                          @click="viewProfile(item.profileId)"
+                        >
                           <v-icon>mdi-eye</v-icon>
                         </v-btn>
                       </div>
                     </template>
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editProfile(item)">
+                      <v-btn
+                        icon
+                        class="table-icons"
+                        @click="editProfile(item)"
+                      >
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.archive="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openArchiveDialog({
                             id: item.key,
@@ -1225,19 +1247,28 @@ onMounted(async () => {
                         class="d-flex align-center justify-start"
                         style="padding-left: 15%"
                       >
-                        <v-btn icon @click="viewProfile(item.profileId)">
+                        <v-btn
+                          icon
+                          class="table-icons"
+                          @click="viewProfile(item.profileId)"
+                        >
                           <v-icon>mdi-eye</v-icon>
                         </v-btn>
                       </div>
                     </template>
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editProfile(item)">
+                      <v-btn
+                        icon
+                        class="table-icons"
+                        @click="editProfile(item)"
+                      >
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.activate="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openActivateDialog({
                             id: item.key,
@@ -1251,6 +1282,7 @@ onMounted(async () => {
                     <template v-slot:item.delete="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openDeleteConfirmDialog({
                             id: item.key,
@@ -1293,13 +1325,18 @@ onMounted(async () => {
                       {{ item.profileName }} {{ item.serializedNumber }}
                     </template>
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editSerializedAsset(item)">
+                      <v-btn
+                        icon
+                        class="table-icons"
+                        @click="editSerializedAsset(item)"
+                      >
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.archive="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openArchiveDialog({
                             id: item.key,
@@ -1340,13 +1377,18 @@ onMounted(async () => {
                       {{ item.profileName }} {{ item.serializedNumber }}
                     </template>
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editSerializedAsset(item)">
+                      <v-btn
+                        icon
+                        class="table-icons"
+                        @click="editSerializedAsset(item)"
+                      >
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.activate="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openActivateDialog({
                             id: item.key,
@@ -1360,6 +1402,7 @@ onMounted(async () => {
                     <template v-slot:item.delete="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openDeleteConfirmDialog({
                             id: item.key,

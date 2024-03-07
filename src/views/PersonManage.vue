@@ -282,13 +282,14 @@ onMounted(async () => {
                     v-model:sort-by="personSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editPerson(item)">
+                      <v-btn icon class="table-icons" @click="editPerson(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.archive="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openArchiveDialog({
                             id: item.key,
@@ -322,13 +323,14 @@ onMounted(async () => {
                     v-model:sort-by="personSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editPerson(item)">
+                      <v-btn icon class="table-icons" @click="editPerson(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.activate="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openActivateDialog({
                             id: item.key,
@@ -342,6 +344,7 @@ onMounted(async () => {
                     <template v-slot:item.delete="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openDeleteConfirmDialog({
                             id: item.key,
@@ -349,7 +352,7 @@ onMounted(async () => {
                           })
                         "
                       >
-                        <v-icon color="primary">mdi-delete</v-icon>
+                        <v-icon>mdi-delete</v-icon>
                       </v-btn>
                     </template>
                   </v-data-table>
