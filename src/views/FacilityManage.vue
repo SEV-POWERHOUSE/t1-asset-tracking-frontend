@@ -541,18 +541,13 @@ onMounted(async () => {
                     v-model:sort-by="buildingsSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
-                      <v-btn
-                        text
-                        class="table-icons"
-                        @click="editBuilding(item)"
-                      >
+                      <v-btn icon @click="editBuilding(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.archive="{ item }">
                       <v-btn
                         icon
-                        class="table-icons"
                         @click="
                           openArchiveDialog({
                             id: item.key,
@@ -589,18 +584,13 @@ onMounted(async () => {
                     v-model:sort-by="buildingsSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
-                      <v-btn
-                        icon
-                        class="table-icons"
-                        @click="editBuilding(item)"
-                      >
+                      <v-btn icon @click="editBuilding(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.activate="{ item }">
                       <v-btn
                         icon
-                        class="table-icons"
                         @click="
                           openActivateDialog({
                             id: item.key,
@@ -614,7 +604,6 @@ onMounted(async () => {
                     <template v-slot:item.delete="{ item }">
                       <v-btn
                         icon
-                        class="table-icons"
                         @click="
                           openDeleteConfirmDialog({
                             id: item.key,
@@ -622,7 +611,7 @@ onMounted(async () => {
                           })
                         "
                       >
-                        <v-icon class="table-icons">mdi-delete</v-icon>
+                        <v-icon color="primary">mdi-delete</v-icon>
                       </v-btn>
                     </template>
                   </v-data-table>
@@ -650,24 +639,19 @@ onMounted(async () => {
                     v-model:sort-by="roomsSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
-
-                      <v-btn icon class="table-icons" @click="editRoom(item)">
-
-
+                      <v-btn icon @click="editRoom(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.archive="{ item }">
                       <v-btn
                         icon
-                        class="table-icons"
                         @click="
                           openArchiveDialog({
                             id: item.key,
                             type: 'room',
                           })
                         "
-                        style="border: none; box-shadow: none"
                       >
                         <v-icon>mdi-arrow-down-box</v-icon>
                       </v-btn>
@@ -698,14 +682,13 @@ onMounted(async () => {
                     v-model:sort-by="roomsSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon class="table-icons" @click="editRoom(item)">
+                      <v-btn icon @click="editRoom(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.activate="{ item }">
                       <v-btn
                         icon
-                        class="table-icons"
                         @click="
                           openActivateDialog({
                             id: item.key,
@@ -719,7 +702,6 @@ onMounted(async () => {
                     <template v-slot:item.delete="{ item }">
                       <v-btn
                         icon
-                        class="table-icons"
                         @click="
                           openDeleteConfirmDialog({
                             id: item.key,
@@ -727,7 +709,7 @@ onMounted(async () => {
                           })
                         "
                       >
-                        <v-icon>mdi-delete</v-icon>
+                        <v-icon color="primary">mdi-delete</v-icon>
                       </v-btn>
                     </template>
                   </v-data-table>
@@ -814,7 +796,6 @@ onMounted(async () => {
                     :rules="[rules.required, rules.roomNumber]"
                     maxlength="4"
                     counter
-                    outlined
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -826,7 +807,6 @@ onMounted(async () => {
                     item-text="title"
                     item-value="key"
                     :rules="[rules.required]"
-                    outlined
                     clearable
                     return-object
                   ></v-autocomplete>
