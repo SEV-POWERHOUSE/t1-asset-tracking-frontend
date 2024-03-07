@@ -367,7 +367,7 @@ const archivedRoomHeaders = ref([
 const filteredRooms = computed(() => {
   return rooms.value.filter((room) => {
     // Filter by selected building if any
-    const buildingMatch = selectedFilterBuildingId.value.key
+    const buildingMatch = selectedFilterBuildingId.value
       ? room.buildingId === selectedFilterBuildingId.value.key
       : true;
 
@@ -383,7 +383,8 @@ const filteredRooms = computed(() => {
   });
 });
 
-const clearBuildingFilter = () => {
+const onBuildingClear = () => {
+  // Reset dependent filters or selections here
   selectedFilterBuildingId.value = "";
 };
 
@@ -509,8 +510,7 @@ onMounted(async () => {
               label="Filter by Building"
               return-object
               clearable
-              @click:clear="clearBuildingFilter"
-              @change="retrieveRooms"
+              @clear="onBuildingClear"
             ></v-autocomplete>
           </v-col>
         </v-row>
