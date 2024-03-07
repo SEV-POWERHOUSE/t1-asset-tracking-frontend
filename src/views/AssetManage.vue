@@ -22,11 +22,8 @@ const editingType = ref(false);
 const editingProfile = ref(false);
 const editingSerializedAsset = ref(false);
 const selectedCategoryId = ref("");
-const selectedFilterCategoryId = ref("");
 const selectedTypeId = ref("");
-const selectedFilterTypeId = ref("");
 const selectedProfileId = ref("");
-const selectedFilterProfileId = ref("");
 const validCategory = ref(false);
 const validType = ref(false);
 const validProfile = ref(false);
@@ -273,7 +270,7 @@ const saveType = async () => {
   const typeData = {
     typeName: newType.value.title,
     desc: newType.value.description,
-    categoryId: selectedCategoryId.value.key, // Make sure this is getting set correctly
+    categoryId: selectedCategoryId.value, // Make sure this is getting set correctly
   };
 
   try {
@@ -340,22 +337,19 @@ const filteredAssetTypes = computed(() => {
 
     // Filter by selected category (from v-autocomplete)
     let categoryMatch = true;
-    if (selectedFilterCategoryId.value) {
-      // Check if selectedFilterCategoryId is not null before accessing its key
+    if (selectedCategoryId.value) {
+      // Check if selectedCategoryId is not null before accessing its key
       categoryMatch =
         type.categoryId ===
-        (selectedFilterCategoryId.value
-          ? selectedFilterCategoryId.value.key
-          : null);
+        (selectedCategoryId.value ? selectedCategoryId.value.key : null);
     }
 
     // Filter by selected type (from v-autocomplete)
     let typeMatch = true;
-    if (selectedFilterTypeId.value) {
-      // Check if selectedFilterTypeId is not null before accessing its key
+    if (selectedTypeId.value) {
+      // Check if selectedTypeId is not null before accessing its key
       typeMatch =
-        type.key ===
-        (selectedFilterTypeId.value ? selectedFilterTypeId.value.key : null);
+        type.key === (selectedTypeId.value ? selectedTypeId.value.key : null);
     }
 
     // Return types that match all the above criteria
@@ -363,15 +357,22 @@ const filteredAssetTypes = computed(() => {
   });
 });
 
-const onCategoryClear = () => {
-  selectedFilterCategoryId.value = null;
-  selectedFilterTypeId.value = null; // Also clear the selected type
-  selectedFilterProfileId.value = null; // Also clear the selected profile
-};
+const filteredTypesForAutocomplete = computed(() => {
+  // Check if a category is selected
+  if (selectedCategoryId.value) {
+    // Return types that belong to the selected category
+    return assetTypes.value.filter(
+      (type) => type.categoryId === selectedCategoryId.value.key
+    );
+  } else {
+    // If no category is selected, return all types
+    return assetTypes.value;
+  }
+});
 
-const onTypeClear = () => {
-  selectedFilterTypeId.value = null; // Clear the selected type
-  selectedFilterProfileId.value = null; // Also clear the selected profile
+const onCategoryClear = () => {
+  selectedCategoryId.value = null;
+  // Call the method to clear the category filter or reset the data view
 };
 
 const archiveType = async (typeId) => {
@@ -444,7 +445,7 @@ const retrieveAssetProfiles = async () => {
         typeName: type ? type.title : "Unknown Type",
         key: profile.profileId,
         title: profile.profileName,
-        assetsCount: assetsCount,
+        assetsCount: assetsCount, // Add the count of serialized assets
       };
     });
   } catch (error) {
@@ -452,16 +453,6 @@ const retrieveAssetProfiles = async () => {
     message.value = "Failed to load profiles.";
   }
 };
-
-const filteredTypesForProfileAutocomplete = computed(() => {
-  if (selectedFilterCategoryId.value) {
-    return assetTypes.value.filter(
-      (type) => type.categoryId === selectedFilterCategoryId.value.key
-    );
-  } else {
-    return assetTypes.value;
-  }
-});
 
 // Open dialog to add a new profile
 const openAddProfileDialog = () => {
@@ -482,7 +473,7 @@ const saveProfile = async () => {
   const profileData = {
     profileName: newProfile.value.profileName,
     desc: newProfile.value.desc,
-    typeId: selectedTypeId.value.key,
+    typeId: selectedTypeId.value,
   };
 
   try {
@@ -540,48 +531,15 @@ function viewProfile(profileId) {
 }
 
 const filteredAssetProfiles = computed(() => {
-  return assetProfiles.value.filter((profile) => {
-    let statusMatch =
-      selectedStatus.value === "Active"
-        ? profile.activeStatus
-        : !profile.activeStatus;
-
-    let typeMatch = true;
-    if (selectedFilterTypeId.value) {
-      typeMatch = profile.typeId === selectedFilterTypeId.value.key;
-    }
-
-    let categoryMatch = true;
-    if (selectedFilterCategoryId.value) {
-      const type = assetTypes.value.find((t) => t.key === profile.typeId);
-      categoryMatch =
-        type && type.categoryId === selectedFilterCategoryId.value.key;
-    }
-
-    return statusMatch && typeMatch && categoryMatch;
-  });
-});
-
-const filteredTypesForAssetAutocomplete = computed(() => {
-  // This checks if a category is selected. If not, it returns all types.
-  if (selectedFilterCategoryId.value) {
-    return assetTypes.value.filter(
-      (type) => type.categoryId === selectedFilterCategoryId.value.key
-    );
-  } else {
-    return assetTypes.value; // Return all types if no category is selected
-  }
-});
-
-const filteredProfilesForAssetAutocomplete = computed(() => {
-  // This checks if a type is selected. If not, it returns all profiles.
-  if (selectedFilterTypeId.value) {
+  if (selectedStatus.value === "Active") {
     return assetProfiles.value.filter(
-      (profile) => profile.typeId === selectedFilterTypeId.value.key
+      (profiles) => profiles.activeStatus === true
+    );
+  } else if (selectedStatus.value === "Inactive") {
+    return assetProfiles.value.filter(
+      (profiles) => profiles.activeStatus === false
     );
   } else {
-    // When no type is selected, it should return all profiles.
-    // This adjustment ensures all profiles are displayed when no type is selected.
     return assetProfiles.value;
   }
 });
@@ -686,7 +644,7 @@ const saveSerializedAsset = async () => {
   const serializedAssetData = {
     serializedNumber: newSerializedAsset.value.serializedNumber,
     notes: newSerializedAsset.value.notes,
-    profileId: selectedProfileId.value.key,
+    profileId: selectedProfileId.value,
   };
 
   try {
@@ -742,39 +700,17 @@ const deleteSerializedAsset = async (serializedAssetId) => {
 };
 
 const filteredSerializedAssets = computed(() => {
-  return serializedAssets.value.filter((asset) => {
-    let statusMatch =
-      selectedStatus.value === "Active"
-        ? asset.activeStatus
-        : !asset.activeStatus;
-
-    let profileMatch = true;
-    if (selectedFilterProfileId.value) {
-      profileMatch = asset.profileId === selectedFilterProfileId.value.key;
-    }
-
-    let typeMatch = true;
-    if (selectedFilterTypeId.value) {
-      const profile = assetProfiles.value.find(
-        (p) => p.key === asset.profileId
-      );
-      typeMatch = profile && profile.typeId === selectedFilterTypeId.value.key;
-    }
-
-    let categoryMatch = true;
-    if (selectedFilterCategoryId.value) {
-      const profile = assetProfiles.value.find(
-        (p) => p.key === asset.profileId
-      );
-      if (profile) {
-        const type = assetTypes.value.find((t) => t.key === profile.typeId);
-        categoryMatch =
-          type && type.categoryId === selectedFilterCategoryId.value.key;
-      }
-    }
-
-    return statusMatch && profileMatch && typeMatch && categoryMatch;
-  });
+  if (selectedStatus.value === "Active") {
+    return serializedAssets.value.filter(
+      (serializedAssets) => serializedAssets.activeStatus === true
+    );
+  } else if (selectedStatus.value === "Inactive") {
+    return serializedAssets.value.filter(
+      (serializedAssets) => serializedAssets.activeStatus === false
+    );
+  } else {
+    return serializedAssets.value;
+  }
 });
 
 const archiveSerializedAsset = async (serializedAssetId) => {
@@ -929,18 +865,9 @@ watch(selectedTab, (newValue) => {
   }
 });
 
-// Clears type and profile v-autocompletes when category v-auto is cleared
-watch(selectedFilterCategoryId, (newValue, oldValue) => {
+watch(selectedCategoryId, (newValue, oldValue) => {
   if (newValue !== oldValue) {
-    selectedFilterTypeId.value = null; // Reset selected type when category changes
-    selectedFilterProfileId.value = null; // This will clear the profile selection when category is cleared
-  }
-});
-
-// Clears profile v-autocomplete when type v-auto is cleared
-watch(selectedFilterTypeId, (newVal) => {
-  if (!newVal) {
-    selectedFilterProfileId.value = null; // This will clear the profile selection when type is cleared
+    selectedTypeId.value = null; // Reset selected type when category changes
   }
 });
 
@@ -975,120 +902,45 @@ onMounted(async () => {
           <v-toolbar>
             <v-toolbar-title>Asset Management</v-toolbar-title>
           </v-toolbar>
-        </v-col>
-      </v-row>
-
-      <v-row>
-        <v-col cols="12">
           <v-tabs v-model="selectedTab" background-color="primary" dark>
-            <v-tab value="SerializedAssets" color="primary">Assets</v-tab>
-            <v-tab value="Profiles" color="primary">Profiles</v-tab>
-            <v-tab value="Types" color="primary">Types</v-tab>
-            <v-tab value="Categories" color="primary">Categories</v-tab>
+            <v-tab color="primary" value="SerializedAssets">Assets</v-tab>
+            <v-tab color="primary" value="Profiles">Profiles</v-tab>
+            <v-tab color="primary" value="Types">Types</v-tab>
+            <v-tab color="primary" value="Categories">Categories</v-tab>
           </v-tabs>
         </v-col>
       </v-row>
+      <v-tabs v-model="selectedStatus" background-color="primary" dark>
+        <v-tab color="primary" value="Active">Active</v-tab>
+        <v-tab color="primary" value="Inactive">Archived</v-tab>
+      </v-tabs>
 
-      <!-- Introducing a spacer row for visual separation -->
-      <v-row class="my-1"></v-row>
-      <!-- Adjust 'my-3' class for desired spacing -->
-
-      <v-row>
-        <v-col cols="12">
-          <v-tabs v-model="selectedStatus" background-color="primary" dark>
-            <v-tab value="Active" color="primary">Active</v-tab>
-            <v-tab value="Inactive" color="primary">Archived</v-tab>
-          </v-tabs>
-        </v-col>
-      </v-row>
-
-      <!-- Serialized Assets section with added space after tabs -->
-      <div v-if="selectedTab === 'SerializedAssets'">
-        <v-row class="mt-3">
-          <!-- Added margin-top class here -->
-          <v-col cols="12" md="4">
-            <v-autocomplete
-              v-model="selectedFilterProfileId"
-              :items="filteredProfilesForAssetAutocomplete"
-              item-text="title"
-              item-value="key"
-              label="Filter by Profile"
-              return-object
-              clearable
-            ></v-autocomplete>
-          </v-col>
-          <v-col cols="12" md="4">
-            <v-autocomplete
-              v-model="selectedFilterTypeId"
-              :items="filteredTypesForAssetAutocomplete"
-              item-text="title"
-              item-value="key"
-              label="Filter by Type"
-              return-object
-              clearable
-              @clear="onTypeClear"
-            ></v-autocomplete>
-          </v-col>
-          <v-col cols="12" md="4">
-            <v-autocomplete
-              v-model="selectedFilterCategoryId"
-              :items="assetCategories"
-              item-text="title"
-              item-value="key"
-              label="Filter by Category"
-              return-object
-              clearable
-              @clear="onCategoryClear"
-            ></v-autocomplete>
-          </v-col>
-        </v-row>
-      </div>
-
-      <!-- Profiles filter section with added space after tabs -->
-      <div v-if="selectedTab === 'Profiles'">
-        <v-row class="mt-3">
-          <!-- Added margin-top class here -->
-          <v-col cols="12" md="6">
-            <v-autocomplete
-              v-model="selectedFilterTypeId"
-              :items="filteredTypesForProfileAutocomplete"
-              item-text="title"
-              item-value="key"
-              label="Filter by Type"
-              return-object
-              clearable
-              @clear="onTypeClear"
-            ></v-autocomplete>
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-autocomplete
-              v-model="selectedFilterCategoryId"
-              :items="assetCategories"
-              item-text="title"
-              item-value="key"
-              label="Filter by Category"
-              return-object
-              clearable
-              @clear="onCategoryClear"
-            ></v-autocomplete>
-          </v-col>
-        </v-row>
-      </div>
-
-      <!-- Types filter -->
+      <!-- Place the filters outside the conditional blocks -->
       <div v-if="selectedTab === 'Types'">
         <v-row class="mt-3">
-          <!-- Added margin-top class here -->
           <v-col cols="12">
             <v-autocomplete
-              v-model="selectedFilterCategoryId"
+              v-model="selectedCategoryId"
               :items="assetCategories"
               item-text="title"
               item-value="key"
               label="Filter by Category"
               return-object
               clearable
+              variant="outlined"
+              small-chips
               @clear="onCategoryClear"
+            ></v-autocomplete>
+
+            <v-autocomplete
+              v-model="selectedTypeId"
+              :items="filteredTypesForAutocomplete"
+              item-text="title"
+              item-value="key"
+              label="Filter by Type"
+              return-object
+              clearable
+              variant="outlined"
             ></v-autocomplete>
           </v-col>
         </v-row>
@@ -1119,13 +971,18 @@ onMounted(async () => {
                     v-model:sort-by="categoriesSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editCategory(item)">
+                      <v-btn
+                        icon
+                        class="table-icons"
+                        @click="editCategory(item)"
+                      >
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.archive="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openArchiveDialog({
                             id: item.key,
@@ -1161,13 +1018,18 @@ onMounted(async () => {
                     v-model:sort-by="categoriesSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editCategory(item)">
+                      <v-btn
+                        icon
+                        class="table-icons"
+                        @click="editCategory(item)"
+                      >
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.activate="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openActivateDialog({
                             id: item.key,
@@ -1181,6 +1043,7 @@ onMounted(async () => {
                     <template v-slot:item.delete="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openDeleteConfirmDialog({
                             id: item.key,
@@ -1216,13 +1079,14 @@ onMounted(async () => {
                     v-model:sort-by="typesSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editType(item)">
+                      <v-btn icon class="table-icons" @click="editType(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.archive="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openArchiveDialog({
                             id: item.key,
@@ -1244,7 +1108,7 @@ onMounted(async () => {
             >
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
-                  <span>Archived Types</span>
+                  <span>Inactive Types</span>
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
@@ -1257,13 +1121,14 @@ onMounted(async () => {
                     v-model:sort-by="typesSortBy"
                   >
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editType(item)">
+                      <v-btn icon class="table-icons" @click="editType(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.activate="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openActivateDialog({
                             id: item.key,
@@ -1277,6 +1142,7 @@ onMounted(async () => {
                     <template v-slot:item.delete="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openDeleteConfirmDialog({
                             id: item.key,
@@ -1313,27 +1179,33 @@ onMounted(async () => {
                     :items-per-page-options="[5, 10, 20, 50, -1]"
                     v-model:sort-by="profilesSortBy"
                   >
-                    <template v-slot:item.assets="{ item }">
-                      {{ item.assetsCount }}
-                    </template>
                     <template v-slot:item.view="{ item }">
                       <div
                         class="d-flex align-center justify-start"
                         style="padding-left: 10%"
                       >
-                        <v-btn icon @click="viewProfile(item.profileId)">
+                        <v-btn
+                          icon
+                          class="table-icons"
+                          @click="viewProfile(item.profileId)"
+                        >
                           <v-icon>mdi-eye</v-icon>
                         </v-btn>
                       </div>
                     </template>
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editProfile(item)">
+                      <v-btn
+                        icon
+                        class="table-icons"
+                        @click="editProfile(item)"
+                      >
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.archive="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openArchiveDialog({
                             id: item.key,
@@ -1375,19 +1247,28 @@ onMounted(async () => {
                         class="d-flex align-center justify-start"
                         style="padding-left: 15%"
                       >
-                        <v-btn icon @click="viewProfile(item.profileId)">
+                        <v-btn
+                          icon
+                          class="table-icons"
+                          @click="viewProfile(item.profileId)"
+                        >
                           <v-icon>mdi-eye</v-icon>
                         </v-btn>
                       </div>
                     </template>
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editProfile(item)">
+                      <v-btn
+                        icon
+                        class="table-icons"
+                        @click="editProfile(item)"
+                      >
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.activate="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openActivateDialog({
                             id: item.key,
@@ -1401,6 +1282,7 @@ onMounted(async () => {
                     <template v-slot:item.delete="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openDeleteConfirmDialog({
                             id: item.key,
@@ -1443,13 +1325,18 @@ onMounted(async () => {
                       {{ item.profileName }} {{ item.serializedNumber }}
                     </template>
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editSerializedAsset(item)">
+                      <v-btn
+                        icon
+                        class="table-icons"
+                        @click="editSerializedAsset(item)"
+                      >
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.archive="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openArchiveDialog({
                             id: item.key,
@@ -1474,7 +1361,7 @@ onMounted(async () => {
             >
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
-                  <span>Archived Assets</span>
+                  <span>Active Serial Assets</span>
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
@@ -1490,13 +1377,18 @@ onMounted(async () => {
                       {{ item.profileName }} {{ item.serializedNumber }}
                     </template>
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editSerializedAsset(item)">
+                      <v-btn
+                        icon
+                        class="table-icons"
+                        @click="editSerializedAsset(item)"
+                      >
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.activate="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openActivateDialog({
                             id: item.key,
@@ -1510,6 +1402,7 @@ onMounted(async () => {
                     <template v-slot:item.delete="{ item }">
                       <v-btn
                         icon
+                        class="table-icons"
                         @click="
                           openDeleteConfirmDialog({
                             id: item.key,
@@ -1598,16 +1491,15 @@ onMounted(async () => {
                 </v-col>
                 <v-col cols="12">
                   <!-- Category Selection -->
-                  <v-autocomplete
+                  <v-select
                     label="Category"
                     :items="assetCategories"
                     v-model="selectedCategoryId"
                     item-text="title"
                     item-value="key"
                     :rules="[rules.required]"
-                    clearable
-                    return-object
-                  ></v-autocomplete>
+                    required
+                  ></v-select>
                 </v-col>
               </v-row>
             </v-container>
@@ -1646,16 +1538,14 @@ onMounted(async () => {
                 </v-col>
                 <v-col cols="12">
                   <!-- Asset Type Selection -->
-                  <v-autocomplete
+                  <v-select
                     label="Type"
                     :items="assetTypes"
                     item-text="title"
                     item-value="key"
                     v-model="selectedTypeId"
                     :rules="[rules.required]"
-                    clearable
-                    return-object
-                  ></v-autocomplete>
+                  ></v-select>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
@@ -1705,16 +1595,14 @@ onMounted(async () => {
                 </v-col>
                 <v-col cols="12">
                   <!-- Asset Profile Selection -->
-                  <v-autocomplete
+                  <v-select
                     label="Profile"
                     :items="assetProfiles"
                     item-text="title"
                     item-value="key"
                     v-model="selectedProfileId"
                     :rules="[rules.required]"
-                    clearable
-                    return-object
-                  ></v-autocomplete>
+                  ></v-select>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
