@@ -140,7 +140,7 @@ const closeCheckoutDialog = () => {
 
 // Define headers for the data table
 const personAssetHeaders = ref([
-  { title: "Full Name", key: "fullName" },
+  { title: "Owner", key: "fullName" },
   { title: "Asset", key: "assetName" },
   { title: "Checkout Date", key: "checkoutDate" },
 ]);
