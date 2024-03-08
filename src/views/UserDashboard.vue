@@ -4,6 +4,7 @@ import SerializedAssetServices from "../services/serializedAssetServices";
 import PersonAssetServices from "../services/personAssetServices";
 
 import { ref, onMounted, watch, computed } from "vue";
+import { format } from "date-fns";
 
 const message = ref("");
 const people = ref([]);
@@ -91,14 +92,12 @@ const retrievePersonAssets = async () => {
     message.value = "Failed to load person assets.";
   }
 };
-const saveCheckout = async () => {
-  // Ensure that both personId and serializedAssetId are selected
-  if (newPersonAsset.value.personId && newPersonAsset.value.serializedAssetId) {
-    // Format the current date as YYYY-MM-DD
-    const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0]; // Format to YYYY-MM-DD
 
-    // Prepare the PersonAsset data
+const saveCheckout = async () => {
+  if (newPersonAsset.value.personId && newPersonAsset.value.serializedAssetId) {
+    // Use the current date without subtracting a day
+    const formattedDate = format(new Date(), "yyyy-MM-dd");
+
     const personAssetData = {
       serializedAssetId: newPersonAsset.value.serializedAssetId.key,
       personId: newPersonAsset.value.personId.key,
@@ -106,27 +105,23 @@ const saveCheckout = async () => {
     };
 
     try {
-      // Save the new PersonAsset
       await PersonAssetServices.create(personAssetData);
-      // Success feedback
       snackbarText.value = "Asset checked out successfully!";
       snackbar.value = true;
-      
-      // Close the dialog and refresh the list of person assets
+
       closeCheckoutDialog();
       await retrievePersonAssets();
     } catch (error) {
-      // Error feedback
       console.error("Error saving checkout:", error);
       snackbarText.value = "Failed to check out the asset.";
       snackbar.value = true;
     }
   } else {
-    // Validation feedback
     snackbarText.value = "Please select both a person and an asset.";
     snackbar.value = true;
   }
 };
+
 
 
 const closeCheckoutDialog = () => {
