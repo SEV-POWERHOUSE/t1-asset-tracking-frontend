@@ -41,7 +41,7 @@ const props = defineProps({
 });
 
 const newSerializedAsset = ref({
-  serializedNumber: "",
+  serialNumber: "",
   notes: "",
   profileId: "",
 });
@@ -82,7 +82,7 @@ const editSerializedAsset = (serializedAsset) => {
 // Save asset (add or edit)
 const saveSerializedAsset = async () => {
   const serializedAssetData = {
-    serializedNumber: newSerializedAsset.value.serializedNumber,
+    serialNumber: newSerializedAsset.value.serialNumber,
     notes: newSerializedAsset.value.notes,
     profileId: selectedProfileId.value,
   };
@@ -135,7 +135,7 @@ const closeSerializedAssetDialog = () => {
 
 // Reset the profile form to its default state
 const resetSerializedAssetForm = () => {
-  newSerializedAsset.value = { serializedNumber: "", notes: "", profileId: "" };
+  newSerializedAsset.value = { serialNumber: "", notes: "", profileId: "" };
   selectedProfileId.value = "";
   validSerializedAsset.value = false;
   editingSerializedAsset.value = false;
@@ -184,7 +184,7 @@ const activateSerializedAsset = async (serializedAssetId) => {
 };
 
 const serializedAssetHeaders = ref([
-  { title: "Serial Number", key: "serializedNumber" },
+  { title: "Serial Number", key: "serialNumber" },
   { title: "Notes", key: "notes"},
   
   { title: "Edit", key: "edit", sortable: false },
@@ -193,7 +193,7 @@ const serializedAssetHeaders = ref([
 ]);
 
 const archivedSerializedAssetHeaders = ref([
-  { title: "Serial Number", key: "serializedNumber" },
+  { title: "Serial Number", key: "serialNumber" },
   { title: "Notes", key: "notes"},
   { title: "Edit", key: "edit", sortable: false },
   { title: "Activate", key: "activate", sortable: false },
@@ -405,7 +405,7 @@ onMounted(async () => {
                 <v-col cols="12">
                   <v-text-field
                     label="Serial Number"
-                    v-model="newSerializedAsset.serializedNumber"
+                    v-model="newSerializedAsset.serialNumber"
                     :rules="[rules.required]"
                     required
                   ></v-text-field>
