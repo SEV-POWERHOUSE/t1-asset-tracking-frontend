@@ -65,7 +65,7 @@ const newProfile = ref({
   typeId: "",
 });
 const newSerializedAsset = ref({
-  serializedNumber: "",
+  serialNumber: "",
   notes: "",
   profileId: "",
 });
@@ -233,10 +233,10 @@ const retrieveAssetTypes = async () => {
       );
       return {
         ...type,
-        categoryName: category ? category.title : "Unknown Category", // Enriching type with category name
-        key: type.typeId, // Keeping your original key assignment
-        title: type.typeName, // Assuming you're mapping typeName to title
-        description: type.desc, // Direct mapping
+        categoryName: category ? category.title : "Unknown Category",
+        key: type.typeId,
+        title: type.typeName,
+        description: type.desc,
         activeStatus: type.activeStatus,
         categoryId: type.categoryId,
       };
@@ -273,7 +273,7 @@ const saveType = async () => {
   const typeData = {
     typeName: newType.value.title,
     desc: newType.value.description,
-    categoryId: selectedCategoryId.value.key, // Make sure this is getting set correctly
+    categoryId: selectedCategoryId.value.key,
   };
 
   try {
@@ -675,7 +675,7 @@ const closeSerializedAssetDialog = () => {
 
 // Reset the profile form to its default state
 const resetSerializedAssetForm = () => {
-  newSerializedAsset.value = { serializedNumber: "", notes: "", profileId: "" };
+  newSerializedAsset.value = { serialNumber: "", notes: "", profileId: "" };
   selectedProfileId.value = "";
   validSerializedAsset.value = false;
   editingSerializedAsset.value = false;
@@ -684,7 +684,7 @@ const resetSerializedAssetForm = () => {
 // Save asset (add or edit)
 const saveSerializedAsset = async () => {
   const serializedAssetData = {
-    serializedNumber: newSerializedAsset.value.serializedNumber,
+    serialNumber: newSerializedAsset.value.serialNumber,
     notes: newSerializedAsset.value.notes,
     profileId: selectedProfileId.value.key,
   };
@@ -816,16 +816,14 @@ const activateSerializedAsset = async (serializedAssetId) => {
 };
 
 const serializedAssetHeaders = ref([
-  // { title: "Asset Name", key: "assetName" },
-  { title: "Name", key: "profileName" },
-  { title: "Serial Number", key: "serializedNumber" },
+{ title: "Asset", key: "serializedAssetName" }, // Add this line
   { title: "Edit", key: "edit", sortable: false },
   { title: "Archive", key: "archive", sortable: false },
 ]);
 
 const archivedSerializedAssetHeaders = ref([
   { title: "Name", key: "profileName" },
-  { title: "Serial Number", key: "serializedNumber" },
+  { title: "Serial Number", key: "serialNumber" },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Activate", key: "activate", sortable: false },
   { title: "Delete", key: "delete", sortable: false },
@@ -1478,9 +1476,6 @@ onMounted(async () => {
                     :items-per-page-options="[5, 10, 20, 50, -1]"
                     v-model:sort-by="assetsSortBy"
                   >
-                    <template v-slot:item.assetName="{ item }">
-                      {{ item.profileName }} {{ item.serializedNumber }}
-                    </template>
                     <template v-slot:item.edit="{ item }">
                       <v-btn
                         icon
@@ -1530,9 +1525,6 @@ onMounted(async () => {
                     :items-per-page-options="[5, 10, 20, 50, -1]"
                     v-model:sort-by="assetsSortBy"
                   >
-                    <template v-slot:item.assetName="{ item }">
-                      {{ item.profileName }} {{ item.serializedNumber }}
-                    </template>
                     <template v-slot:item.edit="{ item }">
                       <v-btn
                         icon
@@ -1747,7 +1739,7 @@ onMounted(async () => {
                 <v-col cols="12">
                   <v-text-field
                     label="Serial Number"
-                    v-model="newSerializedAsset.serializedNumber"
+                    v-model="newSerializedAsset.serialNumber"
                     :rules="[rules.required, rules.serialNumberLength]"
                     maxlength="20"
                     counter

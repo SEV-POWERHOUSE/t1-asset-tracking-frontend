@@ -1,200 +1,260 @@
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import PersonServices from "../services/personServices";
+import SerializedAssetServices from "../services/serializedAssetServices";
+import PersonAssetServices from "../services/personAssetServices";
+
+import { ref, onMounted, watch, computed } from "vue";
+
+const message = ref("");
+const people = ref([]);
+const serializedAssets = ref([]);
+const personAssets = ref([]);
+const assetProfiles = ref([]);
+const validCheckout = ref(false);
 
 const showCheckoutDialog = ref(false);
-const people = ref([]);
-const recentCheckouts = ref([]);
-const activitySortBy = ref([{ key: 'dateTime', order:'desc'}]);
+const validPersonAsset = ref(false);
+const snackbar = ref(false);
+const snackbarText = ref("");
+const activitySortBy = ref([{ key: "checkoutDate", order: "desc" }]);
+const rules = {
+  required: (value) => !!value || "Required.",
+};
+const newPersonAsset = ref({
+  serializedAssetId: "",
+  personId: "",
+  checkoutDate: "",
+});
 
-const closeCheckoutDialog = () => {
-  //resetForm(); // Resets form when closing or canceling the dialog
-  showCheckoutDialog.value = false;
+// Retrieve People from Database
+const retrievePeople = async () => {
+  try {
+    const response = await PersonServices.getAll();
+    people.value = response.data.map((person) => ({
+      title: person.fName,
+      key: person.personId,
+      lName: person.lName,
+      email: person.email,
+      idNumber: person.idNumber,
+      activeStatus: person.activeStatus,
+    }));
+  } catch (error) {
+    console.error("Error loading people:", error);
+  }
 };
 
-const headers = [
-  { title: "Item", align: "start", key: "item" },
-  { title: "Assignment", key: "assignment" },
-  { title: "Date/Time", key: "dateTime" },
-];
+// Retrieve SerializedAssets from Database
+const retrieveSerializedAssets = async () => {
+  try {
+    const response = await SerializedAssetServices.getAll();
+    serializedAssets.value = response.data.map((serializedAsset) => {
+      const profile = assetProfiles.value.find(
+        (t) => t.key === serializedAsset.profileId
+      );
+      return {
+        ...serializedAsset,
+        title: serializedAsset.serializedAssetName,
+        profileName: profile ? profile.profileName : "Unknown Profile",
+        key: serializedAsset.serializedAssetId,
+        profileId: serializedAsset.profileId,
+      };
+    });
+  } catch (error) {
+    console.error("Error loading serialized assets:", error);
+    message.value = "Failed to load serializedAssets.";
+  }
+};
 
-// Example items for the data table
-const items = ref([
-  {
-    item: "IPhone 14",
-    assignment: "Solomon Granger",
-    dateTime: "February 14 3:00 P.M.",
-  },
-  {
-    item: "MacBook Pro",
-    assignment: "Jaxen McRay",
-    dateTime: "February 16 5:30 P.M.",
-  },
-  {
-    item: "Samsung Galaxy S21",
-    assignment: "Zane Fike",
-    dateTime: "February 20 12:05 P.M.",
-  },
-  {
-    item: "Overhead Projector",
-    assignment: "PEC 223",
-    dateTime: "February 23 8:19 A.M.",
-  },
-  {
-    item: "SMART Board",
-    assignment: "HSH 212",
-    dateTime: "February 25 12:18 P.M.",
-  },
-  {
-    item: "RTAC",
-    assignment: "Beam Library",
-    dateTime: "February 27 10:53 A.M.",
-  },
+// Retrieve PersonAssets from Database
+const retrievePersonAssets = async () => {
+  try {
+    // Mock fetching personAssets
+    const response = await PersonAssetServices.getAll();
+    // Simulate join logic
+    personAssets.value = response.data.map((personAsset) => {
+      const person = people.value.find((p) => p.key === personAsset.personId);
+      const serializedAsset = serializedAssets.value.find(
+        (sa) => sa.key === personAsset.serializedAssetId
+      );
+
+      return {
+        personAssetId: personAsset.personAssetId,
+        fullName: person ? `${person.title} ${person.lName}` : "Unknown",
+        assetName: serializedAsset
+          ? serializedAsset.serializedAssetName
+          : "Unknown Asset",
+        checkoutDate: personAsset.checkoutDate,
+      };
+    });
+  } catch (error) {
+    console.error("Error loading person assets:", error);
+    message.value = "Failed to load person assets.";
+  }
+};
+const saveCheckout = async () => {
+  // Ensure that both personId and serializedAssetId are selected
+  if (newPersonAsset.value.personId && newPersonAsset.value.serializedAssetId) {
+    // Format the current date as YYYY-MM-DD
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0]; // Format to YYYY-MM-DD
+
+    // Prepare the PersonAsset data
+    const personAssetData = {
+      serializedAssetId: newPersonAsset.value.serializedAssetId.key,
+      personId: newPersonAsset.value.personId.key,
+      checkoutDate: formattedDate,
+    };
+
+    try {
+      // Save the new PersonAsset
+      await PersonAssetServices.create(personAssetData);
+      // Success feedback
+      snackbarText.value = "Asset checked out successfully!";
+      snackbar.value = true;
+      
+      // Close the dialog and refresh the list of person assets
+      closeCheckoutDialog();
+      await retrievePersonAssets();
+    } catch (error) {
+      // Error feedback
+      console.error("Error saving checkout:", error);
+      snackbarText.value = "Failed to check out the asset.";
+      snackbar.value = true;
+    }
+  } else {
+    // Validation feedback
+    snackbarText.value = "Please select both a person and an asset.";
+    snackbar.value = true;
+  }
+};
+
+
+const closeCheckoutDialog = () => {
+  showCheckoutDialog.value = false;
+  newPersonAsset.value = {
+    serializedAssetId: "",
+    personId: "",
+    checkoutDate: "",
+  };
+};
+
+// Define headers for the data table
+const personAssetHeaders = ref([
+  { title: "Owner", key: "fullName" },
+  { title: "Asset", key: "assetName" },
+  { title: "Checkout Date", key: "checkoutDate" },
 ]);
+
+const formatDate = (dateString) => {
+  // Extract just the date part to avoid time zone conversion issues
+  const [year, month, day] = dateString.split("T")[0].split("-");
+  // Format the date as MM-DD-YYYY
+  const formattedDate = `${month.padStart(2, "0")}-${day.padStart(
+    2,
+    "0"
+  )}-${year}`;
+  return formattedDate;
+};
+
+// Call this once to load the default tab's data when the component mounts
+onMounted(async () => {
+  await retrievePeople();
+  await retrieveSerializedAssets();
+  await retrievePersonAssets();
+});
 </script>
 
 <template>
   <div>
     <v-container>
-      <v-dialog v-model="showCheckoutDialog" max-width="600px">
+      <v-row>
+        <v-col cols="12">
+          <v-toolbar>
+            <v-toolbar-title>Admin Dashboard</v-toolbar-title>
+          </v-toolbar>
+        </v-col>
+      </v-row>
+
+      <v-row>
+        <v-col cols="12">
+          <v-card>
+            <v-card-title class="d-flex justify-space-between align-center">
+              <span>Recent Activity</span>
+              <v-btn color="saveblue" @click="showCheckoutDialog = true">
+                Checkout
+              </v-btn>
+            </v-card-title>
+            <v-card-text>
+              <v-data-table
+                :headers="personAssetHeaders"
+                :items="personAssets"
+                class="elevation-1"
+                :items-per-page="10"
+                :items-per-page-options="[5, 10, 20, 50, -1]"
+                v-model:sort-by="activitySortBy"
+              >
+                <template v-slot:item="{ item }">
+                  <tr>
+                    <td>{{ item.fullName }}</td>
+                    <td>{{ item.assetName }}</td>
+                    <td>{{ formatDate(item.checkoutDate) }}</td>
+                  </tr>
+                </template>
+              </v-data-table>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <!-- Checkout Dialog -->
+      <v-dialog v-model="showCheckoutDialog" persistent max-width="600px">
         <v-card>
           <v-card-title>
-            <span class="headline">Check Out Item</span>
+            <span class="headline">Checkout Asset</span>
           </v-card-title>
           <v-card-text>
             <v-container>
               <v-row>
                 <v-col cols="12">
-                  <v-radio-group
-                    v-model="inline"
-                    inline
-                    label="Choose Input Method"
-                  >
-                    <v-radio label="Scan" value="scan"></v-radio>
-                    <v-radio label="Manual Entry" value="manualEntry"></v-radio>
-                  </v-radio-group>
+                  <v-autocomplete
+                    label="Select Person"
+                    v-model="newPersonAsset.personId"
+                    :items="people"
+                    :item-text="item => `${item.title} ${item.lName}`"
+                    item-value="key"
+                    :rules="[rules.required]"
+                    return-object
+                    clearable
+                  ></v-autocomplete>
                 </v-col>
                 <v-col cols="12">
-                  <v-text-field label="Serial Number"></v-text-field>
-                </v-col>
-                <v-col cols="12">
-                  <v-select label="Select person"></v-select>
-                </v-col>
-                <v-col cols="12">
-                  <v-radio-group v-model="inline" inline label="Duration">
-                    <v-radio label="Indefinite" value="scan"></v-radio>
-                    <v-radio label="Set" value="manualEntry"></v-radio>
-                  </v-radio-group>
+                  <v-autocomplete
+                    label="Select Asset"
+                    v-model="newPersonAsset.serializedAssetId"
+                    :items="serializedAssets"
+                    item-text="title"
+                    item-value="key"
+                    :rules="[rules.required]"
+                    return-object
+                    clearable
+                  ></v-autocomplete>
                 </v-col>
               </v-row>
             </v-container>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="cancelgrey" @click="closeCheckoutDialog"
-              >Cancel
-            </v-btn>
-            <v-btn color="saveblue" @click="closeCheckoutDialog"
-              >Confirm Check Out</v-btn
+            <v-btn color="cancelgrey" text @click="closeCheckoutDialog"
+              >Cancel</v-btn
             >
+            <v-btn color="saveblue" text @click="saveCheckout">Checkout</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
-      <v-row class="mb-4 justify-space-between align-center">
-        <v-col cols="12">
-          <h2 class="text-center mb-4">Recent Activity</h2>
-        </v-col>
-      </v-row>
-
-      <v-row justify="center">
-        <v-col cols="12" md="10" lg="8">
-          <v-data-table
-            :headers="headers"
-            :items="items"
-            class="elevation-1 mb-4"
-            caption="Asset Profiles"
-            :items-per-page="5"
-            :items-per-page-options="[5, 10, 20, 50, -1]"
-            v-model:sort-by="activitySortBy"
-          >
-            <!-- Custom Header Slot -->
-            <template v-slot:header="{ props: { headers } }">
-              <thead>
-                <tr>
-                  <th
-                    v-for="header in headers"
-                    :key="header.text"
-                    :align="header.align"
-                  >
-                    {{ header.title }}
-                  </th>
-                </tr>
-              </thead>
-            </template>
-          </v-data-table>
-
-          <div class="text-center checkout-button-container">
-            <v-btn
-              size="large"
-              color="primary"
-              @click="showCheckoutDialog = true"
-              >Check Out</v-btn
-            >
-          </div>
-        </v-col>
-      </v-row>
     </v-container>
 
-    <v-dialog v-model="showCheckoutDialog" max-width="600px">
-      <v-card>
-        <v-card-title>
-          <span class="headline">Check Out Asset</span>
-        </v-card-title>
-        <v-card-text>
-          <v-container>
-            <v-row>
-              <v-col cols="12">
-                <v-radio-group
-                  v-model="inline"
-                  inline
-                  label="Choose Input Method"
-                >
-                  <v-radio label="Scan" value="scan"></v-radio>
-                  <v-radio label="Manual Entry" value="manualEntry"></v-radio>
-                </v-radio-group>
-              </v-col>
-              <v-col cols="12">
-                <v-text-field label="Serial Number"></v-text-field>
-              </v-col>
-              <v-col cols="12">
-                <v-select label="Select person"></v-select>
-              </v-col>
-              <v-col cols="12">
-                <v-radio-group v-model="inline" inline label="Duration">
-                  <v-radio label="Indefinite" value="scan"></v-radio>
-                  <v-radio label="Set" value="manualEntry"></v-radio>
-                </v-radio-group>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="cancelgrey" @click="closeCheckoutDialog">Cancel </v-btn>
-          <v-btn color="saveblue" @click="closeCheckoutDialog"
-            >Confirm Check Out</v-btn
-          >
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <v-snackbar v-model="snackbar" :timeout="3000" class="custom-snackbar">
+      {{ snackbarText }}
+    </v-snackbar>
   </div>
 </template>
-
-<style>
-.mb-4 {
-  margin-bottom: 1.5rem;
-}
-
-.checkout-button-container {
-  padding-top: 20px; 
-}
-</style>
