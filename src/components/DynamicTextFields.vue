@@ -1,5 +1,6 @@
 <script setup>
 import { ref, toRefs, watch } from "vue"
+import ProfileDataServices from "../services/assetProfileServices";
 
 // Validation Rules
 const rules = {
@@ -17,6 +18,11 @@ const props = defineProps({
         required: true
     }
 })
+const newData = ref({
+  field: "",
+  data: "",
+  profileId: "",
+});
 
 // Destructure the selectedTypeId and formData props
 const { selectedTypeId, formData } = toRefs(props)
@@ -49,9 +55,28 @@ const populateTextField = (label) => {
     }
 };
 
+// Retrieve Profiles from Database
+const retrieveProfileData = async () => {
+  try {
+    const response = await ProfileDataServices.getAll();
+
+    profileData.value = response.data.map((data) => {
+      return {
+        ...data,
+        key: data.profileDataId,
+        title: data.field,
+      };
+    });
+  } catch (error) {
+    console.error("Error loading profile data:", error);
+    message.value = "Failed to load profile data.";
+  }
+};
+
 // Call populateTextField when component is mounted or selectedTypeId changes
 onMounted(() => {
     populateTextField('Manufacturer') // Adjust the label as needed
+    retrieveProfileData()
 });
 
 watch(selectedTypeId, (newValue, oldValue) => {

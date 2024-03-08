@@ -1659,8 +1659,8 @@ onMounted(async () => {
                   ></v-autocomplete>
                 </v-col>
                 <v-col cols="12">
-                <DynamicTextFields :selectedTypeId="selectedTypeId" />
-              </v-col>
+                  <DynamicTextFields :selectedTypeId="selectedTypeId" />
+                </v-col>
               </v-row>
             </v-container>
           </v-form>
