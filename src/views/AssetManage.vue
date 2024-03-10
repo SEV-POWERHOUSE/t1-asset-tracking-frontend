@@ -8,6 +8,7 @@ import { ref, onMounted, watch, computed } from "vue";
 import router from "../router";
 
 const message = ref("");
+const selectedProfile = ref(""); // this is to be sent as a prop to DynamicTextField
 const selectedTab = ref("SerializedAssets");
 const selectedStatus = ref("Active");
 const assetCategories = ref([]);
@@ -470,6 +471,10 @@ const openAddProfileDialog = () => {
   showAddProfileDialog.value = true;
 };
 
+const handleCloseProfileDialog = () => {
+  showAddProfileDialog.value = false;
+}
+
 // Reset the profile form to its default state
 const resetProfileForm = () => {
   newProfile.value = { profileName: "", desc: "", typeId: "" };
@@ -510,16 +515,14 @@ const saveProfile = async () => {
 };
 
 // Edit profile
-const editProfile = (profile) => {
-  // Assign existing profile's properties, including its unique identifier
-  newProfile.value = {
-    ...profile,
-    id: profile.profileId, // Adjust according to how profile IDs are named in your data
-  };
-  selectedTypeId.value = profile.typeId;
-  editingProfile.value = true;
-  showAddProfileDialog.value = true;
-};
+const sendEditProfile = (profile) => {
+  console.log(editingProfile.value)
+  selectedProfile.value = profile
+  selectedTypeId.value = profile.typeId
+  editingProfile.value = true
+  showAddProfileDialog.value = true
+  console.log(editingProfile.value)
+}
 
 // Delete profile
 const deleteProfile = async (profileId) => {
@@ -1328,7 +1331,7 @@ onMounted(async () => {
                       </div>
                     </template>
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editProfile(item)">
+                      <v-btn icon @click="sendEditProfile(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
@@ -1626,55 +1629,12 @@ onMounted(async () => {
     </v-dialog>
     <!-- Add/Edit Profile Dialog -->
     <v-dialog v-model="showAddProfileDialog" max-width="600px">
-      <v-card>
-        <v-card-title>
-          <span class="headline"
-            >{{ editingProfile ? "Edit" : "Add" }} Profile</span
-          >
-        </v-card-title>
-        <v-card-text>
-          <v-form ref="formProfile" v-model="validProfile">
-            <v-container>
-              <v-row>
-                <v-col cols="12">
-                  <v-text-field
-                    label="Profile Name"
-                    v-model="newProfile.profileName"
-                    :rules="[rules.required, rules.maxNameLength]"
-                    maxlength="50"
-                    counter
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12">
-                  <!-- Asset Type Selection -->
-                  <v-autocomplete
-                    label="Type"
-                    :items="assetTypes"
-                    item-text="title"
-                    item-value="key"
-                    v-model="selectedTypeId"
-                    :rules="[rules.required]"
-                    clearable
-                    return-object
-                  ></v-autocomplete>
-                </v-col>
-                <v-col cols="12">
-                <DynamicTextFields :selectedTypeId="selectedTypeId" />
-              </v-col>
-              </v-row>
-            </v-container>
-          </v-form>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="cancelgrey" text @click="showAddProfileDialog = false"
-            >Cancel</v-btn
-          >
-          <v-btn color="saveblue" @click="saveProfile" :disabled="!validProfile"
-            >Save</v-btn
-          >
-        </v-card-actions>
-      </v-card>
+      <DynamicTextFields 
+        :editing-profile="editingProfile" 
+        :send-edit-profile="sendEditProfile"
+        :selected-profile="selectedProfile"
+        @closeDialog="handleCloseProfileDialog"
+        />
     </v-dialog>
 
     <!-- Add/Edit serializedAsset Dialog -->
