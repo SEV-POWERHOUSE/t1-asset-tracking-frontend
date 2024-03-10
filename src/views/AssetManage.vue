@@ -816,7 +816,8 @@ const activateSerializedAsset = async (serializedAssetId) => {
 };
 
 const serializedAssetHeaders = ref([
-{ title: "Asset", key: "serializedAssetName" }, // Add this line
+  { title: "Asset", key: "serializedAssetName" }, // Add this line
+  { title: "View Profile", key: "view" },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Archive", key: "archive", sortable: false },
 ]);
@@ -824,6 +825,7 @@ const serializedAssetHeaders = ref([
 const archivedSerializedAssetHeaders = ref([
   { title: "Name", key: "profileName" },
   { title: "Serial Number", key: "serialNumber" },
+  { title: "View Profile", key: "view" },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Activate", key: "activate", sortable: false },
   { title: "Delete", key: "delete", sortable: false },
@@ -1476,6 +1478,22 @@ onMounted(async () => {
                     :items-per-page-options="[5, 10, 20, 50, -1]"
                     v-model:sort-by="assetsSortBy"
                   >
+
+                  <template v-slot:item.view="{ item }">
+                      <div
+                        class="d-flex align-center justify-start"
+                        style="padding-left: 10%"
+                      >
+                        <v-btn
+                          icon
+                          class="table-icons"
+                          @click="viewProfile(item.profileId)"
+                        >
+                          <v-icon>mdi-eye</v-icon>
+                        </v-btn>
+                      </div>
+                    </template>
+                  
                     <template v-slot:item.edit="{ item }">
                       <v-btn
                         icon
@@ -1525,6 +1543,21 @@ onMounted(async () => {
                     :items-per-page-options="[5, 10, 20, 50, -1]"
                     v-model:sort-by="assetsSortBy"
                   >
+
+                  <template v-slot:item.view="{ item }">
+                      <div
+                        class="d-flex align-center justify-start"
+                        style="padding-left: 10%"
+                      >
+                        <v-btn
+                          icon
+                          class="table-icons"
+                          @click="viewProfile(item.profileId)"
+                        >
+                          <v-icon>mdi-eye</v-icon>
+                        </v-btn>
+                      </div>
+                    </template>
                     <template v-slot:item.edit="{ item }">
                       <v-btn
                         icon

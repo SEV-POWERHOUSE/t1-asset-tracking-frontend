@@ -84,28 +84,29 @@ const saveSerializedAsset = async () => {
   const serializedAssetData = {
     serialNumber: newSerializedAsset.value.serialNumber,
     notes: newSerializedAsset.value.notes,
-    profileId: selectedProfileId.value,
+    profileId: props.profileId, // Use the profileId from the props
   };
 
   try {
-  if (editingSerializedAsset.value && newSerializedAsset.value.id) {
-    await SerializedAssetServices.update(newSerializedAsset.value.id, serializedAssetData);
-    snackbarText.value = "Asset updated successfully.";
-  } else {
-    await SerializedAssetServices.create(serializedAssetData);
-    snackbarText.value = "Asset added successfully.";
+    if (editingSerializedAsset.value && newSerializedAsset.value.id) {
+      await SerializedAssetServices.update(newSerializedAsset.value.id, serializedAssetData);
+      snackbarText.value = "Asset updated successfully.";
+    } else {
+      await SerializedAssetServices.create(serializedAssetData);
+      snackbarText.value = "Asset added successfully.";
+    }
+    snackbar.value = true;
+    message.value = "Asset saved successfully.";
+    await retrieveAssetsForProfile(); // Refresh the list after saving
+  } catch (error) {
+    console.error("Error saving asset:", error);
+    message.value = `Error saving asset: ${error.message || "Unknown error"}`;
+  } finally {
+    resetSerializedAssetForm();
+    showAddSerializedAssetDialog.value = false;
   }
-  snackbar.value = true;
-  message.value = "Asset saved successfully.";
-  await retrieveAssetsForProfile(); // Refresh the list after saving
-} catch (error) {
-  console.error("Error saving asset:", error);
-  message.value = `Error saving asset: ${error.message || "Unknown error"}`;
-} finally {
-  resetSerializedAssetForm();
-  showAddSerializedAssetDialog.value = false;
-}
 };
+
 
 
 // Delete asset
@@ -395,7 +396,7 @@ onMounted(async () => {
       <v-card>
         <v-card-title>
           <span class="headline"
-            >{{ editingSerializedAsset ? "Edit" : "Add" }} Asset</span
+            >{{ editingSerializedAsset ? "Edit" : "Add" }} {{ profileDetails.profileName }}</span
           >
         </v-card-title>
         <v-card-text>
