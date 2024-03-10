@@ -264,7 +264,7 @@ const confirmActivate = async () => {
 };
 
 const goBack = () => {
-  router.go(-1); // Go back one step in the history
+  router.replace('/assetManage'); 
 };
 
 
