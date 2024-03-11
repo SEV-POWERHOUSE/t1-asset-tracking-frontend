@@ -1,6 +1,6 @@
 # Asset Tracking System - Oklahoma Christian University
 
-This project develops a web application for Support Central and general OC operations, designed to manage and track Oklahoma Christian University's physical assets such as laptops, projectors, routers, chairs, tables, and air conditioners. It focuses on asset acquisition, location, assignment to individuals, and maintenance, with robust frontend and backend systems.
+This project develops a web application for Support Central and general OC operations, designed to manage and track Oklahoma Christian University's physical assets such as laptops, projectors, routers, and air conditioners. It focuses on asset acquisition, location, assignment to individuals, and maintenance, with robust frontend and backend systems.
 
 ## Features
 
