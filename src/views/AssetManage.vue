@@ -624,7 +624,7 @@ const profileHeaders = ref([
   { title: "Profile Name", key: "profileName" },
   { title: "Type", key: "typeName" },
   { title: "# of Assets", key: "assets" },
-  { title: "View Assets", key: "view" },
+  { title: "View Assets", key: "view", sortable: false },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Archive", key: "archive", sortable: false },
 ]);
@@ -633,7 +633,7 @@ const archivedProfileHeaders = ref([
   { title: "Profile Name", key: "profileName" },
   { title: "Type", key: "typeName" },
   { title: "# of Assets", key: "assets" },
-  { title: "View Assets", key: "view" },
+  { title: "View Assets", key: "view", sortable: false },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Activate", key: "activate", sortable: false },
   { title: "Delete", key: "delete", sortable: false },
@@ -706,6 +706,7 @@ const saveSerializedAsset = async () => {
     snackbar.value = true; // Show the snackbar
     message.value = "Asset saved successfully.";
     await retrieveSerializedAssets();
+    await retrieveAssetProfiles();
   } catch (error) {
     console.error("Error saving asset:", error);
     message.value = `Error saving asset: ${error.message || "Unknown error"}`;
@@ -817,7 +818,7 @@ const activateSerializedAsset = async (serializedAssetId) => {
 
 const serializedAssetHeaders = ref([
   { title: "Asset", key: "serializedAssetName" }, // Add this line
-  { title: "View Profile", key: "view" },
+  { title: "View Profile", key: "view", sortable: false },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Archive", key: "archive", sortable: false },
 ]);
@@ -825,8 +826,8 @@ const serializedAssetHeaders = ref([
 const archivedSerializedAssetHeaders = ref([
   { title: "Name", key: "profileName" },
   { title: "Serial Number", key: "serialNumber" },
-  { title: "View Profile", key: "view" },
-  { title: "Edit", key: "edit", sortable: false },
+  { title: "View Profile", key: "view", sortable: false },
+  // { title: "Edit", key: "edit", sortable: false },
   { title: "Activate", key: "activate", sortable: false },
   { title: "Delete", key: "delete", sortable: false },
 ]);
@@ -1558,7 +1559,7 @@ onMounted(async () => {
                         </v-btn>
                       </div>
                     </template>
-                    <template v-slot:item.edit="{ item }">
+                    <!-- <template v-slot:item.edit="{ item }">
                       <v-btn
                         icon
                         class="table-icons"
@@ -1566,7 +1567,7 @@ onMounted(async () => {
                       >
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
-                    </template>
+                    </template> -->
                     <template v-slot:item.activate="{ item }">
                       <v-btn
                         icon
@@ -1578,7 +1579,7 @@ onMounted(async () => {
                           })
                         "
                       >
-                        <v-icon>mdi-arrow-down-box</v-icon>
+                        <v-icon>mdi-arrow-up-box</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.delete="{ item }">

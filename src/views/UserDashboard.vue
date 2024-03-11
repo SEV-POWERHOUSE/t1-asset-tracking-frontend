@@ -122,8 +122,6 @@ const saveCheckout = async () => {
   }
 };
 
-
-
 const closeCheckoutDialog = () => {
   showCheckoutDialog.value = false;
   newPersonAsset.value = {
@@ -215,7 +213,7 @@ onMounted(async () => {
                     label="Select Person"
                     v-model="newPersonAsset.personId"
                     :items="people"
-                    :item-text="item => `${item.title} ${item.lName}`"
+                    :item-text="(item) => `${item.title} ${item.lName}`"
                     item-value="key"
                     :rules="[rules.required]"
                     return-object
