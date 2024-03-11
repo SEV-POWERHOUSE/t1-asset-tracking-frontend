@@ -2,13 +2,12 @@
 import AssetProfileServices from "../services/assetProfileServices";
 import SerializedAssetServices from "../services/serializedAssetServices";
 import { ref, onMounted, watch, defineProps } from "vue";
-import router from '../router';
+import router from "../router";
 
 const message = ref("");
 const people = ref([]);
 const serializedAssets = ref([]);
 const assetProfiles = ref([]);
-const selectedTab = ref("");
 const selectedStatus = ref("Active");
 const selectedProfileId = ref("");
 const showAddSerializedAssetDialog = ref(false);
@@ -28,13 +27,12 @@ const rules = {
 };
 
 const props = defineProps({
-        profileId: {
-            required: true,
-        },
-        
-    });
+  profileId: {
+    required: true,
+  },
+});
 
-  const newProfile = ref({
+const newProfile = ref({
   profileName: "",
   desc: "",
   typeId: "",
@@ -53,12 +51,14 @@ const retrieveAssetsForProfile = async () => {
   try {
     const response = await SerializedAssetServices.getAll();
     serializedAssets.value = response.data.map((serializedAsset) => {
-      const profile = assetProfiles.value.find((t) => t.key === serializedAsset.profileId);
+      const profile = assetProfiles.value.find(
+        (t) => t.key === serializedAsset.profileId
+      );
       return {
         ...serializedAsset,
         profileName: profile ? profile.profileName : "Unknown Profile",
         key: serializedAsset.serializedAssetId,
-        profileId: serializedAsset.profileId, 
+        profileId: serializedAsset.profileId,
       };
     });
   } catch (error) {
@@ -89,7 +89,10 @@ const saveSerializedAsset = async () => {
 
   try {
     if (editingSerializedAsset.value && newSerializedAsset.value.id) {
-      await SerializedAssetServices.update(newSerializedAsset.value.id, serializedAssetData);
+      await SerializedAssetServices.update(
+        newSerializedAsset.value.id,
+        serializedAssetData
+      );
       snackbarText.value = "Asset updated successfully.";
     } else {
       await SerializedAssetServices.create(serializedAssetData);
@@ -106,8 +109,6 @@ const saveSerializedAsset = async () => {
     showAddSerializedAssetDialog.value = false;
   }
 };
-
-
 
 // Delete asset
 const deleteSerializedAsset = async (serializedAssetId) => {
@@ -144,9 +145,9 @@ const resetSerializedAssetForm = () => {
 
 const filterAssetsByProfileId = () => {
   return serializedAssets.value.filter(
-    (asset) => 
+    (asset) =>
       String(asset.profileId) === String(props.profileId) &&
-      asset.activeStatus === (selectedStatus.value === 'Active')
+      asset.activeStatus === (selectedStatus.value === "Active")
   );
 };
 
@@ -160,7 +161,9 @@ const archiveSerializedAsset = async (serializedAssetId) => {
     snackbar.value = true; // Show the snackbar
     // Refresh the list of assets after successful deletion
     retrieveSerializedAssets();
-    serializedAssets.value = serializedAssets.value.filter((c) => c.id !== serializedAssetId);
+    serializedAssets.value = serializedAssets.value.filter(
+      (c) => c.id !== serializedAssetId
+    );
   } catch (error) {
     console.error(error);
     message.value = "Error archiving asset.";
@@ -175,9 +178,11 @@ const activateSerializedAsset = async (serializedAssetId) => {
     await SerializedAssetServices.update(serializedAssetId, activateData);
     snackbarText.value = "Asset activated successfully.";
     snackbar.value = true; // Show the snackbar
-    // Refresh the list of categories after successful deletion
+    // Refresh the list of assets after successful deletion
     retrieveSerializedAssets();
-    serializedAssets.value = serializedAssets.value.filter((c) => c.id !== serializedAssetsId);
+    serializedAssets.value = serializedAssets.value.filter(
+      (c) => c.id !== serializedAssetsId
+    );
   } catch (error) {
     console.error(error);
     message.value = "Error archiving asset.";
@@ -186,24 +191,21 @@ const activateSerializedAsset = async (serializedAssetId) => {
 
 const serializedAssetHeaders = ref([
   { title: "Serial Number", key: "serialNumber" },
-  { title: "Notes", key: "notes"},
-  
+  { title: "Notes", key: "notes" },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Archive", key: "archive", sortable: false },
-  
 ]);
 
 const archivedSerializedAssetHeaders = ref([
   { title: "Serial Number", key: "serialNumber" },
-  { title: "Notes", key: "notes"},
+  { title: "Notes", key: "notes" },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Activate", key: "activate", sortable: false },
   { title: "Delete", key: "delete", sortable: false },
-  
 ]);
 
 // Misc Section
-const profileDetails = ref({ profileName: 'Loading...' });
+const profileDetails = ref({ profileName: "Loading..." });
 
 const retrieveProfileDetails = async () => {
   try {
@@ -264,20 +266,17 @@ const confirmActivate = async () => {
 };
 
 const goBack = () => {
-  router.replace('/assetManage'); 
+  router.replace("/assetManage");
 };
-
-
 
 // Call this once to load the default tab's data when the component mounts
 onMounted(async () => {
-    console.log("Attempting to get assetProfile with profileId: " + props.profileId)
-    const assetProfile = await AssetProfileServices.getById(props.profileId);
-    await retrieveProfileDetails();
-    await retrieveAssetsForProfile();
-
-    
- 
+  console.log(
+    "Attempting to get assetProfile with profileId: " + props.profileId
+  );
+  const assetProfile = await AssetProfileServices.getById(props.profileId);
+  await retrieveProfileDetails();
+  await retrieveAssetsForProfile();
 });
 </script>
 
@@ -287,72 +286,83 @@ onMounted(async () => {
       <v-row>
         <v-col cols="12">
           <v-toolbar>
-  <v-btn icon @click="goBack">
-    <v-icon>mdi-arrow-left</v-icon>
-  </v-btn>
-  <v-toolbar-title>{{ profileDetails.profileName }}</v-toolbar-title>
- 
-</v-toolbar>
+            <v-btn icon @click="goBack">
+              <v-icon>mdi-arrow-left</v-icon>
+            </v-btn>
+            <v-toolbar-title>{{ profileDetails.profileName }}</v-toolbar-title>
+          </v-toolbar>
 
           <v-tabs v-model="selectedStatus" background-color="primary" dark>
-        <v-tab color="primary" value="Active">Active</v-tab>
-        <v-tab color="primary" value="Archived">Archived</v-tab>
-      </v-tabs>
+            <v-tab color="primary" value="Active">Active</v-tab>
+            <v-tab color="primary" value="Archived">Archived</v-tab>
+          </v-tabs>
         </v-col>
       </v-row>
 
       <v-row>
         <v-col cols="12">
           <v-fade-transition mode="out-in">
+
             <!-- Active asset for profile Section -->
             <div v-if="selectedStatus === 'Active'">
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
-                  <span>Active {{profileDetails.profileName}}</span>
-                  <v-btn color="primary" @click="showAddSerializedAssetDialog = true">
-                    Add New {{profileDetails.profileName}}
+                  <span>Active {{ profileDetails.profileName }}</span>
+                  <v-btn
+                    color="primary"
+                    @click="showAddSerializedAssetDialog = true"
+                  >
+                    Add New {{ profileDetails.profileName }}
                   </v-btn>
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
-                  :headers="serializedAssetHeaders"
+                    :headers="serializedAssetHeaders"
                     :items="filterAssetsByProfileId()"
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
                   >
                     <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editSerializedAsset(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
-                      <template v-slot:item.archive="{ item }">
-                        <v-btn icon @click="openArchiveDialog({ id: item.key, type: 'serializedAsset' })">
-  <v-icon>mdi-arrow-down-box</v-icon>
-</v-btn>
+                    <template v-slot:item.archive="{ item }">
+                      <v-btn
+                        icon
+                        @click="
+                          openArchiveDialog({
+                            id: item.key,
+                            type: 'serializedAsset',
+                          })
+                        "
+                      >
+                        <v-icon>mdi-arrow-down-box</v-icon>
+                      </v-btn>
                     </template>
                   </v-data-table>
                 </v-card-text>
               </v-card>
             </div>
 
-              <!-- Archived Asset for profile Section -->
-              <div v-if="selectedStatus === 'Archived'">
+            <!-- Archived Asset for profile Section -->
+            <div v-if="selectedStatus === 'Archived'">
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
-                  <span>Active {{profileDetails.profileName}}'s</span>
+                  <span>Active {{ profileDetails.profileName }}'s</span>
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
-                  :headers="archivedSerializedAssetHeaders"
+                    :headers="archivedSerializedAssetHeaders"
                     :items="filterAssetsByProfileId()"
                     item-key="key"
                     class="elevation-1"
                     :items-per-page="5"
-                    :items-per-page-options="[5, 10, 15, 20]"
+                    :items-per-page-options="[5, 10, 20, 50, -1]"
                   >
-                  <template v-slot:item.edit="{ item }">
+                    <template v-slot:item.edit="{ item }">
                       <v-btn icon @click="editSerializedAsset(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
@@ -365,7 +375,8 @@ onMounted(async () => {
                             id: item.key,
                             type: 'serializedAsset',
                           })
-                        " >
+                        "
+                      >
                         <v-icon>mdi-arrow-up-box</v-icon>
                       </v-btn>
                     </template>
@@ -391,12 +402,13 @@ onMounted(async () => {
       </v-row>
     </v-container>
 
-     <!-- Add/Edit serializedAsset Dialog -->
-     <v-dialog v-model="showAddSerializedAssetDialog" max-width="600px">
+    <!-- Add/Edit serializedAsset Dialog -->
+    <v-dialog v-model="showAddSerializedAssetDialog" max-width="600px">
       <v-card>
         <v-card-title>
           <span class="headline"
-            >{{ editingSerializedAsset ? "Edit" : "Add" }} {{ profileDetails.profileName }}</span
+            >{{ editingSerializedAsset ? "Edit" : "Add" }}
+            {{ profileDetails.profileName }}</span
           >
         </v-card-title>
         <v-card-text>
@@ -425,14 +437,19 @@ onMounted(async () => {
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="cancelgrey" text @click="closeSerializedAssetDialog">Cancel</v-btn
+          <v-btn color="cancelgrey" text @click="closeSerializedAssetDialog"
+            >Cancel</v-btn
           >
-          <v-btn color="saveblue" @click="saveSerializedAsset" :disabled="!validSerializedAsset"
+          <v-btn
+            color="saveblue"
+            @click="saveSerializedAsset"
+            :disabled="!validSerializedAsset"
             >Save</v-btn
           >
         </v-card-actions>
       </v-card>
     </v-dialog>
+    
     <!-- Confirm Delete Dialog -->
     <v-dialog v-model="showDeleteConfirmDialog" max-width="500px">
       <v-card>
@@ -450,6 +467,7 @@ onMounted(async () => {
         </v-card-actions>
       </v-card>
     </v-dialog>
+
     <!-- Confirm Archive Dialog -->
     <v-dialog v-model="showArchiveDialog" max-width="500px">
       <v-card>
@@ -464,6 +482,7 @@ onMounted(async () => {
         </v-card-actions>
       </v-card>
     </v-dialog>
+
     <!-- Confirm Activate Dialog -->
     <v-dialog v-model="showActivateDialog" max-width="500px">
       <v-card>
@@ -480,7 +499,6 @@ onMounted(async () => {
     </v-dialog>
     <v-snackbar v-model="snackbar" :timeout="3000" class="custom-snackbar">
       {{ snackbarText }}
-      <!-- <v-btn color="pink" text @click="snackbar = false">Close</v-btn> -->
     </v-snackbar>
   </div>
 </template>
