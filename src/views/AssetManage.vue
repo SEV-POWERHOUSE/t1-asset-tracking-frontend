@@ -3,7 +3,7 @@ import AssetCategoryServices from "../services/assetCategoryServices";
 import AssetTypeServices from "../services/assetTypeServices";
 import AssetProfileServices from "../services/assetProfileServices";
 import SerializedAssetServices from "../services/serializedAssetServices";
-import DynamicTextFields from "../components/DynamicTextFields.vue"
+import ProfileDialog from "../components/ProfileDialog.vue"
 import { ref, onMounted, watch, computed } from "vue";
 import router from "../router";
 
@@ -471,8 +471,9 @@ const openAddProfileDialog = () => {
   showAddProfileDialog.value = true;
 };
 
-const handleCloseProfileDialog = () => {
+const handleCloseProfileDialog = async () => {
   showAddProfileDialog.value = false;
+  await retrieveAssetProfiles()
 }
 
 // Reset the profile form to its default state
@@ -483,45 +484,14 @@ const resetProfileForm = () => {
   editingProfile.value = false;
 };
 
-// Save profile (add or edit)
-const saveProfile = async () => {
-  const profileData = {
-    profileName: newProfile.value.profileName,
-    desc: newProfile.value.desc,
-    typeId: selectedTypeId.value.key,
-  };
-
-  try {
-    // Check if editing an existing profile (i.e., `id` is present)
-    if (editingProfile.value && newProfile.value.id) {
-      // Call update service if editing
-      await AssetProfileServices.update(newProfile.value.id, profileData);
-      snackbarText.value = "Profile updated successfully.";
-    } else {
-      // Call create service if adding a new profile
-      await AssetProfileServices.create(profileData);
-      snackbarText.value = "Profile added successfully.";
-    }
-    snackbar.value = true; // Show the snackbar
-    message.value = "Profile saved successfully.";
-    await retrieveAssetProfiles();
-  } catch (error) {
-    console.error("Error saving profile:", error);
-    message.value = `Error saving profile: ${error.message || "Unknown error"}`;
-  } finally {
-    resetProfileForm();
-    showAddProfileDialog.value = false;
-  }
-};
-
 // Edit profile
 const sendEditProfile = (profile) => {
-  console.log(editingProfile.value)
   selectedProfile.value = profile
   selectedTypeId.value = profile.typeId
   editingProfile.value = true
   showAddProfileDialog.value = true
-  console.log(editingProfile.value)
+  console.log("editingProfile set in AssetMange:", editingProfile.value)
+  console.log("Profile sent from AssetManage: ", selectedProfile.value)
 }
 
 // Delete profile
@@ -1629,7 +1599,7 @@ onMounted(async () => {
     </v-dialog>
     <!-- Add/Edit Profile Dialog -->
     <v-dialog v-model="showAddProfileDialog" max-width="600px">
-      <DynamicTextFields 
+      <ProfileDialog 
         :editing-profile="editingProfile" 
         :send-edit-profile="sendEditProfile"
         :selected-profile="selectedProfile"

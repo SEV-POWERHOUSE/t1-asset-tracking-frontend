@@ -10,6 +10,8 @@ const validProfile = ref(false);
 const assetCategories = ref([]);
 const assetTypes = ref([]);
 const selectedTypeId = ref("");
+const snackbar = ref(false);
+const snackbarText = ref("");
 
 // Validation Rules
 const rules = {
@@ -51,9 +53,6 @@ const newData = ref({
     profileId: "",
 })
 
-const handleSendEditProfile = () => {
-    props.sendEditProfile(props.profile);
-};
 
 // Retrieve Categories from Database
 const retrieveAssetCategories = async () => {
@@ -114,6 +113,14 @@ const retrieveProfileData = async () => {
   }
 }
 
+// Reset the profile form to its default state
+const resetProfileForm = () => {
+  newProfile.value = { profileName: "", desc: "", typeId: "" };
+  selectedTypeId.value = "";
+  validProfile.value = false;
+  editingProfile.value = false;
+};
+
 // Save profile (add or edit)
 const saveProfile = async () => {
   const profileData = {
@@ -135,33 +142,32 @@ const saveProfile = async () => {
     }
     snackbar.value = true // Show the snackbar
     message.value = "Profile saved successfully."
-    await retrieveAssetProfiles()
   } catch (error) {
     console.error("Error saving profile:", error)
     message.value = `Error saving profile: ${error.message || "Unknown error"}`
   } finally {
     resetProfileForm()
-    showAddProfileDialog.value = false
+    emitCloseDialog()
   }
 }
 
 // Edit profile
 const editProfile = () => {
     console.log("Passed in profile: ", selectedProfile.value)
-    if (props.selectedProfile) {
+    if (selectedProfile.value) {
         // Assign existing profile's properties, including its unique identifier
         newProfile.value = {
-            ...props.selectedProfile,
-            id: props.selectedProfile.profileId, // Adjust according to how profile IDs are named in your data
+            ...selectedProfile.value,
+            id: selectedProfile.value.profileId, // Adjust according to how profile IDs are named in your data
         }
-        selectedTypeId.value = props.selectedProfile.typeId
+        selectedTypeId.value = selectedProfile.value.typeId
     }
 }
 
 // Function to populate text field with data from formData
 const populateTextField = (label) => {
-    if (formData.value[label]) {
-        textFieldValue.value = formData.value[label]
+    if (selectedProfile.value[label]) {
+        textFieldValue.value = selectedProfile.value[label]
     } else {
         textFieldValue.value = '' // Clear the text field if no data found
     }
@@ -176,15 +182,19 @@ onMounted(() => {
     retrieveProfileData()
     retrieveAssetTypes()
     retrieveAssetCategories()
-
-    console.log("editingProfile: ", editingProfile.value)
+    if (editingProfile.value) {
+        editProfile()
+    }
+    console.log("editingProfile received in child: ", editingProfile.value)
+    console.log("Profile received in child: ", selectedProfile.value)
 })
 
-// Watcher Functions
-// Watch for changes in selectedProfile prop
-watch(() => props.selectedProfile, (newValue) => {
-    if (newValue && editingProfile.value) {
-        editProfile(newValue);
+// Watchers
+
+
+watch(selectedTypeId, async (newValue) => {
+    if (newValue) {
+        await retrieveDynamicFields();
     }
 });
 
