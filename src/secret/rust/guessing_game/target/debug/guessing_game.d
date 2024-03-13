@@ -1,0 +1,1 @@
+C:\xampp\htdocs\sev\t1-asset-tracking\t1-asset-tracking-frontend\src\secret\rust\guessing_game\target\debug\guessing_game.exe: C:\xampp\htdocs\sev\t1-asset-tracking\t1-asset-tracking-frontend\src\secret\rust\guessing_game\src\main.rs
