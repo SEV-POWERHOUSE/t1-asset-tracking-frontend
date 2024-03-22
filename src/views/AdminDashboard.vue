@@ -4,7 +4,8 @@ import PersonServices from "../services/personServices";
 import PersonAssetServices from "../services/personAssetServices";
 import BuildingServices from "../services/buildingServices";
 import BuildingAssetServices from "../services/buildingAssetServices";
-
+import RoomServices from "../services/roomServices";
+import RoomAssetServices from "../services/roomAssetServices";
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { format, parseISO, isBefore } from "date-fns";
@@ -12,11 +13,13 @@ import { format, parseISO, isBefore } from "date-fns";
 const router = useRouter();
 const message = ref("");
 const serializedAssets = ref([]);
+const assetProfiles = ref([]);
 const people = ref([]);
 const personAssets = ref([]);
 const buildings = ref([]);
 const buildingAssets = ref([]);
-const assetProfiles = ref([]);
+const rooms = ref([]);
+const roomAssets = ref([]);
 const snackbar = ref(false);
 const snackbarText = ref("");
 const activitySortBy = ref([{ key: "mostRecentDate", order: "desc" }]);
@@ -145,8 +148,56 @@ const retrieveBuildingAssets = async () => {
   }
 };
 
+// Retrieve Rooms from Database
+const retrieveRooms = async () => {
+  try {
+    const response = await RoomServices.getAll();
+    rooms.value = response.data.map((room) => ({
+      title: room.roomName,
+      key: room.roomId,
+      roomNo: room.roomNo,
+      buildingId: room.buildingId,
+      activeStatus: room.activeStatus,
+    }));
+  } catch (error) {
+    console.error("Error loading rooms:", error);
+  }
+};
+
+// Retrieve RoomAssets from Database
+const retrieveRoomAssets = async () => {
+  try {
+    // Mock fetching roomAssets
+    const response = await RoomAssetServices.getAll();
+    // Simulate join logic
+    roomAssets.value = response.data.map((roomAsset) => {
+      const room = rooms.value.find((r) => r.key === roomAsset.roomId);
+      const serializedAsset = serializedAssets.value.find(
+        (ra) => ra.key === roomAsset.serializedAssetId
+      );
+
+      return {
+        roomAssetId: roomAsset.roomAssetId,
+        roomId: roomAsset.roomId,
+        name: room ? room.title : "Unknown",
+        serializedAssetId: roomAsset.serializedAssetId,
+        title: serializedAsset
+          ? serializedAsset.serializedAssetName
+          : "Unknown Asset",
+        checkoutDate: roomAsset.checkoutDate,
+        checkoutStatus: roomAsset.checkoutStatus,
+        expectedCheckinDate: roomAsset.expectedCheckinDate,
+        checkinDate: roomAsset.checkinDate,
+      };
+    });
+  } catch (error) {
+    console.error("Error loading room assets:", error);
+    message.value = "Failed to load room assets.";
+  }
+};
+
 const activityHeaders = ref([
-  { title: "Owner/Building", key: "owner" },
+  { title: "Owner/Facility", key: "owner" },
   { title: "Asset", key: "assetTitle" },
   { title: "Asset Type", key: "assetType" },
   { title: "Activity Type", key: "activityType" },
@@ -154,44 +205,48 @@ const activityHeaders = ref([
 ]);
 
 const combinedAssets = computed(() => {
-  // Normalize and combine person and building assets
-  const normalizedPersonAssets = personAssets.value.map((asset) => ({
+  // Normalize person assets
+  const normalizedPersonAssets = personAssets.value.map(asset => ({
     owner: asset.fullName,
-    assetTitle: asset.title, // The asset's title
+    assetTitle: asset.title,
     activityType: asset.checkoutStatus ? "Checkout" : "Check-in",
-    mostRecentDate: asset.checkoutStatus
-      ? asset.checkoutDate
-      : asset.checkinDate,
+    mostRecentDate: asset.checkoutStatus ? asset.checkoutDate : asset.checkinDate,
     assetType: "Person Asset",
   }));
 
-  const normalizedBuildingAssets = buildingAssets.value.map((asset) => ({
+  // Normalize building assets
+  const normalizedBuildingAssets = buildingAssets.value.map(asset => ({
     owner: asset.name,
-    assetTitle: asset.title, // The asset's title
+    assetTitle: asset.title,
     activityType: asset.checkoutStatus ? "Checkout" : "Check-in",
-    mostRecentDate: asset.checkoutStatus
-      ? asset.checkoutDate
-      : asset.checkinDate,
+    mostRecentDate: asset.checkoutStatus ? asset.checkoutDate : asset.checkinDate,
     assetType: "Building Asset",
   }));
 
-  // Combine, sort, and format mostRecentDate
-  return [...normalizedPersonAssets, ...normalizedBuildingAssets]
-    .map((asset) => {
+  // Normalize room assets
+  const normalizedRoomAssets = roomAssets.value.map(asset => ({
+    owner: asset.name, // Assuming 'name' is the room's identifier; adjust as needed
+    assetTitle: asset.title,
+    activityType: asset.checkoutStatus ? "Checkout" : "Check-in",
+    mostRecentDate: asset.checkoutStatus ? asset.checkoutDate : asset.checkinDate,
+    assetType: "Room Asset",
+  }));
+
+  // Combine all assets, sort, and format mostRecentDate
+  return [...normalizedPersonAssets, ...normalizedBuildingAssets, ...normalizedRoomAssets]
+    .map(asset => {
       // Convert mostRecentDate to Date object for sorting and formatting
-      const mostRecentDateObj = asset.mostRecentDate
-        ? parseISO(asset.mostRecentDate)
-        : new Date();
+      const mostRecentDateObj = asset.mostRecentDate ? parseISO(asset.mostRecentDate) : new Date();
       return {
         ...asset,
         mostRecentDateObj,
-        // Format the mostRecentDate for display
-        mostRecentDate: format(mostRecentDateObj, "MMM dd, yyyy"),
+        mostRecentDate: format(mostRecentDateObj, "MMM dd, yyyy"), // Format the mostRecentDate for display
       };
     })
-    .sort((a, b) => b.mostRecentDateObj - a.mostRecentDateObj) // Sort descending
+    .sort((a, b) => b.mostRecentDateObj - a.mostRecentDateObj) // Sort by mostRecentDateObj descending
     .map(({ mostRecentDateObj, ...asset }) => asset); // Remove the temporary Date object used for sorting
 });
+
 
 function goToCheckoutPage() {
   router.push({ name: "assetCheckout" });
@@ -204,6 +259,8 @@ onMounted(async () => {
   await retrievePersonAssets();
   await retrieveBuildings();
   await retrieveBuildingAssets();
+  await retrieveRooms();
+  await retrieveRoomAssets();
 });
 </script>
 

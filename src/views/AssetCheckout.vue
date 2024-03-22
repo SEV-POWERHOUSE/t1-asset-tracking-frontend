@@ -16,6 +16,7 @@ const selectedTab = ref("SerializedAssets");
 const selectedStatus = ref("Checkout");
 const selectedPersonAsset = ref("");
 const selectedBuildingAsset = ref("");
+const selectedRoomAsset = ref("");
 const serializedAssets = ref([]);
 const assetProfiles = ref([]);
 const people = ref([]);
@@ -31,6 +32,8 @@ const showPersonCheckoutDialog = ref(false);
 const showPersonCheckinDialog = ref(false);
 const showBuildingCheckoutDialog = ref(false);
 const showBuildingCheckinDialog = ref(false);
+const showRoomCheckoutDialog = ref(false);
+const showRoomCheckinDialog = ref(false);
 const menu = ref(false);
 const indefiniteCheckout = ref(true);
 const expectedCheckinDate = ref(null);
@@ -274,12 +277,7 @@ const availableForCheckoutPersonAssets = computed(() => {
 const availableForCheckinPersonAssets = computed(() => {
   return personAssets.value.filter((asset) => asset.checkoutStatus);
 });
-//
-//
-//
-//
-//
-//
+
 // *** Buildings Section ***
 
 // Retrieve Buildings from Database
@@ -462,7 +460,7 @@ const closeBuildingCheckinDialog = () => {
 
 // Define headers for the data table
 const buildingAssetCheckoutHeaders = ref([
-  { title: "Owner", key: "name" },
+  { title: "Building", key: "name" },
   { title: "Asset", key: "title" },
   { title: "Status", key: "checkoutStatus" },
   { title: "Expected Check-in Date", key: "expectedCheckinDate" },
@@ -471,7 +469,7 @@ const buildingAssetCheckoutHeaders = ref([
 
 // Define headers for the data table
 const buildingAssetCheckinHeaders = ref([
-  { title: "Owner", key: "name" },
+  { title: "Building", key: "name" },
   { title: "Asset", key: "title" },
   { title: "Status", key: "checkoutStatus" },
   { title: "Expected Check-in Date", key: "expectedCheckinDate" },
@@ -487,12 +485,206 @@ const availableForCheckoutBuildingAssets = computed(() => {
 const availableForCheckinBuildingAssets = computed(() => {
   return buildingAssets.value.filter((asset) => asset.checkoutStatus);
 });
-//
-//
-//
-//
-//
-//
+
+// *** Rooms Section ***
+
+// Retrieve Rooms from Database
+const retrieveRooms = async () => {
+  try {
+    const response = await RoomServices.getAll();
+    rooms.value = response.data.map((room) => ({
+      title: room.roomName,
+      key: room.roomId,
+      roomNo: room.roomNo,
+      buildingId: room.buildingId,
+      activeStatus: room.activeStatus,
+    }));
+  } catch (error) {
+    console.error("Error loading rooms:", error);
+  }
+};
+
+// Retrieve RoomAssets from Database
+const retrieveRoomAssets = async () => {
+  try {
+    // Mock fetching roomAssets
+    const response = await RoomAssetServices.getAll();
+    // Simulate join logic
+    roomAssets.value = response.data.map((roomAsset) => {
+      const room = rooms.value.find((r) => r.key === roomAsset.roomId);
+      const serializedAsset = serializedAssets.value.find(
+        (ra) => ra.key === roomAsset.serializedAssetId
+      );
+
+      return {
+        roomAssetId: roomAsset.roomAssetId,
+        roomId: roomAsset.roomId,
+        name: room ? room.title : "Unknown",
+        serializedAssetId: roomAsset.serializedAssetId,
+        title: serializedAsset
+          ? serializedAsset.serializedAssetName
+          : "Unknown Asset",
+        checkoutDate: roomAsset.checkoutDate,
+        checkoutStatus: roomAsset.checkoutStatus,
+        expectedCheckinDate: roomAsset.expectedCheckinDate,
+        checkinDate: roomAsset.checkinDate,
+      };
+    });
+  } catch (error) {
+    console.error("Error loading room assets:", error);
+    message.value = "Failed to load room assets.";
+  }
+};
+
+const saveRoomCheckout = async () => {
+  if (newRoomAsset.value.roomId && newRoomAsset.value.serializedAssetId) {
+    const formattedDate = format(new Date(), "MMM dd, yyyy HH:mm:ss");
+
+    // Check if the checkin is marked as indefinite
+    let checkinDate = null; // Default to null for indefinite checkin
+    if (!indefiniteCheckout.value && expectedCheckinDate.value) {
+      // Format the expected checkin date for database
+      checkinDate = format(
+        new Date(expectedCheckinDate.value),
+        "MMM dd, yyyy HH:mm:ss"
+      );
+    }
+
+    const roomAssetData = {
+      serializedAssetId: newRoomAsset.value.serializedAssetId.key,
+      roomId: newRoomAsset.value.roomId.key,
+      checkoutDate: formattedDate,
+      checkoutStatus: true,
+      expectedCheckinDate: checkinDate,
+    };
+
+    try {
+      // Create new RoomAsset record
+      await RoomAssetServices.create(roomAssetData);
+
+      // Update the checkoutStatus of the SerializedAsset to true
+      await SerializedAssetServices.updateCheckoutStatus(
+        newRoomAsset.value.serializedAssetId.key,
+        true
+      );
+
+      snackbarText.value = "Asset checked out successfully!";
+      snackbar.value = true;
+
+      closeRoomCheckoutDialog();
+      await retrieveRoomAssets();
+      await retrieveSerializedAssets(); // Refresh serialized assets to reflect the checkout status update
+    } catch (error) {
+      console.error("Error saving checkout:", error);
+      snackbarText.value = "Failed to check out the asset.";
+      snackbar.value = true;
+    }
+  } else {
+    snackbarText.value = "Please select both a room and an asset.";
+    snackbar.value = true;
+  }
+};
+
+const saveRoomCheckin = async () => {
+  if (newRoomAsset.value.roomAssetId) {
+    try {
+      const formattedDate = format(new Date(), "MMM dd, yyyy HH:mm:ss"); // Format the current date
+
+      const selectedRoomAsset = roomAssets.value.find(
+        (ra) => ra.roomAssetId === newRoomAsset.value.roomAssetId
+      );
+      if (!selectedRoomAsset) {
+        throw new Error("Selected asset not found.");
+      }
+
+      // Update the checkout status for both the RoomAsset and the SerializedAsset
+      await RoomAssetServices.updateCheckoutStatusAndDate(
+        selectedRoomAsset.roomAssetId,
+        false,
+        formattedDate
+      );
+      await SerializedAssetServices.updateCheckoutStatus(
+        selectedRoomAsset.serializedAssetId,
+        false
+      );
+
+      snackbarText.value = "Asset checked in successfully!";
+      snackbar.value = true;
+      closeRoomCheckinDialog();
+      await retrieveRoomAssets();
+      await retrieveSerializedAssets(); // Refresh to show updated statuses
+    } catch (error) {
+      console.error("Error saving check-in:", error);
+      snackbarText.value = "Failed to check in the asset.";
+      snackbar.value = true;
+    }
+  } else {
+    snackbarText.value = "Please select an asset for check-in.";
+    snackbar.value = true;
+  }
+};
+
+const filteredRoomAssets = computed(() => {
+  if (selectedStatus.value === "Checkout") {
+    return roomAssets.value.filter((asset) => asset.checkoutStatus === true);
+  } else if (selectedStatus.value === "Check-in") {
+    return roomAssets.value.filter((asset) => asset.checkoutStatus === false);
+  }
+  return roomAssets.value;
+});
+
+const closeRoomCheckoutDialog = () => {
+  showRoomCheckoutDialog.value = false;
+  resetFields();
+  newRoomAsset.value = {
+    serializedAssetId: "",
+    roomId: "",
+    checkoutDate: "",
+    expectedCheckinDate: null,
+  };
+};
+
+const closeRoomCheckinDialog = () => {
+  showRoomCheckinDialog.value = false;
+  resetFields();
+  // Reset the newRoomAsset values as well
+  newRoomAsset.value = {
+    serializedAssetId: "",
+    roomId: "",
+    checkoutDate: "",
+    checkoutStatus: "",
+  };
+  selectedRoomAsset.value = "";
+};
+
+// Define headers for the data table
+const roomAssetCheckoutHeaders = ref([
+  { title: "Room", key: "name" },
+  { title: "Asset", key: "title" },
+  { title: "Status", key: "checkoutStatus" },
+  { title: "Expected Check-in Date", key: "expectedCheckinDate" },
+  { title: "Checkout Date", key: "checkoutDate" },
+]);
+
+// Define headers for the data table
+const roomAssetCheckinHeaders = ref([
+  { title: "Room", key: "name" },
+  { title: "Asset", key: "title" },
+  { title: "Status", key: "checkoutStatus" },
+  { title: "Expected Check-in Date", key: "expectedCheckinDate" },
+  { title: "Check-in Date", key: "checkinDate" },
+]);
+
+// Computed property for assets available for checkout (checkoutStatus = false)
+const availableForCheckoutRoomAssets = computed(() => {
+  return serializedAssets.value.filter((asset) => !asset.checkoutStatus);
+});
+
+// Computed property for assets available for check-in (checkoutStatus = true)
+const availableForCheckinRoomAssets = computed(() => {
+  return roomAssets.value.filter((asset) => asset.checkoutStatus);
+});
+
 // *** Misc Section ***
 
 // Retrieve SerializedAssets from Database
@@ -565,8 +757,8 @@ watch(selectedTab, (newValue) => {
   } else if (newValue === "Rooms") {
     watch(selectedStatus, (statusValue) => {
       retrieveSerializedAssets();
-      // retrieveRooms();
-      // retrieveRoomAssets();
+      retrieveRooms();
+      retrieveRoomAssets();
     });
   }
 });
@@ -600,6 +792,20 @@ watch(
   { immediate: true, deep: true }
 );
 
+watch(
+  selectedRoomAsset,
+  (newValue) => {
+    // Check if newValue is not null before trying to access its properties
+    if (newValue && newValue.roomAssetId) {
+      newRoomAsset.value.roomAssetId = newValue.roomAssetId;
+    } else {
+      // If newValue is null, reset newRoomAsset.value.roomAssetId to a default value
+      newRoomAsset.value.roomAssetId = "";
+    }
+  },
+  { immediate: true, deep: true }
+);
+
 // Call this once to load the default tab's data when the component mounts
 onMounted(async () => {
   await retrieveSerializedAssets();
@@ -607,8 +813,8 @@ onMounted(async () => {
   await retrievePersonAssets();
   await retrieveBuildings();
   await retrieveBuildingAssets();
-  // await retrieveRooms();
-  // await retrieveRoomAssets();
+  await retrieveRooms();
+  await retrieveRoomAssets();
 });
 </script>
 
@@ -810,15 +1016,15 @@ onMounted(async () => {
                   <span>Recent Room Checkouts</span>
                   <v-btn
                     color="saveblue"
-                    @click="showPersonCheckoutDialog = true"
+                    @click="showRoomCheckoutDialog = true"
                   >
                     Checkout
                   </v-btn>
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
-                    :headers="personAssetCheckoutHeaders"
-                    :items="filteredPersonAssets"
+                    :headers="roomAssetCheckoutHeaders"
+                    :items="filteredRoomAssets"
                     class="elevation-1"
                     :items-per-page="10"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
@@ -845,17 +1051,14 @@ onMounted(async () => {
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Recent Room Check-ins</span>
-                  <v-btn
-                    color="saveblue"
-                    @click="showPersonCheckinDialog = true"
-                  >
+                  <v-btn color="saveblue" @click="showRoomCheckinDialog = true">
                     Check-in
                   </v-btn>
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
-                    :headers="personAssetCheckinHeaders"
-                    :items="filteredPersonAssets"
+                    :headers="roomAssetCheckinHeaders"
+                    :items="filteredRoomAssets"
                     class="elevation-1"
                     :items-per-page="10"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
@@ -1129,6 +1332,131 @@ onMounted(async () => {
           <v-btn color="saveblue" text @click="saveBuildingCheckin"
             >Check-in</v-btn
           >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- *** Room Checkout Dialog *** -->
+    <v-dialog v-model="showRoomCheckoutDialog" persistent max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="headline">Checkout Asset</span>
+        </v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <v-autocomplete
+                  label="Select Room"
+                  v-model="newRoomAsset.roomId"
+                  :items="rooms"
+                  item-text="title"
+                  item-value="key"
+                  :rules="[rules.required]"
+                  return-object
+                  clearable
+                ></v-autocomplete>
+              </v-col>
+              <v-col cols="12">
+                <v-autocomplete
+                  label="Select Asset"
+                  v-model="newRoomAsset.serializedAssetId"
+                  :items="availableForCheckoutRoomAssets"
+                  item-text="title"
+                  item-value="key"
+                  :rules="[rules.required]"
+                  return-object
+                  clearable
+                ></v-autocomplete>
+              </v-col>
+              <v-col cols="12">
+                <v-checkbox
+                  v-model="indefiniteCheckout"
+                  label="Indefinite Checkout"
+                ></v-checkbox>
+              </v-col>
+              <v-col cols="12" v-if="!indefiniteCheckout">
+                <v-menu
+                  v-model="menu"
+                  :close-on-content-click="false"
+                  :nudge-right="40"
+                  transition="scale-transition"
+                  offset-y
+                  min-width="auto"
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-text-field
+                      v-model="formattedCheckinDate"
+                      label="Expected Checkin Date"
+                      prepend-icon="mdi-calendar"
+                      readonly
+                      v-bind="attrs"
+                      @click="menu = !menu"
+                    ></v-text-field>
+                  </template>
+                  <v-date-picker
+                    v-model="expectedCheckinDate"
+                    @input="menu = false"
+                  ></v-date-picker>
+                </v-menu>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="cancelgrey" text @click="closeRoomCheckoutDialog"
+            >Cancel</v-btn
+          >
+          <v-btn color="saveblue" text @click="saveRoomCheckout"
+            >Checkout</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- *** Room Checkin Dialog *** -->
+    <v-dialog v-model="showRoomCheckinDialog" persistent max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="headline">Check-in Asset</span>
+        </v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <!-- <v-autocomplete
+                  label="Select Room"
+                  v-model="newRoomAsset.roomId"
+                  :items="roomsWithCheckedOutAssets"
+                  item-text="title"
+                  item-value="key"
+                  :rules="[rules.required]"
+                  return-object
+                  clearable
+                ></v-autocomplete> -->
+              </v-col>
+              <v-col cols="12">
+                <v-autocomplete
+                  label="Select Asset for Check-in"
+                  v-model="selectedRoomAsset"
+                  :items="availableForCheckinRoomAssets"
+                  item-text="title"
+                  item-value="roomAssetId"
+                  :rules="[rules.required]"
+                  return-object
+                  clearable
+                ></v-autocomplete>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="cancelgrey" text @click="closeRoomCheckinDialog"
+            >Cancel</v-btn
+          >
+          <v-btn color="saveblue" text @click="saveRoomCheckin">Check-in</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
