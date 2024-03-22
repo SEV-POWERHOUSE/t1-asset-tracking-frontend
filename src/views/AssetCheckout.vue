@@ -9,12 +9,13 @@ import BuildingAssetServices from "../services/buildingAssetServices";
 import RoomServices from "../services/roomServices";
 import RoomAssetServices from "../services/roomAssetServices";
 import { ref, onMounted, watch, computed } from "vue";
-import { format } from "date-fns";
+import { parseISO, format } from "date-fns";
 
 const message = ref("");
 const selectedTab = ref("SerializedAssets");
 const selectedStatus = ref("Checkout");
 const selectedPersonAsset = ref("");
+const selectedBuildingAsset = ref("");
 const serializedAssets = ref([]);
 const assetProfiles = ref([]);
 const people = ref([]);
@@ -28,6 +29,8 @@ const validBuildingAsset = ref(false);
 const validRoomAsset = ref(false);
 const showPersonCheckoutDialog = ref(false);
 const showPersonCheckinDialog = ref(false);
+const showBuildingCheckoutDialog = ref(false);
+const showBuildingCheckinDialog = ref(false);
 const menu = ref(false);
 const indefiniteCheckout = ref(true);
 const expectedCheckinDate = ref(null);
@@ -50,15 +53,17 @@ const newBuildingAsset = ref({
   buildingId: "",
   checkoutDate: "",
   checkoutStatus: "",
+  expectedCheckinDate: "",
 });
 const newRoomAsset = ref({
   serializedAssetId: "",
   roomId: "",
   checkoutDate: "",
   checkoutStatus: "",
+  expectedCheckinDate: "",
 });
 
-// People Section
+// *** People Section ***
 
 // Retrieve People from Database
 const retrievePeople = async () => {
@@ -113,13 +118,16 @@ const retrievePersonAssets = async () => {
 
 const savePersonCheckout = async () => {
   if (newPersonAsset.value.personId && newPersonAsset.value.serializedAssetId) {
-    const formattedDate = format(new Date(), "yyyy-MM-dd HH:mm:ss");
+    const formattedDate = format(new Date(), "MMM dd, yyyy HH:mm:ss");
 
     // Check if the checkin is marked as indefinite
     let checkinDate = null; // Default to null for indefinite checkin
     if (!indefiniteCheckout.value && expectedCheckinDate.value) {
       // Format the expected checkin date for database
-      checkinDate = format(new Date(expectedCheckinDate.value), "yyyy-MM-dd");
+      checkinDate = format(
+        new Date(expectedCheckinDate.value),
+        "MMM dd, yyyy HH:mm:ss"
+      );
     }
 
     const personAssetData = {
@@ -160,7 +168,7 @@ const savePersonCheckout = async () => {
 const savePersonCheckin = async () => {
   if (newPersonAsset.value.personAssetId) {
     try {
-      const formattedDate = format(new Date(), "yyyy-MM-dd HH:mm:ss"); // Format the current date
+      const formattedDate = format(new Date(), "MMM dd, yyyy HH:mm:ss"); // Format the current date
 
       const selectedPersonAsset = personAssets.value.find(
         (pa) => pa.personAssetId === newPersonAsset.value.personAssetId
@@ -236,13 +244,7 @@ const closePersonCheckinDialog = () => {
     checkoutDate: "",
     checkoutStatus: "",
   };
-  selectedPersonAsset.value = ""; // If `selectedPersonAsset` is expected to be an object, reset it to an empty object {} or the appropriate default value
-};
-
-const resetFields = () => {
-  expectedCheckinDate.value = null; // or a default date if you prefer
-  indefiniteCheckout.value = true; // Assuming true is the default state
-  // Reset other fields as necessary
+  selectedPersonAsset.value = "";
 };
 
 // Define headers for the data table
@@ -263,31 +265,6 @@ const personAssetCheckinHeaders = ref([
   { title: "Check-in Date", key: "checkinDate" },
 ]);
 
-// *** Misc Section ***
-
-// Retrieve SerializedAssets from Database
-const retrieveSerializedAssets = async () => {
-  try {
-    const response = await SerializedAssetServices.getAll();
-    serializedAssets.value = response.data.map((serializedAsset) => {
-      const profile = assetProfiles.value.find(
-        (t) => t.key === serializedAsset.profileId
-      );
-      return {
-        ...serializedAsset,
-        title: serializedAsset.serializedAssetName,
-        profileName: profile ? profile.profileName : "Unknown Profile",
-        key: serializedAsset.serializedAssetId,
-        profileId: serializedAsset.profileId,
-        checkoutStatus: serializedAsset.checkoutStatus,
-      };
-    });
-  } catch (error) {
-    console.error("Error loading serialized assets:", error);
-    message.value = "Failed to load serializedAssets.";
-  }
-};
-
 // Computed property for assets available for checkout (checkoutStatus = false)
 const availableForCheckoutPersonAssets = computed(() => {
   return serializedAssets.value.filter((asset) => !asset.checkoutStatus);
@@ -297,6 +274,251 @@ const availableForCheckoutPersonAssets = computed(() => {
 const availableForCheckinPersonAssets = computed(() => {
   return personAssets.value.filter((asset) => asset.checkoutStatus);
 });
+//
+//
+//
+//
+//
+//
+// *** Buildings Section ***
+
+// Retrieve Buildings from Database
+const retrieveBuildings = async () => {
+  try {
+    const response = await BuildingServices.getAll();
+    buildings.value = response.data.map((building) => ({
+      title: building.name,
+      key: building.buildingId,
+      abbreviation: building.abbreviation,
+      noOfRooms: building.noOfRooms,
+      activeStatus: building.activeStatus,
+    }));
+  } catch (error) {
+    console.error("Error loading buildings:", error);
+  }
+};
+
+// Retrieve BuildingAssets from Database
+const retrieveBuildingAssets = async () => {
+  try {
+    // Mock fetching buildingAssets
+    const response = await BuildingAssetServices.getAll();
+    // Simulate join logic
+    buildingAssets.value = response.data.map((buildingAsset) => {
+      const building = buildings.value.find(
+        (b) => b.key === buildingAsset.buildingId
+      );
+      const serializedAsset = serializedAssets.value.find(
+        (ba) => ba.key === buildingAsset.serializedAssetId
+      );
+
+      return {
+        buildingAssetId: buildingAsset.buildingAssetId,
+        buildingId: buildingAsset.buildingId,
+        serializedAssetId: buildingAsset.serializedAssetId,
+        name: building ? building.title : "Unknown",
+        title: serializedAsset
+          ? serializedAsset.serializedAssetName
+          : "Unknown Asset",
+        checkoutDate: buildingAsset.checkoutDate,
+        checkoutStatus: buildingAsset.checkoutStatus,
+        expectedCheckinDate: buildingAsset.expectedCheckinDate,
+        checkinDate: buildingAsset.checkinDate,
+      };
+    });
+  } catch (error) {
+    console.error("Error loading building assets:", error);
+    message.value = "Failed to load building assets.";
+  }
+};
+
+const saveBuildingCheckout = async () => {
+  if (
+    newBuildingAsset.value.buildingId &&
+    newBuildingAsset.value.serializedAssetId
+  ) {
+    const formattedDate = format(new Date(), "MMM dd, yyyy HH:mm:ss");
+
+    // Check if the checkin is marked as indefinite
+    let checkinDate = null; // Default to null for indefinite checkin
+    if (!indefiniteCheckout.value && expectedCheckinDate.value) {
+      // Format the expected checkin date for database
+      checkinDate = format(
+        new Date(expectedCheckinDate.value),
+        "MMM dd, yyyy HH:mm:ss"
+      );
+    }
+
+    const buildingAssetData = {
+      serializedAssetId: newBuildingAsset.value.serializedAssetId.key,
+      buildingId: newBuildingAsset.value.buildingId.key,
+      checkoutDate: formattedDate,
+      checkoutStatus: true,
+      expectedCheckinDate: checkinDate,
+    };
+
+    try {
+      // Create new BuildingAsset record
+      await BuildingAssetServices.create(buildingAssetData);
+
+      // Update the checkoutStatus of the SerializedAsset to true
+      await SerializedAssetServices.updateCheckoutStatus(
+        newBuildingAsset.value.serializedAssetId.key,
+        true
+      );
+
+      snackbarText.value = "Asset checked out successfully!";
+      snackbar.value = true;
+
+      closeBuildingCheckoutDialog();
+      await retrieveBuildingAssets();
+      await retrieveSerializedAssets(); // Refresh serialized assets to reflect the checkout status update
+    } catch (error) {
+      console.error("Error saving checkout:", error);
+      snackbarText.value = "Failed to check out the asset.";
+      snackbar.value = true;
+    }
+  } else {
+    snackbarText.value = "Please select both a building and an asset.";
+    snackbar.value = true;
+  }
+};
+
+const saveBuildingCheckin = async () => {
+  if (newBuildingAsset.value.buildingAssetId) {
+    try {
+      const formattedDate = format(new Date(), "MMM dd, yyyy HH:mm:ss"); // Format the current date
+
+      const selectedBuildingAsset = buildingAssets.value.find(
+        (ba) => ba.buildingAssetId === newBuildingAsset.value.buildingAssetId
+      );
+      if (!selectedBuildingAsset) {
+        throw new Error("Selected asset not found.");
+      }
+
+      // Update the checkout status for both the BuildingAsset and the SerializedAsset
+      await BuildingAssetServices.updateCheckoutStatusAndDate(
+        selectedBuildingAsset.buildingAssetId,
+        false,
+        formattedDate
+      );
+      await SerializedAssetServices.updateCheckoutStatus(
+        selectedBuildingAsset.serializedAssetId,
+        false
+      );
+
+      snackbarText.value = "Asset checked in successfully!";
+      snackbar.value = true;
+      closeBuildingCheckinDialog();
+      await retrieveBuildingAssets();
+      await retrieveSerializedAssets(); // Refresh to show updated statuses
+    } catch (error) {
+      console.error("Error saving check-in:", error);
+      snackbarText.value = "Failed to check in the asset.";
+      snackbar.value = true;
+    }
+  } else {
+    snackbarText.value = "Please select an asset for check-in.";
+    snackbar.value = true;
+  }
+};
+
+const filteredBuildingAssets = computed(() => {
+  if (selectedStatus.value === "Checkout") {
+    return buildingAssets.value.filter(
+      (asset) => asset.checkoutStatus === true
+    );
+  } else if (selectedStatus.value === "Check-in") {
+    return buildingAssets.value.filter(
+      (asset) => asset.checkoutStatus === false
+    );
+  }
+  return buildingAssets.value;
+});
+
+const closeBuildingCheckoutDialog = () => {
+  showBuildingCheckoutDialog.value = false;
+  resetFields();
+  newBuildingAsset.value = {
+    serializedAssetId: "",
+    buildingId: "",
+    checkoutDate: "",
+    expectedCheckinDate: null,
+  };
+};
+
+const closeBuildingCheckinDialog = () => {
+  showBuildingCheckinDialog.value = false;
+  resetFields();
+  // Reset the newBuildingAsset values as well
+  newBuildingAsset.value = {
+    serializedAssetId: "",
+    buildingId: "",
+    checkoutDate: "",
+    checkoutStatus: "",
+  };
+  selectedBuildingAsset.value = "";
+};
+
+// Define headers for the data table
+const buildingAssetCheckoutHeaders = ref([
+  { title: "Owner", key: "name" },
+  { title: "Asset", key: "title" },
+  { title: "Status", key: "checkoutStatus" },
+  { title: "Expected Check-in Date", key: "expectedCheckinDate" },
+  { title: "Checkout Date", key: "checkoutDate" },
+]);
+
+// Define headers for the data table
+const buildingAssetCheckinHeaders = ref([
+  { title: "Owner", key: "name" },
+  { title: "Asset", key: "title" },
+  { title: "Status", key: "checkoutStatus" },
+  { title: "Expected Check-in Date", key: "expectedCheckinDate" },
+  { title: "Check-in Date", key: "checkinDate" },
+]);
+
+// Computed property for assets available for checkout (checkoutStatus = false)
+const availableForCheckoutBuildingAssets = computed(() => {
+  return serializedAssets.value.filter((asset) => !asset.checkoutStatus);
+});
+
+// Computed property for assets available for check-in (checkoutStatus = true)
+const availableForCheckinBuildingAssets = computed(() => {
+  return buildingAssets.value.filter((asset) => asset.checkoutStatus);
+});
+//
+//
+//
+//
+//
+//
+// *** Misc Section ***
+
+// Retrieve SerializedAssets from Database
+const retrieveSerializedAssets = async () => {
+  try {
+    const response = await SerializedAssetServices.getAll();
+    serializedAssets.value = response.data
+      .filter((asset) => asset.activeStatus !== false) // Filter out archived assets
+      .map((serializedAsset) => {
+        const profile = assetProfiles.value.find(
+          (t) => t.key === serializedAsset.profileId
+        );
+        return {
+          ...serializedAsset,
+          title: serializedAsset.serializedAssetName,
+          profileName: profile ? profile.profileName : "Unknown Profile",
+          key: serializedAsset.serializedAssetId,
+          profileId: serializedAsset.profileId,
+          checkoutStatus: serializedAsset.checkoutStatus,
+        };
+      });
+  } catch (error) {
+    console.error("Error loading serialized assets:", error);
+    message.value = "Failed to load serializedAssets.";
+  }
+};
 
 const translateStatus = (status) => {
   return status ? "Checked Out" : "Checked In";
@@ -304,23 +526,27 @@ const translateStatus = (status) => {
 
 const formatDate = (dateString) => {
   if (!dateString) return "Indefinite"; // Return "Indefinite" if dateString is null or undefined
-  // Extract just the date part to avoid time zone conversion issues
-  const [year, month, day] = dateString.split("T")[0].split("-");
-  // Format the date as MM-DD-YYYY
-  const formattedDate = `${month.padStart(2, "0")}-${day.padStart(
-    2,
-    "0"
-  )}-${year}`;
-  return formattedDate;
+  // Parse the dateString to a Date object
+  const date = parseISO(dateString);
+  // Format the date as "MMM dd, yyyy"
+  return format(date, "MMM dd, yyyy");
 };
 
 // Computed property for display
 const formattedCheckinDate = computed(() => {
   if (expectedCheckinDate.value) {
-    return format(new Date(expectedCheckinDate.value), "MM-dd-yyyy");
+    return format(new Date(expectedCheckinDate.value), "MMM dd, yyyy");
   }
   return "";
 });
+
+const resetFields = () => {
+  expectedCheckinDate.value = null; // or a default date if you prefer
+  indefiniteCheckout.value = true; // Assuming true is the default state
+  // Reset other fields as necessary
+};
+
+// Watchers
 
 // Watch for changes on selectedTab and fetch data accordingly
 watch(selectedTab, (newValue) => {
@@ -333,8 +559,8 @@ watch(selectedTab, (newValue) => {
   } else if (newValue === "Buildings") {
     watch(selectedStatus, (statusValue) => {
       retrieveSerializedAssets();
-      // retrieveBuildings();
-      // retrieveBuildingAssets();
+      retrieveBuildings();
+      retrieveBuildingAssets();
     });
   } else if (newValue === "Rooms") {
     watch(selectedStatus, (statusValue) => {
@@ -354,7 +580,21 @@ watch(
       newPersonAsset.value.personAssetId = newValue.personAssetId;
     } else {
       // If newValue is null, reset newPersonAsset.value.personAssetId to a default value
-      newPersonAsset.value.personAssetId = ""; // or null, depending on what makes sense for your application
+      newPersonAsset.value.personAssetId = "";
+    }
+  },
+  { immediate: true, deep: true }
+);
+
+watch(
+  selectedBuildingAsset,
+  (newValue) => {
+    // Check if newValue is not null before trying to access its properties
+    if (newValue && newValue.buildingAssetId) {
+      newBuildingAsset.value.buildingAssetId = newValue.buildingAssetId;
+    } else {
+      // If newValue is null, reset newBuildingAsset.value.buildingAssetId to a default value
+      newBuildingAsset.value.buildingAssetId = "";
     }
   },
   { immediate: true, deep: true }
@@ -365,8 +605,8 @@ onMounted(async () => {
   await retrieveSerializedAssets();
   await retrievePeople();
   await retrievePersonAssets();
-  // await retrieveBuildings();
-  // await retrieveBuildingAssets();
+  await retrieveBuildings();
+  await retrieveBuildingAssets();
   // await retrieveRooms();
   // await retrieveRoomAssets();
 });
@@ -494,15 +734,15 @@ onMounted(async () => {
                   <span>Recent Building Checkouts</span>
                   <v-btn
                     color="saveblue"
-                    @click="showPersonCheckoutDialog = true"
+                    @click="showBuildingCheckoutDialog = true"
                   >
                     Checkout
                   </v-btn>
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
-                    :headers="personAssetCheckoutHeaders"
-                    :items="filteredPersonAssets"
+                    :headers="buildingAssetCheckoutHeaders"
+                    :items="filteredBuildingAssets"
                     class="elevation-1"
                     :items-per-page="10"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
@@ -533,15 +773,15 @@ onMounted(async () => {
                   <span>Recent Building Check-ins</span>
                   <v-btn
                     color="saveblue"
-                    @click="showPersonCheckinDialog = true"
+                    @click="showBuildingCheckinDialog = true"
                   >
                     Check-in
                   </v-btn>
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
-                    :headers="personAssetCheckinHeaders"
-                    :items="filteredPersonAssets"
+                    :headers="buildingAssetCheckinHeaders"
+                    :items="filteredBuildingAssets"
                     class="elevation-1"
                     :items-per-page="10"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
@@ -760,6 +1000,133 @@ onMounted(async () => {
             >Cancel</v-btn
           >
           <v-btn color="saveblue" text @click="savePersonCheckin"
+            >Check-in</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- *** Building Checkout Dialog *** -->
+    <v-dialog v-model="showBuildingCheckoutDialog" persistent max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="headline">Checkout Asset</span>
+        </v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <v-autocomplete
+                  label="Select Building"
+                  v-model="newBuildingAsset.buildingId"
+                  :items="buildings"
+                  item-text="title"
+                  item-value="key"
+                  :rules="[rules.required]"
+                  return-object
+                  clearable
+                ></v-autocomplete>
+              </v-col>
+              <v-col cols="12">
+                <v-autocomplete
+                  label="Select Asset"
+                  v-model="newBuildingAsset.serializedAssetId"
+                  :items="availableForCheckoutBuildingAssets"
+                  item-text="title"
+                  item-value="key"
+                  :rules="[rules.required]"
+                  return-object
+                  clearable
+                ></v-autocomplete>
+              </v-col>
+              <v-col cols="12">
+                <v-checkbox
+                  v-model="indefiniteCheckout"
+                  label="Indefinite Checkout"
+                ></v-checkbox>
+              </v-col>
+              <v-col cols="12" v-if="!indefiniteCheckout">
+                <v-menu
+                  v-model="menu"
+                  :close-on-content-click="false"
+                  :nudge-right="40"
+                  transition="scale-transition"
+                  offset-y
+                  min-width="auto"
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-text-field
+                      v-model="formattedCheckinDate"
+                      label="Expected Checkin Date"
+                      prepend-icon="mdi-calendar"
+                      readonly
+                      v-bind="attrs"
+                      @click="menu = !menu"
+                    ></v-text-field>
+                  </template>
+                  <v-date-picker
+                    v-model="expectedCheckinDate"
+                    @input="menu = false"
+                  ></v-date-picker>
+                </v-menu>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="cancelgrey" text @click="closeBuildingCheckoutDialog"
+            >Cancel</v-btn
+          >
+          <v-btn color="saveblue" text @click="saveBuildingCheckout"
+            >Checkout</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- *** Building Checkin Dialog *** -->
+    <v-dialog v-model="showBuildingCheckinDialog" persistent max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="headline">Check-in Asset</span>
+        </v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <!-- <v-autocomplete
+                  label="Select Building"
+                  v-model="newBuildingAsset.buildingId"
+                  :items="buildingsWithCheckedOutAssets"
+                  item-text="title"
+                  item-value="key"
+                  :rules="[rules.required]"
+                  return-object
+                  clearable
+                ></v-autocomplete> -->
+              </v-col>
+              <v-col cols="12">
+                <v-autocomplete
+                  label="Select Asset for Check-in"
+                  v-model="selectedBuildingAsset"
+                  :items="availableForCheckinBuildingAssets"
+                  item-text="title"
+                  item-value="buildingAssetId"
+                  :rules="[rules.required]"
+                  return-object
+                  clearable
+                ></v-autocomplete>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="cancelgrey" text @click="closeBuildingCheckinDialog"
+            >Cancel</v-btn
+          >
+          <v-btn color="saveblue" text @click="saveBuildingCheckin"
             >Check-in</v-btn
           >
         </v-card-actions>
