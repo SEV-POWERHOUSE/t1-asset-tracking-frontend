@@ -1,7 +1,9 @@
 <script setup>
-import PersonServices from "../services/personServices";
 import SerializedAssetServices from "../services/serializedAssetServices";
+import PersonServices from "../services/personServices";
 import PersonAssetServices from "../services/personAssetServices";
+import BuildingServices from "../services/buildingServices";
+import BuildingAssetServices from "../services/buildingAssetServices";
 
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
@@ -9,9 +11,11 @@ import { format, parseISO, isBefore } from "date-fns";
 
 const router = useRouter();
 const message = ref("");
-const people = ref([]);
 const serializedAssets = ref([]);
+const people = ref([]);
 const personAssets = ref([]);
+const buildings = ref([]);
+const buildingAssets = ref([]);
 const assetProfiles = ref([]);
 const snackbar = ref(false);
 const snackbarText = ref("");
@@ -91,49 +95,102 @@ const retrievePersonAssets = async () => {
   }
 };
 
-const personAssetHeaders = ref([
-  { title: "Owner", key: "fullName" },
-  { title: "Asset", key: "title" },
+// Retrieve Buildings from Database
+const retrieveBuildings = async () => {
+  try {
+    const response = await BuildingServices.getAll();
+    buildings.value = response.data.map((building) => ({
+      title: building.name,
+      key: building.buildingId,
+      abbreviation: building.abbreviation,
+      noOfRooms: building.noOfRooms,
+      activeStatus: building.activeStatus,
+    }));
+  } catch (error) {
+    console.error("Error loading buildings:", error);
+  }
+};
+
+// Retrieve BuildingAssets from Database
+const retrieveBuildingAssets = async () => {
+  try {
+    // Mock fetching buildingAssets
+    const response = await BuildingAssetServices.getAll();
+    // Simulate join logic
+    buildingAssets.value = response.data.map((buildingAsset) => {
+      const building = buildings.value.find(
+        (b) => b.key === buildingAsset.buildingId
+      );
+      const serializedAsset = serializedAssets.value.find(
+        (ba) => ba.key === buildingAsset.serializedAssetId
+      );
+
+      return {
+        buildingAssetId: buildingAsset.buildingAssetId,
+        buildingId: buildingAsset.buildingId,
+        serializedAssetId: buildingAsset.serializedAssetId,
+        name: building ? building.title : "Unknown",
+        title: serializedAsset
+          ? serializedAsset.serializedAssetName
+          : "Unknown Asset",
+        checkoutDate: buildingAsset.checkoutDate,
+        checkoutStatus: buildingAsset.checkoutStatus,
+        expectedCheckinDate: buildingAsset.expectedCheckinDate,
+        checkinDate: buildingAsset.checkinDate,
+      };
+    });
+  } catch (error) {
+    console.error("Error loading building assets:", error);
+    message.value = "Failed to load building assets.";
+  }
+};
+
+const activityHeaders = ref([
+  { title: "Owner/Building", key: "owner" },
+  { title: "Asset", key: "assetTitle" },
+  { title: "Asset Type", key: "assetType" },
   { title: "Activity Type", key: "activityType" },
   { title: "Most Recent Date", key: "mostRecentDate" },
 ]);
 
-const combinedPersonAssets = computed(() => {
-  return (
-    personAssets.value
-      .map((asset) => {
-        // Assume checkoutDate and checkinDate are ISO strings with time, e.g., "YYYY-MM-DDTHH:mm:ss"
-        const checkoutDateISO = asset.checkoutDate;
-        const checkinDateISO = asset.checkinDate;
+const combinedAssets = computed(() => {
+  // Normalize and combine person and building assets
+  const normalizedPersonAssets = personAssets.value.map((asset) => ({
+    owner: asset.fullName,
+    assetTitle: asset.title, // The asset's title
+    activityType: asset.checkoutStatus ? "Checkout" : "Check-in",
+    mostRecentDate: asset.checkoutStatus
+      ? asset.checkoutDate
+      : asset.checkinDate,
+    assetType: "Person Asset",
+  }));
 
-        // Use parseISO to convert to Date objects if needed for comparison
-        const checkoutDate = checkoutDateISO ? parseISO(checkoutDateISO) : null;
-        const checkinDate = checkinDateISO ? parseISO(checkinDateISO) : null;
+  const normalizedBuildingAssets = buildingAssets.value.map((asset) => ({
+    owner: asset.name,
+    assetTitle: asset.title, // The asset's title
+    activityType: asset.checkoutStatus ? "Checkout" : "Check-in",
+    mostRecentDate: asset.checkoutStatus
+      ? asset.checkoutDate
+      : asset.checkinDate,
+    assetType: "Building Asset",
+  }));
 
-        // Determine the most recent date and time
-        let mostRecentActivity = "Checkout";
-        let mostRecentDateObj = checkoutDate; // Default to checkoutDate Date object
-        if (
-          checkinDate &&
-          (!checkoutDate || isBefore(checkoutDate, checkinDate))
-        ) {
-          mostRecentDateObj = checkinDate;
-          mostRecentActivity = "Check-In";
-        }
-
-        // Return the formatted date as YYYY-MM-DD and activity type
-        return {
-          ...asset,
-          mostRecentDate: format(mostRecentDateObj, "yyyy-MM-dd"), // Format to only show the date
-          mostRecentTime: format(mostRecentDateObj, "HH:mm:ss"), // You might want to display time as well
-          activityType: mostRecentActivity,
-        };
-      })
-      // Sort by the actual Date objects to get accurate sorting
-      .sort((a, b) =>
-        isBefore(parseISO(a.checkoutDate), parseISO(b.checkoutDate)) ? 1 : -1
-      )
-  );
+  // Combine, sort, and format mostRecentDate
+  return [...normalizedPersonAssets, ...normalizedBuildingAssets]
+    .map((asset) => {
+      // Convert mostRecentDate to Date object for sorting and formatting
+      const mostRecentDateObj = asset.mostRecentDate
+        ? parseISO(asset.mostRecentDate)
+        : new Date();
+      return {
+        ...asset,
+        mostRecentDateObj,
+        // Format the mostRecentDate for display
+        mostRecentDate: format(mostRecentDateObj, "MMM dd, yyyy"),
+      };
+    })
+    .sort((a, b) => b.mostRecentDateObj - a.mostRecentDateObj) // Sort descending
+    .map(({ mostRecentDateObj, ...asset }) => asset); // Remove the temporary Date object used for sorting
 });
 
 function goToCheckoutPage() {
@@ -142,9 +199,11 @@ function goToCheckoutPage() {
 
 // Call this once to load the default tab's data when the component mounts
 onMounted(async () => {
-  await retrievePeople();
   await retrieveSerializedAssets();
+  await retrievePeople();
   await retrievePersonAssets();
+  await retrieveBuildings();
+  await retrieveBuildingAssets();
 });
 </script>
 
@@ -170,8 +229,8 @@ onMounted(async () => {
             </v-card-title>
             <v-card-text>
               <v-data-table
-                :headers="personAssetHeaders"
-                :items="combinedPersonAssets"
+                :headers="activityHeaders"
+                :items="combinedAssets"
                 class="elevation-1"
                 :items-per-page="10"
                 :items-per-page-options="[5, 10, 20, 50, -1]"

@@ -9,14 +9,23 @@ export default {
   getAll() {
     return apiClient.get(baseURL);
   },
-  getByRoomId(roomId) {
-    return apiClient.get(baseURL + `${roomId}`);
+  getById(roomAssetId) {
+    return apiClient.get(baseURL + `${roomAssetId}`);
   },
-  update(roomId, data) {
-    return apiClient.put(baseURL + `${roomId}`, data);
+  update(roomAssetId, data) {
+    return apiClient.put(baseURL + `${roomAssetId}`, data);
   },
-  delete(roomId) {
-    return apiClient.delete(baseURL + `${roomId}`);
+  updateCheckoutStatus(roomAssetId, checkoutStatus) {
+    return this.update(roomAssetId, { checkoutStatus: checkoutStatus });
+  },
+  updateCheckoutStatusAndDate(roomAssetId, checkoutStatus, date) {
+    return this.update(roomAssetId, {
+      checkoutStatus: checkoutStatus,
+      checkinDate: date,
+    });
+  },
+  delete(roomAssetId) {
+    return apiClient.delete(baseURL + `${roomAssetId}`);
   },
   deleteAll() {
     return apiClient.delete(baseURL);
