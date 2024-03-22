@@ -112,7 +112,7 @@ const retrievePersonAssets = async () => {
 
 const savePersonCheckout = async () => {
   if (newPersonAsset.value.personId && newPersonAsset.value.serializedAssetId) {
-    const formattedDate = format(new Date(), "yyyy-MM-dd");
+    const formattedDate = format(new Date(), "yyyy-MM-dd HH:mm:ss");
 
     // Check if the checkin is marked as indefinite
     let checkinDate = null; // Default to null for indefinite checkin
@@ -159,7 +159,7 @@ const savePersonCheckout = async () => {
 const savePersonCheckin = async () => {
   if (newPersonAsset.value.personAssetId) {
     try {
-      const formattedDate = format(new Date(), "yyyy-MM-dd"); // Format the current date
+      const formattedDate = format(new Date(), "yyyy-MM-dd HH:mm:ss"); // Format the current date
 
       const selectedPersonAsset = personAssets.value.find(
         (pa) => pa.personAssetId === newPersonAsset.value.personAssetId
@@ -181,7 +181,7 @@ const savePersonCheckin = async () => {
 
       snackbarText.value = "Asset checked in successfully!";
       snackbar.value = true;
-      showPersonCheckinDialog.value = false;
+      closePersonCheckinDialog();
       await retrievePersonAssets();
       await retrieveSerializedAssets(); // Refresh to show updated statuses
     } catch (error) {
