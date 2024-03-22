@@ -181,7 +181,7 @@ const savePersonCheckin = async () => {
 
       snackbarText.value = "Asset checked in successfully!";
       snackbar.value = true;
-      showPersonCheckinDialog.value = false;
+      closePersonCheckinDialog();
       await retrievePersonAssets();
       await retrieveSerializedAssets(); // Refresh to show updated statuses
     } catch (error) {
