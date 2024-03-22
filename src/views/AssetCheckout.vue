@@ -1,5 +1,3 @@
-Here is my current code:
-
 <script setup>
 import SerializedAssetServices from "../services/serializedAssetServices";
 import PersonServices from "../services/personServices";
@@ -25,9 +23,6 @@ const buildings = ref([]);
 const buildingAssets = ref([]);
 const rooms = ref([]);
 const roomAssets = ref([]);
-const validPersonAsset = ref(false);
-const validBuildingAsset = ref(false);
-const validRoomAsset = ref(false);
 const showPersonCheckoutDialog = ref(false);
 const showPersonCheckinDialog = ref(false);
 const showBuildingCheckoutDialog = ref(false);
