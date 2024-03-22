@@ -7,7 +7,8 @@ import BuildingAssetServices from "../services/buildingAssetServices";
 import RoomServices from "../services/roomServices";
 import RoomAssetServices from "../services/roomAssetServices";
 import { ref, onMounted, watch, computed } from "vue";
-import { parseISO, format } from "date-fns";
+import { parseISO, formatISO, format } from "date-fns";
+import { utcToZonedTime, zonedTimeToUtc } from "date-fns-tz";
 
 const message = ref("");
 const selectedTab = ref("SerializedAssets");
@@ -116,16 +117,29 @@ const retrievePersonAssets = async () => {
 
 const savePersonCheckout = async () => {
   if (newPersonAsset.value.personId && newPersonAsset.value.serializedAssetId) {
-    const formattedDate = format(new Date(), "MMM dd, yyyy HH:mm:ss");
+    // Define formattedDate with the current date in UTC and ISO format
+    const nowUtc = zonedTimeToUtc(
+      new Date(),
+      Intl.DateTimeFormat().resolvedOptions().timeZone
+    );
+    const formattedDate = nowUtc.toISOString();
+    console.log("Checkout Date in UTC ISO Format:", formattedDate);
 
-    // Check if the checkin is marked as indefinite
-    let checkinDate = null; // Default to null for indefinite checkin
+    let checkinDate = null;
     if (!indefiniteCheckout.value && expectedCheckinDate.value) {
-      // Format the expected checkin date for database
-      checkinDate = format(
-        new Date(expectedCheckinDate.value),
-        "MMM dd, yyyy HH:mm:ss"
-      );
+      try {
+        // Convert expected check-in date to UTC and format to ISO string
+        const checkinDateUtc = zonedTimeToUtc(
+          new Date(expectedCheckinDate.value),
+          Intl.DateTimeFormat().resolvedOptions().timeZone
+        );
+        checkinDate = checkinDateUtc.toISOString();
+        console.log("Formatted Check-in Date in UTC ISO Format:", checkinDate);
+      } catch (error) {
+        console.error("Invalid expected check-in date:", error);
+        // Exit the function to prevent further execution if there's an error
+        return;
+      }
     }
 
     const personAssetData = {
@@ -330,16 +344,29 @@ const saveBuildingCheckout = async () => {
     newBuildingAsset.value.buildingId &&
     newBuildingAsset.value.serializedAssetId
   ) {
-    const formattedDate = format(new Date(), "MMM dd, yyyy HH:mm:ss");
+    // Define formattedDate with the current date in UTC and ISO format
+    const nowUtc = zonedTimeToUtc(
+      new Date(),
+      Intl.DateTimeFormat().resolvedOptions().timeZone
+    );
+    const formattedDate = nowUtc.toISOString();
+    console.log("Checkout Date in UTC ISO Format:", formattedDate);
 
-    // Check if the checkin is marked as indefinite
-    let checkinDate = null; // Default to null for indefinite checkin
+    let checkinDate = null;
     if (!indefiniteCheckout.value && expectedCheckinDate.value) {
-      // Format the expected checkin date for database
-      checkinDate = format(
-        new Date(expectedCheckinDate.value),
-        "MMM dd, yyyy HH:mm:ss"
-      );
+      try {
+        // Convert expected check-in date to UTC and format to ISO string
+        const checkinDateUtc = zonedTimeToUtc(
+          new Date(expectedCheckinDate.value),
+          Intl.DateTimeFormat().resolvedOptions().timeZone
+        );
+        checkinDate = checkinDateUtc.toISOString();
+        console.log("Formatted Check-in Date in UTC ISO Format:", checkinDate);
+      } catch (error) {
+        console.error("Invalid expected check-in date:", error);
+        // Exit the function to prevent further execution if there's an error
+        return;
+      }
     }
 
     const buildingAssetData = {
@@ -533,16 +560,29 @@ const retrieveRoomAssets = async () => {
 
 const saveRoomCheckout = async () => {
   if (newRoomAsset.value.roomId && newRoomAsset.value.serializedAssetId) {
-    const formattedDate = format(new Date(), "MMM dd, yyyy HH:mm:ss");
+    // Define formattedDate with the current date in UTC and ISO format
+    const nowUtc = zonedTimeToUtc(
+      new Date(),
+      Intl.DateTimeFormat().resolvedOptions().timeZone
+    );
+    const formattedDate = nowUtc.toISOString();
+    console.log("Checkout Date in UTC ISO Format:", formattedDate);
 
-    // Check if the checkin is marked as indefinite
-    let checkinDate = null; // Default to null for indefinite checkin
+    let checkinDate = null;
     if (!indefiniteCheckout.value && expectedCheckinDate.value) {
-      // Format the expected checkin date for database
-      checkinDate = format(
-        new Date(expectedCheckinDate.value),
-        "MMM dd, yyyy HH:mm:ss"
-      );
+      try {
+        // Convert expected check-in date to UTC and format to ISO string
+        const checkinDateUtc = zonedTimeToUtc(
+          new Date(expectedCheckinDate.value),
+          Intl.DateTimeFormat().resolvedOptions().timeZone
+        );
+        checkinDate = checkinDateUtc.toISOString();
+        console.log("Formatted Check-in Date in UTC ISO Format:", checkinDate);
+      } catch (error) {
+        console.error("Invalid expected check-in date:", error);
+        // Exit the function to prevent further execution if there's an error
+        return;
+      }
     }
 
     const roomAssetData = {
