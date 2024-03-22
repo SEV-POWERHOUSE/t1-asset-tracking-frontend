@@ -98,52 +98,43 @@ const personAssetHeaders = ref([
   { title: "Most Recent Date", key: "mostRecentDate" },
 ]);
 
-// const translateStatus = (status) => {
-//   return status ? "Checked Out" : "Checked In";
-// };
-
-// const formatDate = (dateString) => {
-//   if (!dateString) return "Indefinite"; // Return "Indefinite" if dateString is null or undefined
-//   // Extract just the date part to avoid time zone conversion issues
-//   const [year, month, day] = dateString.split("T")[0].split("-");
-//   // Format the date as MM-DD-YYYY
-//   const formattedDate = `${month.padStart(2, "0")}-${day.padStart(
-//     2,
-//     "0"
-//   )}-${year}`;
-//   return formattedDate;
-// };
-
 const combinedPersonAssets = computed(() => {
-  return personAssets.value.map((asset) => {
-    // Assume checkoutDate and checkinDate are ISO strings with time, e.g., "YYYY-MM-DDTHH:mm:ss"
-    const checkoutDateISO = asset.checkoutDate;
-    const checkinDateISO = asset.checkinDate;
+  return (
+    personAssets.value
+      .map((asset) => {
+        // Assume checkoutDate and checkinDate are ISO strings with time, e.g., "YYYY-MM-DDTHH:mm:ss"
+        const checkoutDateISO = asset.checkoutDate;
+        const checkinDateISO = asset.checkinDate;
 
-    // Use parseISO to convert to Date objects if needed for comparison
-    const checkoutDate = checkoutDateISO ? parseISO(checkoutDateISO) : null;
-    const checkinDate = checkinDateISO ? parseISO(checkinDateISO) : null;
+        // Use parseISO to convert to Date objects if needed for comparison
+        const checkoutDate = checkoutDateISO ? parseISO(checkoutDateISO) : null;
+        const checkinDate = checkinDateISO ? parseISO(checkinDateISO) : null;
 
-    // Determine the most recent date and time
-    let mostRecentActivity = "Checkout";
-    let mostRecentDateObj = checkoutDate; // Default to checkoutDate Date object
-    if (checkinDate && (!checkoutDate || isBefore(checkoutDate, checkinDate))) {
-      mostRecentDateObj = checkinDate;
-      mostRecentActivity = "Check-In";
-    }
+        // Determine the most recent date and time
+        let mostRecentActivity = "Checkout";
+        let mostRecentDateObj = checkoutDate; // Default to checkoutDate Date object
+        if (
+          checkinDate &&
+          (!checkoutDate || isBefore(checkoutDate, checkinDate))
+        ) {
+          mostRecentDateObj = checkinDate;
+          mostRecentActivity = "Check-In";
+        }
 
-    // Return the formatted date as YYYY-MM-DD and activity type
-    return {
-      ...asset,
-      mostRecentDate: format(mostRecentDateObj, "yyyy-MM-dd"), // Format to only show the date
-      mostRecentTime: format(mostRecentDateObj, "HH:mm:ss"), // You might want to display time as well
-      activityType: mostRecentActivity,
-    };
-  })
-  // Sort by the actual Date objects to get accurate sorting
-  .sort((a, b) => (isBefore(parseISO(a.checkoutDate), parseISO(b.checkoutDate)) ? 1 : -1));
+        // Return the formatted date as YYYY-MM-DD and activity type
+        return {
+          ...asset,
+          mostRecentDate: format(mostRecentDateObj, "yyyy-MM-dd"), // Format to only show the date
+          mostRecentTime: format(mostRecentDateObj, "HH:mm:ss"), // You might want to display time as well
+          activityType: mostRecentActivity,
+        };
+      })
+      // Sort by the actual Date objects to get accurate sorting
+      .sort((a, b) =>
+        isBefore(parseISO(a.checkoutDate), parseISO(b.checkoutDate)) ? 1 : -1
+      )
+  );
 });
-
 
 function goToCheckoutPage() {
   router.push({ name: "assetCheckout" });
