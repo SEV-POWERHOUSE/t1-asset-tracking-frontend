@@ -15,6 +15,15 @@ export default {
   update(personAssetId, data) {
     return apiClient.put(baseURL + `${personAssetId}`, data);
   },
+  updateCheckoutStatus(personAssetId, checkoutStatus) {
+    return this.update(personAssetId, { checkoutStatus: checkoutStatus });
+  },
+  updateCheckoutStatusAndDate(personAssetId, checkoutStatus, date) {
+    return this.update(personAssetId, {
+      checkoutStatus: checkoutStatus,
+      checkinDate: date,
+    });
+  },
   delete(personAssetId) {
     return apiClient.delete(baseURL + `${personAssetId}`);
   },

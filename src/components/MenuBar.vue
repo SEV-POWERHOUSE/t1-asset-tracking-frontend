@@ -19,7 +19,7 @@ const isRoleAssigned = computed(() => store.getters.isRoleAssigned);
 // Compute isDev from store
 const isDev = computed(() => store.getters.isDev);
 
-const maintenanceActions = [
+const manageActions = [
   {
     title: "Users",
     component: "userManage",
@@ -83,11 +83,12 @@ onMounted(() => {
         <!-- Conditional rendering based on user role -->
         <template v-if="isAdmin">
           <v-btn text :to="{ name: 'adminDashboard' }">Admin Dashboard</v-btn>
+          <v-btn text :to="{ name: 'assetCheckout' }">Checkout</v-btn>
           <v-btn>
             Manage
             <v-menu activator="parent" open-on-hover>
               <v-list>
-                <v-list-item v-for="(item, index) in maintenanceActions" :key="index" :value="index"
+                <v-list-item v-for="(item, index) in manageActions" :key="index" :value="index"
                   @click="router.push({ name: item.component })">
                   <v-list-item-title>{{ item.title }}</v-list-item-title>
                 </v-list-item>

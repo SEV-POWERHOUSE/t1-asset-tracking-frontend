@@ -1,6 +1,4 @@
-<script setup>
-
-</script>
+<script setup></script>
 
 <template>
   <div>
@@ -9,15 +7,12 @@
         <v-card-title>No Role Assigned</v-card-title>
         <v-card-text>
           <p>
-            You currently have no role assigned. An administrator will need to assign
-            you a role before you move forward. Either contact an administrator in person 
-            or use the button below to notify an administrator.
-      </p>
+            You currently have no role assigned. An administrator will need to
+            assign you a role before you move forward.
+          </p>
           <!-- Additional content for unassigned dashboard can go here -->
         </v-card-text>
       </v-card>
-     
-    
     </v-container>
   </div>
 </template>

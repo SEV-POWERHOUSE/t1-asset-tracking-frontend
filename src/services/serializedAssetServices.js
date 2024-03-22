@@ -15,6 +15,9 @@ export default {
   update(serializedAssetId, data) {
     return apiClient.put(baseURL + serializedAssetId, data);
   },
+  updateCheckoutStatus(serializedAssetId, checkoutStatus) {
+    return this.update(serializedAssetId, { checkoutStatus: checkoutStatus });
+  },
   delete(serializedAssetId) {
     return apiClient.delete(baseURL + serializedAssetId);
   },
