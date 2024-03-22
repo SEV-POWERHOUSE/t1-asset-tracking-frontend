@@ -33,7 +33,8 @@ const indefiniteCheckout = ref(true);
 const expectedCheckinDate = ref(null);
 const snackbar = ref(false);
 const snackbarText = ref("");
-const activitySortBy = ref([{ key: "checkoutDate", order: "desc" }]);
+const checkoutSortBy = ref([{ key: "checkoutDate", order: "desc" }]);
+const checkinSortBy = ref([{ key: "checkinDate", order: "desc" }]);
 const rules = {
   required: (value) => !!value || "Required.",
 };
@@ -429,7 +430,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="10"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
-                    v-model:sort-by="activitySortBy"
+                    v-model:sort-by="checkoutSortBy"
                   >
                     <template v-slot:item.checkoutStatus="{ item }">
                       <td>{{ translateStatus(item.checkoutStatus) }}</td>
@@ -466,7 +467,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="10"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
-                    v-model:sort-by="activitySortBy"
+                    v-model:sort-by="checkinSortBy"
                   >
                     <template v-slot:item.checkoutStatus="{ item }">
                       <td>{{ translateStatus(item.checkoutStatus) }}</td>
@@ -505,7 +506,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="10"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
-                    v-model:sort-by="activitySortBy"
+                    v-model:sort-by="checkoutSortBy"
                   >
                     <template v-slot:item.checkoutStatus="{ item }">
                       <td>{{ translateStatus(item.checkoutStatus) }}</td>
@@ -544,7 +545,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="10"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
-                    v-model:sort-by="activitySortBy"
+                    v-model:sort-by="checkinSortBy"
                   >
                     <template v-slot:item.checkoutStatus="{ item }">
                       <td>{{ translateStatus(item.checkoutStatus) }}</td>
@@ -581,7 +582,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="10"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
-                    v-model:sort-by="activitySortBy"
+                    v-model:sort-by="checkoutSortBy"
                   >
                     <template v-slot:item.checkoutStatus="{ item }">
                       <td>{{ translateStatus(item.checkoutStatus) }}</td>
@@ -618,7 +619,7 @@ onMounted(async () => {
                     class="elevation-1"
                     :items-per-page="10"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
-                    v-model:sort-by="activitySortBy"
+                    v-model:sort-by="checkinSortBy"
                   >
                     <template v-slot:item.checkoutStatus="{ item }">
                       <td>{{ translateStatus(item.checkoutStatus) }}</td>
