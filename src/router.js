@@ -10,6 +10,7 @@ import AssetManage from "./views/AssetManage.vue";
 import FacilityManage from "./views/FacilityManage.vue";
 import PersonManage from "./views/PersonManage.vue";
 import ProfileView from "./views/ProfileView.vue";
+import AssetCheckout from "./views/AssetCheckout.vue";
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -104,15 +105,15 @@ const router = createRouter({
       component: ProfileView,
       props: true,
     },
+    {
+      path: "/assetCheckout",
+      name: "assetCheckout",
+      component: AssetCheckout,
+    },
   ],
 });
 
 export default router;
-
-
-
-
-
 
 // Template for breadcrumb links
 // meta: {

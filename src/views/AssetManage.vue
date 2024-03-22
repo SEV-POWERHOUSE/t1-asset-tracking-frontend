@@ -817,15 +817,17 @@ const activateSerializedAsset = async (serializedAssetId) => {
 };
 
 const serializedAssetHeaders = ref([
-  { title: "Asset", key: "serializedAssetName" }, // Add this line
+  { title: "Asset", key: "serializedAssetName" },
+  { title: "Status", key: "checkoutStatus" },
   { title: "View Profile", key: "view", sortable: false },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Archive", key: "archive", sortable: false },
 ]);
 
 const archivedSerializedAssetHeaders = ref([
-  { title: "Name", key: "profileName" },
-  { title: "Serial Number", key: "serialNumber" },
+  { title: "Asset", key: "serializedAssetName" },
+  { title: "Status", key: "checkoutStatus" },
+  { title: "View Profile", key: "view", sortable: false },
   { title: "View Profile", key: "view", sortable: false },
   // { title: "Edit", key: "edit", sortable: false },
   { title: "Activate", key: "activate", sortable: false },
@@ -992,7 +994,7 @@ onMounted(async () => {
 
       <!-- Introducing a spacer row for visual separation -->
       <v-row class="my-1"></v-row>
-      <!-- Adjust 'my-3' class for desired spacing -->
+      <!-- Adjust 'my-1' class for desired spacing -->
 
       <v-row>
         <v-col cols="12">
@@ -1007,6 +1009,8 @@ onMounted(async () => {
       <div v-if="selectedTab === 'SerializedAssets'">
         <v-row class="mt-3">
           <!-- Added margin-top class here -->
+
+          <!-- Assets filter section with added space after tabs -->
           <v-col cols="12" md="4">
             <v-autocomplete
               v-model="selectedFilterProfileId"
@@ -1479,8 +1483,7 @@ onMounted(async () => {
                     :items-per-page-options="[5, 10, 20, 50, -1]"
                     v-model:sort-by="assetsSortBy"
                   >
-
-                  <template v-slot:item.view="{ item }">
+                    <template v-slot:item.view="{ item }">
                       <div
                         class="d-flex align-center justify-start"
                         style="padding-left: 10%"
@@ -1494,7 +1497,7 @@ onMounted(async () => {
                         </v-btn>
                       </div>
                     </template>
-                  
+
                     <template v-slot:item.edit="{ item }">
                       <v-btn
                         icon
@@ -1544,8 +1547,7 @@ onMounted(async () => {
                     :items-per-page-options="[5, 10, 20, 50, -1]"
                     v-model:sort-by="assetsSortBy"
                   >
-
-                  <template v-slot:item.view="{ item }">
+                    <template v-slot:item.view="{ item }">
                       <div
                         class="d-flex align-center justify-start"
                         style="padding-left: 10%"
