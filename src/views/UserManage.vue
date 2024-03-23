@@ -17,7 +17,7 @@ const userRolesSortBy = ref([{ key: "name", order: "asc" }]);
 
 // Refs for User Roles tab
 const roles = ref([]);
-const newUserRole = ref({ name: "" });
+const newUserRole = ref({ name: "", defaultCanAdd: false, defaultCanEdit: false, defaultCanDelete: false, defaultCanArchive: false, defaultCanActivate: false});
 const editingUserRole = ref(false);
 const showAddUserRoleDialog = ref(false);
 const validUserRole = ref(false);
@@ -67,22 +67,31 @@ const fetchUsersAndRoles = async () => {
 
 // Batch update function
 const saveAllUserRoleChanges = async () => {
-  const updatePromises = Object.entries(changedUserRoles.value).map(
+
+  const updateRolePromises = Object.entries(changedUserRoles.value).map(
     ([userId, roleId]) => userServices.updateRole(userId, roleId)
   );
 
+  const updateData = generateUpdateData(); // This is a placeholder for your logic
+  
+  
+
+  const allPromises = [...updateRolePromises, ...additionalUpdatePromises];
+
   try {
-    await Promise.all(updatePromises);
-    snackbarText.value = "All user roles updated successfully";
+    await Promise.all(allPromises); // Wait for all promises to complete
+    snackbarText.value = "All changes updated successfully";
     snackbar.value = true; // Show the snackbar
     fetchUsersAndRoles(); // Refresh data
-    changedUserRoles.value = {}; // Reset changes tracker
+    changedUserRoles.value = {}; // Reset role changes tracker
+    additionalChanges.value = {}; // Reset additional changes tracker
   } catch (error) {
-    console.error("Failed to update user roles:", error);
-    snackbarText.value = "Failed to update user roles";
+    console.error("Failed to update changes:", error);
+    snackbarText.value = "Failed to update changes";
     snackbar.value = true; // Show the snackbar even in case of error
   }
 };
+
 
 // Computed property to check if there are changes
 const hasChanges = computed(() => {
@@ -113,24 +122,30 @@ const editUserRole = (role) => {
 };
 
 const saveUserRole = async () => {
-  if (editingUserRole.value && newUserRole.value.id) {
-    // Update existing user role
-    await userRoleServices.update(newUserRole.value.id, newUserRole.value);
-    snackbarText.value = "Role updated successfully.";
-  } else {
-    // Add new user role
-    await userRoleServices.create(newUserRole.value);
-    snackbarText.value = "Role added successfully.";
+  try {
+    if (editingUserRole.value && newUserRole.value.id) {
+      // Update existing user role
+      await userRoleServices.update(newUserRole.value.id, newUserRole.value);
+      snackbarText.value = "Role updated successfully.";
+    } else {
+      // Add new user role
+      await userRoleServices.create(newUserRole.value);
+      snackbarText.value = "Role added successfully.";
+    }
+    snackbar.value = true; // Show the snackbar
+
+    // Reset newUserRole to its initial state
+    newUserRole.value = { name: "", defaultCanAdd: false, defaultCanEdit: false, defaultCanDelete: false, defaultCanArchive: false, defaultCanActivate: false };
+    validUserRole.value = false; // Also reset form validation state
+    editingUserRole.value = false; // Reset editing state
+
+    showAddUserRoleDialog.value = false; // Close the dialog
+    await retrieveUserRoles(); // Refresh the list of roles
+  } catch (error) {
+    console.error("Failed to save user role:", error);
+    snackbarText.value = "Failed to save user role.";
+    snackbar.value = true; // Show the snackbar even in case of error
   }
-  snackbar.value = true; // Show the snackbar
-
-  // Reset newUserRole to its initial state
-  newUserRole.value = { name: "" };
-  validUserRole.value = false; // Also reset form validation state
-  editingUserRole.value = false; // Reset editing state
-
-  showAddUserRoleDialog.value = false; // Close the dialog
-  await retrieveUserRoles(); // Refresh the list of roles
 };
 
 const deleteUserRole = async (roleId) => {
@@ -149,7 +164,7 @@ const deleteUserRole = async (roleId) => {
 
 const closeUserRoleDialog = () => {
   showAddUserRoleDialog.value = false;
-  newUserRole.value = { name: "" }; // Reset the form
+  newUserRole.value = { name: "", defaultCanAdd: false, defaultCanEdit: false, defaultCanDelete: false, defaultCanArchive: false, defaultCanActivate: false };
   editingUserRole.value = false; // Reset the editing state
 };
 
@@ -175,7 +190,7 @@ const confirmDelete = async () => {
 };
 
 const resetForm = () => {
-  newUserRole.value = { name: "" };
+  newUserRole.value = { name: "", defaultCanAdd: false, defaultCanEdit: false, defaultCanDelete: false, defaultCanArchive: false, defaultCanActivate: false };
   validUserRole.value = false; // Reset validation state
   editingUserRole.value = false; // Ensure we're not in editing mode
 };
@@ -342,6 +357,11 @@ onMounted(async () => {
               maxlength="40"
               counter
             ></v-text-field>
+            <v-checkbox label="Add"  v-model="newUserRole.defaultCanAdd"></v-checkbox>
+            <v-checkbox label="Edit"  v-model="newUserRole.defaultCanEdit"></v-checkbox>
+            <v-checkbox label="Delete"  v-model="newUserRole.defaultCanDelete"></v-checkbox>
+            <v-checkbox label="Archive"  v-model="newUserRole.defaultCanArchive"></v-checkbox>
+            <v-checkbox label="Activate"  v-model="newUserRole.defaultCanActivate"></v-checkbox>
           </v-form>
         </v-card-text>
         <v-card-actions>
