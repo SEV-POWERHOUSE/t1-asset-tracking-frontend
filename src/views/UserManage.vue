@@ -67,30 +67,25 @@ const fetchUsersAndRoles = async () => {
 
 // Batch update function
 const saveAllUserRoleChanges = async () => {
-
-  const updateRolePromises = Object.entries(changedUserRoles.value).map(
-    ([userId, roleId]) => userServices.updateRole(userId, roleId)
+  const updatePromises = Object.entries(changedUserRoles.value).map(
+    ([userId, roleId]) => {
+      return userServices.updateRole(userId, roleId);
+    }
   );
 
-  const updateData = generateUpdateData(); // This is a placeholder for your logic
-  
-  
-
-  const allPromises = [...updateRolePromises, ...additionalUpdatePromises];
-
   try {
-    await Promise.all(allPromises); // Wait for all promises to complete
-    snackbarText.value = "All changes updated successfully";
-    snackbar.value = true; // Show the snackbar
+    await Promise.all(updatePromises);
+    snackbarText.value = "All role changes updated successfully";
+    snackbar.value = true;
     fetchUsersAndRoles(); // Refresh data
     changedUserRoles.value = {}; // Reset role changes tracker
-    additionalChanges.value = {}; // Reset additional changes tracker
   } catch (error) {
-    console.error("Failed to update changes:", error);
-    snackbarText.value = "Failed to update changes";
-    snackbar.value = true; // Show the snackbar even in case of error
+    console.error("Failed to update role changes:", error);
+    snackbarText.value = "Failed to update role changes";
+    snackbar.value = true;
   }
 };
+
 
 
 // Computed property to check if there are changes
