@@ -829,7 +829,7 @@ const archivedSerializedAssetHeaders = ref([
   { title: "Status", key: "checkoutStatus" },
   { title: "View Profile", key: "view", sortable: false },
   { title: "View Profile", key: "view", sortable: false },
-  // { title: "Edit", key: "edit", sortable: false },
+  { title: "Edit", key: "edit", sortable: false },
   { title: "Activate", key: "activate", sortable: false },
   { title: "Delete", key: "delete", sortable: false },
 ]);
@@ -1571,7 +1571,7 @@ onMounted(async () => {
                         </v-btn>
                       </div>
                     </template>
-                    <!-- <template v-slot:item.edit="{ item }">
+                    <template v-slot:item.edit="{ item }">
                       <v-btn
                         icon
                         class="table-icons"
@@ -1579,7 +1579,7 @@ onMounted(async () => {
                       >
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
-                    </template> -->
+                    </template>
                     <template v-slot:item.activate="{ item }">
                       <v-btn
                         icon
