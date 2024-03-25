@@ -834,7 +834,11 @@ const archivedSerializedAssetHeaders = ref([
   { title: "Delete", key: "delete", sortable: false },
 ]);
 
-// Misc Section
+// *** Misc Section ***
+
+const translateStatus = (status) => {
+  return status ? "Checked Out" : "Checked In";
+};
 
 const openDeleteConfirmDialog = (item) => {
   itemToDelete.value = item;
@@ -1483,6 +1487,9 @@ onMounted(async () => {
                     :items-per-page-options="[5, 10, 20, 50, -1]"
                     v-model:sort-by="assetsSortBy"
                   >
+                    <template v-slot:item.checkoutStatus="{ item }">
+                      <td>{{ translateStatus(item.checkoutStatus) }}</td>
+                    </template>
                     <template v-slot:item.view="{ item }">
                       <div
                         class="d-flex align-center justify-start"
@@ -1547,6 +1554,9 @@ onMounted(async () => {
                     :items-per-page-options="[5, 10, 20, 50, -1]"
                     v-model:sort-by="assetsSortBy"
                   >
+                    <template v-slot:item.checkoutStatus="{ item }">
+                      <td>{{ translateStatus(item.checkoutStatus) }}</td>
+                    </template>
                     <template v-slot:item.view="{ item }">
                       <div
                         class="d-flex align-center justify-start"
