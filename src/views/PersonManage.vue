@@ -1,6 +1,7 @@
 <script setup>
 import PersonServices from "../services/personServices";
 import { ref, onMounted, watch, computed } from "vue";
+import { useStore } from 'vuex';
 
 const message = ref("");
 const selectedTab = ref("People");
@@ -18,6 +19,10 @@ const itemToActivate = ref(null);
 const snackbar = ref(false);
 const snackbarText = ref("");
 const personSortBy = ref([{ key: "title", order: "asc" }]);
+const store = useStore();
+const canAdd = computed(() => {
+  return store.getters.canAdd;
+});
 const rules = {
   required: (value) => !!value || "Required.",
   maxNameLength: (value) =>
@@ -159,24 +164,45 @@ const activatePerson = async (personId) => {
   }
 };
 
-const personHeaders = ref([
+const basePersonHeaders = ref([
   { title: "First Name", key: "title" },
   { title: "Last Name", key: "lName" },
   { title: "Email", key: "email" },
   { title: "ID", key: "idNumber" },
-  { title: "Edit", key: "edit", sortable: false },
-  { title: "Archive", key: "archive", sortable: false },
 ]);
 
-const archivedPersonHeaders = ref([
-  { title: "First Name", key: "title" },
-  { title: "Last Name", key: "lName" },
-  { title: "Email", key: "email" },
-  { title: "ID", key: "idNumber" },
-  { title: "Edit", key: "edit", sortable: false },
-  { title: "Activate", key: "activate", sortable: false },
-  { title: "Delete", key: "delete", sortable: false },
-]);
+const personHeaders  = computed(() => {
+  const headers = [...basePersonHeaders.value];
+
+if (store.getters.canEdit) {
+  headers.push( { title: "Edit", key: "edit", sortable: false });
+}
+
+if (store.getters.canArchive) {
+  headers.push({ title: "Archive", key: "archive", sortable: false });
+}
+
+return headers;
+});
+
+const archivedPersonHeaders = computed(() => {
+  const headers = [...basePersonHeaders.value];
+
+if (store.getters.canEdit) {
+  headers.push( { title: "Edit", key: "edit", sortable: false });
+}
+
+if (store.getters.canActivate) {
+  headers.push({ title: "Activate", key: "activate", sortable: false });
+}
+
+if (store.getters.canDelete) {
+  headers.push({ title: "Delete", key: "delete", sortable: false });
+}
+
+return headers;
+});
+
 
 const filteredPeople = computed(() => {
   if (selectedStatus.value === "Active") {
@@ -281,9 +307,11 @@ onMounted(async () => {
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Active People</span>
+                  <template v-if="canAdd">
                   <v-btn color="primary" @click="showAddPersonDialog = true">
                     Add New Person
                   </v-btn>
+                </template>
                 </v-card-title>
                 <v-card-text>
                   <v-data-table

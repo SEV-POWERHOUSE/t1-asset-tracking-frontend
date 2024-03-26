@@ -32,10 +32,23 @@ const store = createStore({
     isRoleAssigned(state) {
       return state.loginUser && state.loginUser.userRoleId !== miscUserRoleId;
     },
-    // Add a getter to check for development permission
     isDev(state) {
-      // This will return true if `devPermission` is true, and false otherwise
       return state.loginUser && state.loginUser.devPermission === true;
+    },
+    canAdd(state) {
+      return state.loginUser && state.loginUser.canAdd === true;
+    },
+    canEdit(state) {
+      return state.loginUser && state.loginUser.canEdit === true;
+    },
+    canDelete(state) {
+      return state.loginUser && state.loginUser.canDelete === true;
+    },
+    canArchive(state) {
+      return state.loginUser && state.loginUser.canArchive === true;
+    },
+    canActivate(state) {
+      return state.loginUser && state.loginUser.canActivate === true;
     },
   },
 });

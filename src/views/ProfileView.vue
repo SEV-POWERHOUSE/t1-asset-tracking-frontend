@@ -1,11 +1,11 @@
 <script setup>
 import AssetProfileServices from "../services/assetProfileServices";
 import SerializedAssetServices from "../services/serializedAssetServices";
-import { ref, onMounted, watch, defineProps } from "vue";
+import { ref, onMounted, watch, defineProps, computed } from "vue";
 import router from "../router";
+import { useStore } from 'vuex';
 
 const message = ref("");
-const people = ref([]);
 const serializedAssets = ref([]);
 const assetProfiles = ref([]);
 const selectedStatus = ref("Active");
@@ -22,6 +22,10 @@ const itemToArchive = ref(null);
 const itemToActivate = ref(null);
 const snackbar = ref(false);
 const snackbarText = ref("");
+const store = useStore();
+const canAdd = computed(() => {
+  return store.getters.canAdd;
+});
 const rules = {
   required: (value) => !!value || "Required.",
 };
@@ -189,22 +193,47 @@ const activateSerializedAsset = async (serializedAssetId) => {
   }
 };
 
-const serializedAssetHeaders = ref([
+const baseSerializedAssetHeaders = ref([
   { title: "Serial Number", key: "serialNumber" },
   { title: "Notes", key: "notes" },
   { title: "Status", key: "checkoutStatus" },
-  { title: "Edit", key: "edit", sortable: false },
-  { title: "Archive", key: "archive", sortable: false },
 ]);
 
-const archivedSerializedAssetHeaders = ref([
-  { title: "Serial Number", key: "serialNumber" },
-  { title: "Notes", key: "notes" },
-  { title: "Status", key: "checkoutStatus" },
-  { title: "Edit", key: "edit", sortable: false },
-  { title: "Activate", key: "activate", sortable: false },
-  { title: "Delete", key: "delete", sortable: false },
-]);
+
+const serializedAssetHeaders = computed(() => {
+const headers = [...baseSerializedAssetHeaders.value];
+
+if (store.getters.canEdit) {
+  headers.push( { title: "Edit", key: "edit", sortable: false });
+}
+
+if (store.getters.canArchive) {
+  headers.push({ title: "Archive", key: "archive", sortable: false });
+}
+
+return headers;
+  
+});
+
+const archivedSerializedAssetHeaders = computed(() => {
+const headers = [...baseSerializedAssetHeaders.value];
+
+if (store.getters.canEdit) {
+  headers.push( { title: "Edit", key: "edit", sortable: false });
+}
+
+if (store.getters.canActivate) {
+  headers.push({ title: "Activate", key: "activate", sortable: false });
+}
+
+if (store.getters.canDelete) {
+  headers.push({ title: "Delete", key: "delete", sortable: false });
+}
+
+return headers;
+  
+});
+
 
 // Misc Section
 const profileDetails = ref({ profileName: "Loading..." });
@@ -313,12 +342,14 @@ onMounted(async () => {
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Active {{ profileDetails.profileName }}</span>
+                  <template v-if="canAdd">
                   <v-btn
                     color="primary"
                     @click="showAddSerializedAssetDialog = true"
                   >
                     Add New {{ profileDetails.profileName }}
                   </v-btn>
+                </template>
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
