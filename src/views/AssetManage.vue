@@ -5,6 +5,7 @@ import AssetProfileServices from "../services/assetProfileServices";
 import SerializedAssetServices from "../services/serializedAssetServices";
 import { ref, onMounted, watch, computed } from "vue";
 import router from "../router";
+import { useStore } from 'vuex';
 
 const message = ref("");
 const selectedTab = ref("SerializedAssets");
@@ -43,6 +44,10 @@ const categoriesSortBy = ref([{ key: "title", order: "asc" }]);
 const typesSortBy = ref([{ key: "title", order: "asc" }]);
 const profilesSortBy = ref([{ key: "profileName", order: "asc" }]);
 const assetsSortBy = ref([{ key: "profileName", order: "asc" }]);
+const store = useStore();
+const canAdd = computed(() => {
+  return store.getters.canAdd;
+});
 const rules = {
   required: (value) => !!value || "Required.",
   maxDescLength: (value) => value.length <= 255,
@@ -191,19 +196,45 @@ const closeCategoryDialog = () => {
   newCategory.value = { categoryName: "", desc: "" };
 };
 
-const categoryHeaders = ref([
+const baseCategoryHeaders = ref([
   { title: "Category Name", key: "title" },
   { title: "Description", key: "description", sortable: false },
-  { title: "Edit", key: "edit", sortable: false },
-  { title: "Archive", key: "archive", sortable: false },
 ]);
-const archivedCategoryHeaders = ref([
-  { title: "Category Name", key: "title" },
-  { title: "Description", key: "description", sortable: false },
-  { title: "Edit", key: "edit", sortable: false },
-  { title: "Activate", key: "activate", sortable: false },
-  { title: "Delete", key: "delete", sortable: false },
-]);
+
+
+const activeCategoryHeaders = computed(() => {
+  const headers = [...baseCategoryHeaders.value];
+
+  if (store.getters.canEdit) {
+    headers.push( { title: "Edit", key: "edit", sortable: false });
+  }
+
+  if (store.getters.canArchive) {
+    headers.push({ title: "Archive", key: "archive", sortable: false });
+  }
+
+  return headers;
+});
+
+const archivedCategoryHeaders = computed(() => {
+  const headers = [...baseCategoryHeaders.value];
+
+  if (store.getters.canEdit) {
+    headers.push( { title: "Edit", key: "edit", sortable: false });
+  }
+
+  if (store.getters.canActivate) {
+    headers.push({ title: "Activate", key: "activate", sortable: false });
+  }
+
+  if (store.getters.canDelete) {
+    headers.push({ title: "Delete", key: "delete", sortable: false });
+  }
+
+  return headers;
+});
+
+
 
 const filteredAssetCategories = computed(() => {
   if (selectedStatus.value === "Active") {
@@ -408,22 +439,43 @@ const activateType = async (typeId) => {
   }
 };
 
-const typeHeaders = ref([
+const baseTypeHeaders = ref([
   { title: "Type Name", key: "title" },
   { title: "Description", key: "description", sortable: false },
   { title: "Category", key: "categoryName" },
-  { title: "Edit", key: "edit", sortable: false },
-  { title: "Archive", key: "archive", sortable: false },
 ]);
 
-const archivedTypeHeaders = ref([
-  { title: "Type Name", key: "title" },
-  { title: "Description", key: "description", sortable: false },
-  { title: "Category", key: "categoryName" },
-  { title: "Edit", key: "edit", sortable: false },
-  { title: "Activate", key: "activate", sortable: false },
-  { title: "Delete", key: "delete", sortable: false },
-]);
+const activeTypeHeaders = computed(() => {
+  const headers = [...baseTypeHeaders.value];
+
+  if (store.getters.canEdit) {
+    headers.push( { title: "Edit", key: "edit", sortable: false });
+  }
+
+  if (store.getters.canArchive) {
+    headers.push({ title: "Archive", key: "archive", sortable: false });
+  }
+
+  return headers;
+});
+
+const archivedTypeHeaders = computed(() => {
+  const headers = [...baseTypeHeaders.value];
+
+  if (store.getters.canEdit) {
+    headers.push( { title: "Edit", key: "edit", sortable: false });
+  }
+
+  if (store.getters.canActivate) {
+    headers.push({ title: "Activate", key: "activate", sortable: false });
+  }
+
+  if (store.getters.canDelete) {
+    headers.push({ title: "Delete", key: "delete", sortable: false });
+  }
+
+  return headers;
+});
 
 // Profiles Section
 
@@ -620,24 +672,47 @@ const activateProfile = async (profileId) => {
   }
 };
 
-const profileHeaders = ref([
+const baseProfileHeaders = ref([
   { title: "Profile Name", key: "profileName" },
   { title: "Type", key: "typeName" },
   { title: "# of Assets", key: "assets" },
   { title: "View Assets", key: "view", sortable: false },
-  { title: "Edit", key: "edit", sortable: false },
-  { title: "Archive", key: "archive", sortable: false },
 ]);
 
-const archivedProfileHeaders = ref([
-  { title: "Profile Name", key: "profileName" },
-  { title: "Type", key: "typeName" },
-  { title: "# of Assets", key: "assets" },
-  { title: "View Assets", key: "view", sortable: false },
-  { title: "Edit", key: "edit", sortable: false },
-  { title: "Activate", key: "activate", sortable: false },
-  { title: "Delete", key: "delete", sortable: false },
-]);
+const activeProfileHeaders = computed(() => {
+  const headers = [...baseProfileHeaders.value];
+
+  if (store.getters.canEdit) {
+    headers.push( { title: "Edit", key: "edit", sortable: false });
+  }
+
+  if (store.getters.canArchive) {
+    headers.push({ title: "Archive", key: "archive", sortable: false });
+  }
+
+  return headers;
+});
+
+const archivedProfileHeaders = computed(() => {
+  const headers = [...baseProfileHeaders.value];
+
+  if (store.getters.canEdit) {
+    headers.push( { title: "Edit", key: "edit", sortable: false });
+  }
+
+  if (store.getters.canActivate) {
+    headers.push({ title: "Activate", key: "activate", sortable: false });
+  }
+
+  if (store.getters.canDelete) {
+    headers.push({ title: "Delete", key: "delete", sortable: false });
+  }
+
+  return headers;
+});
+
+
+
 
 // Serialized Asset Section
 
@@ -816,23 +891,46 @@ const activateSerializedAsset = async (serializedAssetId) => {
   }
 };
 
-const serializedAssetHeaders = ref([
+const baseSerializedAssetHeaders = ref([
   { title: "Asset", key: "serializedAssetName" },
   { title: "Status", key: "checkoutStatus" },
   { title: "View Profile", key: "view", sortable: false },
-  { title: "Edit", key: "edit", sortable: false },
-  { title: "Archive", key: "archive", sortable: false },
 ]);
 
-const archivedSerializedAssetHeaders = ref([
-  { title: "Asset", key: "serializedAssetName" },
-  { title: "Status", key: "checkoutStatus" },
-  { title: "View Profile", key: "view", sortable: false },
-  { title: "View Profile", key: "view", sortable: false },
-  // { title: "Edit", key: "edit", sortable: false },
-  { title: "Activate", key: "activate", sortable: false },
-  { title: "Delete", key: "delete", sortable: false },
-]);
+const activeSerializedAssetHeaders = computed(() => {
+  const headers = [...baseSerializedAssetHeaders.value];
+
+  if (store.getters.canEdit) {
+    headers.push( { title: "Edit", key: "edit", sortable: false });
+  }
+
+  if (store.getters.canArchive) {
+    headers.push({ title: "Archive", key: "archive", sortable: false });
+  }
+
+  return headers;
+});
+
+const archivedSerializedAssetHeaders = computed(() => {
+  const headers = [...baseSerializedAssetHeaders.value];
+
+  if (store.getters.canEdit) {
+    headers.push( { title: "Edit", key: "edit", sortable: false });
+  }
+
+  if (store.getters.canActivate) {
+    headers.push({ title: "Activate", key: "activate", sortable: false });
+  }
+
+  if (store.getters.canDelete) {
+    headers.push({ title: "Delete", key: "delete", sortable: false });
+  }
+
+  return headers;
+});
+
+
+
 
 // Misc Section
 
@@ -1115,13 +1213,15 @@ onMounted(async () => {
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Active Categories</span>
+                  <template v-if= "canAdd">
                   <v-btn color="primary" @click="showAddCategoryDialog = true">
                     Add New Category
                   </v-btn>
+                </template>
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
-                    :headers="categoryHeaders"
+                    :headers="activeCategoryHeaders"
                     :items="filteredAssetCategories"
                     item-key="key"
                     class="elevation-1"
@@ -1223,13 +1323,15 @@ onMounted(async () => {
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Active Types</span>
+                  <template v-if= "canAdd">
                   <v-btn color="primary" @click="openAddTypeDialog">
                     Add New Type
                   </v-btn>
+                </template>
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
-                    :headers="typeHeaders"
+                    :headers="activeTypeHeaders"
                     :items="filteredAssetTypes"
                     item-key="key"
                     class="elevation-1"
@@ -1324,13 +1426,15 @@ onMounted(async () => {
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Active Profiles</span>
+                <template v-if="canAdd">
                   <v-btn color="primary" @click="openAddProfileDialog"
                     >Add New Profile</v-btn
                   >
+                </template>
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
-                    :headers="profileHeaders"
+                    :headers="activeProfileHeaders"
                     :items="filteredAssetProfiles"
                     item-key="profileId"
                     class="elevation-1"
@@ -1469,13 +1573,15 @@ onMounted(async () => {
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Active Assets</span>
+                  <template v-if="canAdd">
                   <v-btn color="primary" @click="openAddSerializedAssetDialog">
                     Add New Asset
                   </v-btn>
+                </template>
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
-                    :headers="serializedAssetHeaders"
+                    :headers="activeSerializedAssetHeaders"
                     :items="filteredSerializedAssets"
                     item-key="serializedAssetId"
                     class="elevation-1"
@@ -1561,7 +1667,7 @@ onMounted(async () => {
                         </v-btn>
                       </div>
                     </template>
-                    <!-- <template v-slot:item.edit="{ item }">
+                    <template v-slot:item.edit="{ item }">
                       <v-btn
                         icon
                         class="table-icons"
@@ -1569,7 +1675,7 @@ onMounted(async () => {
                       >
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
-                    </template> -->
+                    </template>
                     <template v-slot:item.activate="{ item }">
                       <v-btn
                         icon

@@ -18,25 +18,41 @@ const isAdmin = computed(() => store.getters.isAdmin);
 const isRoleAssigned = computed(() => store.getters.isRoleAssigned);
 // Compute isDev from store
 const isDev = computed(() => store.getters.isDev);
+const canAdd = computed(() => {
+  return store.getters.canAdd;
+});
 
-const manageActions = [
-  {
-    title: "Users",
-    component: "userManage",
-  },
-  {
-    title: "Assets",
-    component: "assetManage",
-  },
-  {
-    title: "Facilities",
-    component: "facilityManage",
-  },
-  {
-    title: "People",
-    component: "personManage",
-  },
-];
+const canEdit = computed(() => store.getters.canEdit);
+const canDelete = computed(() => store.getters.canDelete);
+const canArchive = computed(() => store.getters.canArchive);
+const canActivate = computed(() => store.getters.canActivate);
+
+const manageActions = computed(() => {
+  let actions = [
+    {
+      title: "Assets",
+      component: "assetManage",
+    },
+    {
+      title: "Facilities",
+      component: "facilityManage",
+    },
+    {
+      title: "People",
+      component: "personManage",
+    },
+  ];
+
+  if (isAdmin.value) {
+    actions.unshift({
+      title: "Users",
+      component: "userManage",
+    });
+  }
+
+  return actions;
+});
+
 
 const resetMenu = () => {
   user.value = Utils.getStore("user");
@@ -84,6 +100,13 @@ onMounted(() => {
         <template v-if="isAdmin">
           <v-btn text :to="{ name: 'adminDashboard' }">Admin Dashboard</v-btn>
           <v-btn text :to="{ name: 'assetCheckout' }">Checkout</v-btn>
+        </template>
+
+        <template v-else-if="isRoleAssigned">
+          <v-btn text :to="{ name: 'userDashboard' }">User Dashboard</v-btn>
+        </template>
+
+        <template v-if="canAdd || canDelete || canEdit || canArchive || canActivate">
           <v-btn>
             Manage
             <v-menu activator="parent" open-on-hover>
@@ -96,14 +119,14 @@ onMounted(() => {
             </v-menu>
           </v-btn>
         </template>
-        <template v-else-if="isRoleAssigned">
-          <v-btn text :to="{ name: 'userDashboard' }">User Dashboard</v-btn>
-        </template>
+
 
         <template v-if="isDev">
           <v-btn text :to="{ name: 'devTools' }">Dev Tools</v-btn>
         </template>
       </template>
+
+      
 
       <template v-if="user">
         <v-menu bottom min-width="200px" rounded offset-y>

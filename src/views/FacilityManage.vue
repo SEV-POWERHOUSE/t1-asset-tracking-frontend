@@ -2,6 +2,7 @@
 import BuildingServices from "../services/buildingServices";
 import RoomServices from "../services/roomServices";
 import { ref, onMounted, watch, computed } from "vue";
+import { useStore } from 'vuex';
 
 const message = ref("");
 const selectedTab = ref("Rooms");
@@ -26,6 +27,10 @@ const snackbar = ref(false);
 const snackbarText = ref("");
 const buildingsSortBy = ref([{ key: "title", order: "asc" }]);
 const roomsSortBy = ref([{ key: "title", order: "asc" }]);
+const store = useStore();
+const canAdd = computed(() => {
+  return store.getters.canAdd;
+});
 const rules = {
   required: (value) => !!value || "Required.",
   maxNameLength: (value) => value.length <= 80,
@@ -178,22 +183,47 @@ const activateBuilding = async (buildingId) => {
   }
 };
 
-const buildingHeaders = ref([
+const baseBuildingHeaders = ref([
   { title: "Building Name", key: "title" },
   { title: "Abbreviation", key: "abbreviation" },
   { title: "No. of Rooms", key: "noOfRooms" },
-  { title: "Edit", key: "edit", sortable: false },
-  { title: "Archive", key: "archive", sortable: false },
-]);
 
-const archivedBuildingHeaders = ref([
-  { title: "Building Name", key: "title" },
-  { title: "Abbreviation", key: "abbreviation" },
-  { title: "No. of Rooms", key: "noOfRooms" },
-  { title: "Edit", key: "edit", sortable: false },
-  { title: "Activate", key: "activate", sortable: false },
-  { title: "Delete", key: "delete", sortable: false },
-]);
+
+])
+
+const buildingHeaders = computed(() => {
+const headers = [...baseBuildingHeaders.value];
+
+if (store.getters.canEdit) {
+  headers.push( { title: "Edit", key: "edit", sortable: false });
+}
+
+if (store.getters.canArchive) {
+  headers.push({ title: "Archive", key: "archive", sortable: false });
+}
+
+return headers;
+  
+});
+
+const archivedBuildingHeaders = computed(() => {
+const headers = [...baseBuildingHeaders.value];
+
+if (store.getters.canEdit) {
+  headers.push( { title: "Edit", key: "edit", sortable: false });
+}
+
+if (store.getters.canActivate) {
+  headers.push({ title: "Activate", key: "activate", sortable: false });
+}
+
+if (store.getters.canDelete) {
+  headers.push({ title: "Delete", key: "delete", sortable: false });
+}
+
+return headers;
+  
+});
 
 const filteredBuildings = computed(() => {
   if (selectedStatus.value === "Active") {
@@ -349,20 +379,42 @@ const activateRoom = async (roomId) => {
   }
 };
 
-const roomHeaders = ref([
+const baseRoomHeaders = ref([
   { title: "Room No.", key: "title" },
   { title: "Building", key: "buildingName" },
-  { title: "Edit", key: "edit", sortable: false },
-  { title: "Archive", key: "archive", sortable: false },
 ]);
 
-const archivedRoomHeaders = ref([
-  { title: "Room No.", key: "title" },
-  { title: "Building", key: "buildingName" },
-  { title: "Edit", key: "edit", sortable: false },
-  { title: "Activate", key: "activate", sortable: false },
-  { title: "Delete", key: "delete", sortable: false },
-]);
+const roomHeaders  = computed(() => {
+  const headers = [...baseRoomHeaders.value];
+
+if (store.getters.canEdit) {
+  headers.push( { title: "Edit", key: "edit", sortable: false });
+}
+
+if (store.getters.canArchive) {
+  headers.push({ title: "Archive", key: "archive", sortable: false });
+}
+
+return headers;
+});
+
+const archivedRoomHeaders = computed(() => {
+  const headers = [...baseRoomHeaders.value];
+
+if (store.getters.canEdit) {
+  headers.push( { title: "Edit", key: "edit", sortable: false });
+}
+
+if (store.getters.canActivate) {
+  headers.push({ title: "Activate", key: "activate", sortable: false });
+}
+
+if (store.getters.canDelete) {
+  headers.push({ title: "Delete", key: "delete", sortable: false });
+}
+
+return headers;
+});
 
 const filteredRooms = computed(() => {
   return rooms.value.filter((room) => {
@@ -524,9 +576,11 @@ onMounted(async () => {
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Active Buildings</span>
+                  <template v-if="canAdd">
                   <v-btn color="primary" @click="showAddBuildingDialog = true">
                     Add New Building
                   </v-btn>
+                </template>
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
@@ -633,9 +687,11 @@ onMounted(async () => {
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Active Rooms</span>
+                  <template v-if="canAdd">
                   <v-btn color="primary" @click="openAddRoomDialog">
                     Add New Room
                   </v-btn>
+                </template>
                 </v-card-title>
                 <v-card-text>
                   <v-data-table
@@ -677,10 +733,7 @@ onMounted(async () => {
               <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                   <span>Archived Rooms</span>
-                  <v-btn color="primary" @click="openAddRoomDialog">
-                    Add New Room
-                  </v-btn>
-                </v-card-title>
+               </v-card-title>
                 <v-card-text>
                   <v-data-table
                     :headers="archivedRoomHeaders"
