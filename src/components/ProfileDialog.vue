@@ -145,9 +145,8 @@ const saveProfile = async () => {
       console.log("Created profile: ", createdProfile)
 
 
-      if (createdProfile && createdProfile.profileId) {
-        console.log("Profile created now saving data from textfields ", createdProfile.profileId)
-        await saveProfileData(createdProfile)
+      if (createdProfile && createdProfile.data && createdProfile.data.profileId) {
+        await saveProfileData(createdProfile.data.profileId)
       } else {
         throw new Error("Profile creation response missing profileId")
       }
@@ -169,9 +168,9 @@ const saveProfileData = async (profileId) => {
   try {
     for(const field of generateDynamicFields.value) {
       const profileData = {
-        field: field.newData.value.field,
-        data: field.newData.value.data,
-        profileId: profileId.value.key
+        field: field.newData.field,
+        data: field.newData.data,
+        profileId: profileId
       }
       await ProfileDataServices.create(profileData)
       console.log("profileData created: ", profileData)
