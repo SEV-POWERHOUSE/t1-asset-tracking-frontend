@@ -205,48 +205,119 @@ const activityHeaders = ref([
 ]);
 
 const combinedAssets = computed(() => {
-  // Normalize person assets
-  const normalizedPersonAssets = personAssets.value.map(asset => ({
-    owner: asset.fullName,
-    assetTitle: asset.title,
-    activityType: asset.checkoutStatus ? "Checkout" : "Check-in",
-    mostRecentDate: asset.checkoutStatus ? asset.checkoutDate : asset.checkinDate,
-    assetType: "Person Asset",
-  }));
+  // Initialize an empty array to hold all activities
+  const allActivities = [];
 
-  // Normalize building assets
-  const normalizedBuildingAssets = buildingAssets.value.map(asset => ({
-    owner: asset.name,
-    assetTitle: asset.title,
-    activityType: asset.checkoutStatus ? "Checkout" : "Check-in",
-    mostRecentDate: asset.checkoutStatus ? asset.checkoutDate : asset.checkinDate,
-    assetType: "Building Asset",
-  }));
+  // Process person assets for checkout and check-in
+  personAssets.value.forEach((asset) => {
+    const person = people.value.find((p) => p.key === asset.personId);
+    const serializedAsset = serializedAssets.value.find(
+      (sa) => sa.key === asset.serializedAssetId
+    );
+    const assetTitle = serializedAsset
+      ? serializedAsset.serializedAssetName
+      : "Unknown Asset";
+    const fullName = person ? person.fullName : "Unknown";
 
-  // Normalize room assets
-  const normalizedRoomAssets = roomAssets.value.map(asset => ({
-    owner: asset.name, // Assuming 'name' is the room's identifier; adjust as needed
-    assetTitle: asset.title,
-    activityType: asset.checkoutStatus ? "Checkout" : "Check-in",
-    mostRecentDate: asset.checkoutStatus ? asset.checkoutDate : asset.checkinDate,
-    assetType: "Room Asset",
-  }));
+    // Add checkout activity, if exists
+    if (asset.checkoutDate) {
+      allActivities.push({
+        owner: fullName,
+        assetTitle: assetTitle,
+        activityType: "Checkout",
+        mostRecentDate: asset.checkoutDate,
+        assetType: "Person Asset",
+      });
+    }
 
-  // Combine all assets, sort, and format mostRecentDate
-  return [...normalizedPersonAssets, ...normalizedBuildingAssets, ...normalizedRoomAssets]
-    .map(asset => {
-      // Convert mostRecentDate to Date object for sorting and formatting
-      const mostRecentDateObj = asset.mostRecentDate ? parseISO(asset.mostRecentDate) : new Date();
-      return {
-        ...asset,
-        mostRecentDateObj,
-        mostRecentDate: format(mostRecentDateObj, "MMM dd, yyyy"), // Format the mostRecentDate for display
-      };
-    })
-    .sort((a, b) => b.mostRecentDateObj - a.mostRecentDateObj) // Sort by mostRecentDateObj descending
-    .map(({ mostRecentDateObj, ...asset }) => asset); // Remove the temporary Date object used for sorting
+    // Add check-in activity, if exists
+    if (asset.checkinDate) {
+      allActivities.push({
+        owner: fullName,
+        assetTitle: assetTitle,
+        activityType: "Check-in",
+        mostRecentDate: asset.checkinDate,
+        assetType: "Person Asset",
+      });
+    }
+  });
+
+  // Process building assets for checkout and check-in
+  buildingAssets.value.forEach((asset) => {
+    const building = buildings.value.find((b) => b.key === asset.buildingId);
+    const serializedAsset = serializedAssets.value.find(
+      (sa) => sa.key === asset.serializedAssetId
+    );
+    const assetTitle = serializedAsset
+      ? serializedAsset.serializedAssetName
+      : "Unknown Asset";
+    const buildingName = building ? building.title : "Unknown";
+
+    if (asset.checkoutDate) {
+      allActivities.push({
+        owner: buildingName,
+        assetTitle: assetTitle,
+        activityType: "Checkout",
+        mostRecentDate: asset.checkoutDate,
+        assetType: "Building Asset",
+      });
+    }
+
+    if (asset.checkinDate) {
+      allActivities.push({
+        owner: buildingName,
+        assetTitle: assetTitle,
+        activityType: "Check-in",
+        mostRecentDate: asset.checkinDate,
+        assetType: "Building Asset",
+      });
+    }
+  });
+
+  // Process room assets for checkout and check-in
+  roomAssets.value.forEach((asset) => {
+    const room = rooms.value.find((r) => r.key === asset.roomId);
+    const serializedAsset = serializedAssets.value.find(
+      (sa) => sa.key === asset.serializedAssetId
+    );
+    const assetTitle = serializedAsset
+      ? serializedAsset.serializedAssetName
+      : "Unknown Asset";
+    const roomName = room ? room.title : "Unknown";
+
+    if (asset.checkoutDate) {
+      allActivities.push({
+        owner: roomName,
+        assetTitle: assetTitle,
+        activityType: "Checkout",
+        mostRecentDate: asset.checkoutDate,
+        assetType: "Room Asset",
+      });
+    }
+
+    if (asset.checkinDate) {
+      allActivities.push({
+        owner: roomName,
+        assetTitle: assetTitle,
+        activityType: "Check-in",
+        mostRecentDate: asset.checkinDate,
+        assetType: "Room Asset",
+      });
+    }
+  });
+
+  // After processing all assets, sort by mostRecentDate and format the date for display
+  return allActivities
+    .map((activity) => ({
+      ...activity,
+      mostRecentDateObj: parseISO(activity.mostRecentDate),
+    }))
+    .sort((a, b) => b.mostRecentDateObj - a.mostRecentDateObj)
+    .map(({ mostRecentDateObj, ...activity }) => ({
+      ...activity,
+      mostRecentDate: format(mostRecentDateObj, "MMM dd, yyyy"),
+    }));
 });
-
 
 function goToCheckoutPage() {
   router.push({ name: "assetCheckout" });
