@@ -828,7 +828,6 @@ const archivedSerializedAssetHeaders = ref([
   { title: "Asset", key: "serializedAssetName" },
   { title: "Status", key: "checkoutStatus" },
   { title: "View Profile", key: "view", sortable: false },
-  { title: "View Profile", key: "view", sortable: false },
   { title: "Edit", key: "edit", sortable: false },
   { title: "Activate", key: "activate", sortable: false },
   { title: "Delete", key: "delete", sortable: false },
