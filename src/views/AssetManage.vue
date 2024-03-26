@@ -1598,7 +1598,7 @@ onMounted(async () => {
       </v-card>
     </v-dialog>
     <!-- Add/Edit Profile Dialog -->
-    <v-dialog v-model="showAddProfileDialog" max-width="600px">
+    <v-dialog v-model="showAddProfileDialog" max-width="800px">
       <ProfileDialog 
         :editing-profile="editingProfile" 
         :send-edit-profile="sendEditProfile"
