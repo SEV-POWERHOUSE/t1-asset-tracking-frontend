@@ -125,29 +125,15 @@ const retrievePersonAssets = async () => {
 
 const savePersonCheckout = async () => {
   if (newPersonAsset.value.personId && newPersonAsset.value.serializedAssetId) {
-    // Define formattedDate with the current date in UTC and ISO format
-    const nowUtc = zonedTimeToUtc(
-      new Date(),
-      Intl.DateTimeFormat().resolvedOptions().timeZone
-    );
-    const formattedDate = nowUtc.toISOString();
-    console.log("Checkout Date in UTC ISO Format:", formattedDate);
+    // Use the local time directly, formatting it to match the check-in formatting
+    const formattedDate = format(new Date(), "MMM dd, yyyy HH:mm:ss");
+    console.log("Checkout Date in Local Time Format:", formattedDate);
 
     let checkinDate = null;
     if (!indefiniteCheckout.value && expectedCheckinDate.value) {
-      try {
-        // Convert expected check-in date to UTC and format to ISO string
-        const checkinDateUtc = zonedTimeToUtc(
-          new Date(expectedCheckinDate.value),
-          Intl.DateTimeFormat().resolvedOptions().timeZone
-        );
-        checkinDate = checkinDateUtc.toISOString();
-        console.log("Formatted Check-in Date in UTC ISO Format:", checkinDate);
-      } catch (error) {
-        console.error("Invalid expected check-in date:", error);
-        // Exit the function to prevent further execution if there's an error
-        return;
-      }
+      // Since you're already using local time for checkout, ensure that expected check-in date handling is consistent
+      checkinDate = format(new Date(expectedCheckinDate.value), "MMM dd, yyyy");
+      console.log("Formatted Expected Check-in Date:", checkinDate);
     }
 
     const personAssetData = {
