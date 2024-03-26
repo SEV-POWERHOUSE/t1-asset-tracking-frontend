@@ -1629,9 +1629,10 @@ onMounted(async () => {
               label="Category Name"
               v-model="newCategory.title"
               :rules="[rules.required, rules.maxNameLength]"
-              maxLength="50"
-              counter
+              maxlength="50"
+              :counter="50"
             ></v-text-field>
+
             <v-text-field
               label="Description"
               v-model="newCategory.description"
