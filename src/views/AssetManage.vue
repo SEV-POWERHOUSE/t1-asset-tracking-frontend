@@ -897,6 +897,7 @@ const baseSerializedAssetHeaders = ref([
   { title: "View Profile", key: "view", sortable: false },
 ]);
 
+
 const activeSerializedAssetHeaders = computed(() => {
   const headers = [...baseSerializedAssetHeaders.value];
 
@@ -930,9 +931,11 @@ const archivedSerializedAssetHeaders = computed(() => {
 });
 
 
+// *** Misc Section ***
 
-
-// Misc Section
+const translateStatus = (status) => {
+  return status ? "Checked Out" : "Checked In";
+};
 
 const openDeleteConfirmDialog = (item) => {
   itemToDelete.value = item;
@@ -1589,6 +1592,9 @@ onMounted(async () => {
                     :items-per-page-options="[5, 10, 20, 50, -1]"
                     v-model:sort-by="assetsSortBy"
                   >
+                    <template v-slot:item.checkoutStatus="{ item }">
+                      <td>{{ translateStatus(item.checkoutStatus) }}</td>
+                    </template>
                     <template v-slot:item.view="{ item }">
                       <div
                         class="d-flex align-center justify-start"
@@ -1653,6 +1659,9 @@ onMounted(async () => {
                     :items-per-page-options="[5, 10, 20, 50, -1]"
                     v-model:sort-by="assetsSortBy"
                   >
+                    <template v-slot:item.checkoutStatus="{ item }">
+                      <td>{{ translateStatus(item.checkoutStatus) }}</td>
+                    </template>
                     <template v-slot:item.view="{ item }">
                       <div
                         class="d-flex align-center justify-start"
@@ -1725,9 +1734,10 @@ onMounted(async () => {
               label="Category Name"
               v-model="newCategory.title"
               :rules="[rules.required, rules.maxNameLength]"
-              maxLength="50"
-              counter
+              maxlength="50"
+              :counter="50"
             ></v-text-field>
+
             <v-text-field
               label="Description"
               v-model="newCategory.description"

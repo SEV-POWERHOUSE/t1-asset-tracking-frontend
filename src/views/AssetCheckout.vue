@@ -30,6 +30,14 @@ const showBuildingCheckoutDialog = ref(false);
 const showBuildingCheckinDialog = ref(false);
 const showRoomCheckoutDialog = ref(false);
 const showRoomCheckinDialog = ref(false);
+const checkoutFormValid = ref(false);
+const checkinFormValid = ref(false);
+const personCheckoutForm = ref(null);
+const buildingCheckoutForm = ref(null);
+const roomCheckoutForm = ref(null);
+const personCheckinForm = ref(null);
+const buildingCheckinForm = ref(null);
+const roomCheckinForm = ref(null);
 const menu = ref(false);
 const indefiniteCheckout = ref(true);
 const expectedCheckinDate = ref(null);
@@ -117,29 +125,15 @@ const retrievePersonAssets = async () => {
 
 const savePersonCheckout = async () => {
   if (newPersonAsset.value.personId && newPersonAsset.value.serializedAssetId) {
-    // Define formattedDate with the current date in UTC and ISO format
-    const nowUtc = zonedTimeToUtc(
-      new Date(),
-      Intl.DateTimeFormat().resolvedOptions().timeZone
-    );
-    const formattedDate = nowUtc.toISOString();
-    console.log("Checkout Date in UTC ISO Format:", formattedDate);
+    // Use the local time directly, formatting it to match the check-in formatting
+    const formattedDate = format(new Date(), "MMM dd, yyyy HH:mm:ss");
+    console.log("Checkout Date in Local Time Format:", formattedDate);
 
     let checkinDate = null;
     if (!indefiniteCheckout.value && expectedCheckinDate.value) {
-      try {
-        // Convert expected check-in date to UTC and format to ISO string
-        const checkinDateUtc = zonedTimeToUtc(
-          new Date(expectedCheckinDate.value),
-          Intl.DateTimeFormat().resolvedOptions().timeZone
-        );
-        checkinDate = checkinDateUtc.toISOString();
-        console.log("Formatted Check-in Date in UTC ISO Format:", checkinDate);
-      } catch (error) {
-        console.error("Invalid expected check-in date:", error);
-        // Exit the function to prevent further execution if there's an error
-        return;
-      }
+      // Since you're already using local time for checkout, ensure that expected check-in date handling is consistent
+      checkinDate = format(new Date(expectedCheckinDate.value), "MMM dd, yyyy");
+      console.log("Formatted Expected Check-in Date:", checkinDate);
     }
 
     const personAssetData = {
@@ -344,29 +338,15 @@ const saveBuildingCheckout = async () => {
     newBuildingAsset.value.buildingId &&
     newBuildingAsset.value.serializedAssetId
   ) {
-    // Define formattedDate with the current date in UTC and ISO format
-    const nowUtc = zonedTimeToUtc(
-      new Date(),
-      Intl.DateTimeFormat().resolvedOptions().timeZone
-    );
-    const formattedDate = nowUtc.toISOString();
-    console.log("Checkout Date in UTC ISO Format:", formattedDate);
+    // Use the local time directly, formatting it to match the check-in formatting
+    const formattedDate = format(new Date(), "MMM dd, yyyy HH:mm:ss");
+    console.log("Checkout Date in Local Time Format:", formattedDate);
 
     let checkinDate = null;
     if (!indefiniteCheckout.value && expectedCheckinDate.value) {
-      try {
-        // Convert expected check-in date to UTC and format to ISO string
-        const checkinDateUtc = zonedTimeToUtc(
-          new Date(expectedCheckinDate.value),
-          Intl.DateTimeFormat().resolvedOptions().timeZone
-        );
-        checkinDate = checkinDateUtc.toISOString();
-        console.log("Formatted Check-in Date in UTC ISO Format:", checkinDate);
-      } catch (error) {
-        console.error("Invalid expected check-in date:", error);
-        // Exit the function to prevent further execution if there's an error
-        return;
-      }
+      // Since you're already using local time for checkout, ensure that expected check-in date handling is consistent
+      checkinDate = format(new Date(expectedCheckinDate.value), "MMM dd, yyyy");
+      console.log("Formatted Expected Check-in Date:", checkinDate);
     }
 
     const buildingAssetData = {
@@ -560,29 +540,15 @@ const retrieveRoomAssets = async () => {
 
 const saveRoomCheckout = async () => {
   if (newRoomAsset.value.roomId && newRoomAsset.value.serializedAssetId) {
-    // Define formattedDate with the current date in UTC and ISO format
-    const nowUtc = zonedTimeToUtc(
-      new Date(),
-      Intl.DateTimeFormat().resolvedOptions().timeZone
-    );
-    const formattedDate = nowUtc.toISOString();
-    console.log("Checkout Date in UTC ISO Format:", formattedDate);
+    // Use the local time directly, formatting it to match the check-in formatting
+    const formattedDate = format(new Date(), "MMM dd, yyyy HH:mm:ss");
+    console.log("Checkout Date in Local Time Format:", formattedDate);
 
     let checkinDate = null;
     if (!indefiniteCheckout.value && expectedCheckinDate.value) {
-      try {
-        // Convert expected check-in date to UTC and format to ISO string
-        const checkinDateUtc = zonedTimeToUtc(
-          new Date(expectedCheckinDate.value),
-          Intl.DateTimeFormat().resolvedOptions().timeZone
-        );
-        checkinDate = checkinDateUtc.toISOString();
-        console.log("Formatted Check-in Date in UTC ISO Format:", checkinDate);
-      } catch (error) {
-        console.error("Invalid expected check-in date:", error);
-        // Exit the function to prevent further execution if there's an error
-        return;
-      }
+      // Since you're already using local time for checkout, ensure that expected check-in date handling is consistent
+      checkinDate = format(new Date(expectedCheckinDate.value), "MMM dd, yyyy");
+      console.log("Formatted Expected Check-in Date:", checkinDate);
     }
 
     const roomAssetData = {
@@ -768,9 +734,12 @@ const formattedCheckinDate = computed(() => {
 });
 
 const resetFields = () => {
-  expectedCheckinDate.value = null; // or a default date if you prefer
-  indefiniteCheckout.value = true; // Assuming true is the default state
-  // Reset other fields as necessary
+  // Reset date related stuff
+  expectedCheckinDate.value = null;
+  indefiniteCheckout.value = true;
+  // Reset the from validation
+  checkoutFormValid.value = false;
+  checkinFormValid.value = false;
 };
 
 // Watchers
@@ -1123,76 +1092,83 @@ onMounted(async () => {
         <v-card-title>
           <span class="headline">Checkout Asset</span>
         </v-card-title>
-        <v-card-text>
-          <v-container>
-            <v-row>
-              <v-col cols="12">
-                <v-autocomplete
-                  label="Select Person"
-                  v-model="newPersonAsset.personId"
-                  :items="people"
-                  item-text="title"
-                  item-value="key"
-                  :rules="[rules.required]"
-                  return-object
-                  clearable
-                ></v-autocomplete>
-              </v-col>
-              <v-col cols="12">
-                <v-autocomplete
-                  label="Select Asset"
-                  v-model="newPersonAsset.serializedAssetId"
-                  :items="availableForCheckoutPersonAssets"
-                  item-text="title"
-                  item-value="key"
-                  :rules="[rules.required]"
-                  return-object
-                  clearable
-                ></v-autocomplete>
-              </v-col>
-              <v-col cols="12">
-                <v-checkbox
-                  v-model="indefiniteCheckout"
-                  label="Indefinite Checkout"
-                ></v-checkbox>
-              </v-col>
-              <v-col cols="12" v-if="!indefiniteCheckout">
-                <v-menu
-                  v-model="menu"
-                  :close-on-content-click="false"
-                  :nudge-right="40"
-                  transition="scale-transition"
-                  offset-y
-                  min-width="auto"
-                >
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-text-field
-                      v-model="formattedCheckinDate"
-                      label="Expected Checkin Date"
-                      prepend-icon="mdi-calendar"
-                      readonly
-                      v-bind="attrs"
-                      @click="menu = !menu"
-                    ></v-text-field>
-                  </template>
-                  <v-date-picker
-                    v-model="expectedCheckinDate"
-                    @input="menu = false"
-                  ></v-date-picker>
-                </v-menu>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="cancelgrey" text @click="closePersonCheckoutDialog"
-            >Cancel</v-btn
-          >
-          <v-btn color="saveblue" text @click="savePersonCheckout"
-            >Checkout</v-btn
-          >
-        </v-card-actions>
+        <v-form ref="personCheckoutForm" v-model="checkoutFormValid">
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <v-autocomplete
+                    label="Select Person"
+                    v-model="newPersonAsset.personId"
+                    :items="people"
+                    item-text="title"
+                    item-value="key"
+                    :rules="[rules.required]"
+                    return-object
+                    clearable
+                  ></v-autocomplete>
+                </v-col>
+                <v-col cols="12">
+                  <v-autocomplete
+                    label="Select Asset"
+                    v-model="newPersonAsset.serializedAssetId"
+                    :items="availableForCheckoutPersonAssets"
+                    item-text="title"
+                    item-value="key"
+                    :rules="[rules.required]"
+                    return-object
+                    clearable
+                  ></v-autocomplete>
+                </v-col>
+                <v-col cols="12">
+                  <v-checkbox
+                    v-model="indefiniteCheckout"
+                    label="Indefinite Checkout"
+                  ></v-checkbox>
+                </v-col>
+                <v-col cols="12" v-if="!indefiniteCheckout">
+                  <v-menu
+                    v-model="menu"
+                    :close-on-content-click="false"
+                    :nudge-right="40"
+                    transition="scale-transition"
+                    offset-y
+                    min-width="auto"
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-text-field
+                        v-model="formattedCheckinDate"
+                        label="Expected Checkin Date"
+                        prepend-icon="mdi-calendar"
+                        :rules="[rules.required]"
+                        readonly
+                        v-bind="attrs"
+                        @click="menu = !menu"
+                      ></v-text-field>
+                    </template>
+                    <v-date-picker
+                      v-model="expectedCheckinDate"
+                      @input="menu = false"
+                    ></v-date-picker>
+                  </v-menu>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="cancelgrey" text @click="closePersonCheckoutDialog"
+              >Cancel</v-btn
+            >
+            <v-btn
+              color="saveblue"
+              text
+              @click="savePersonCheckout"
+              :disabled="!checkoutFormValid"
+              >Checkout</v-btn
+            >
+          </v-card-actions>
+        </v-form>
       </v-card>
     </v-dialog>
 
@@ -1202,11 +1178,12 @@ onMounted(async () => {
         <v-card-title>
           <span class="headline">Check-in Asset</span>
         </v-card-title>
-        <v-card-text>
-          <v-container>
-            <v-row>
-              <v-col cols="12">
-                <!-- <v-autocomplete
+        <v-form ref="personCheckinForm" v-model="checkinFormValid">
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <!-- <v-autocomplete
                   label="Select Person"
                   v-model="newPersonAsset.personId"
                   :items="peopleWithCheckedOutAssets"
@@ -1216,31 +1193,36 @@ onMounted(async () => {
                   return-object
                   clearable
                 ></v-autocomplete> -->
-              </v-col>
-              <v-col cols="12">
-                <v-autocomplete
-                  label="Select Asset for Check-in"
-                  v-model="selectedPersonAsset"
-                  :items="availableForCheckinPersonAssets"
-                  item-text="title"
-                  item-value="personAssetId"
-                  :rules="[rules.required]"
-                  return-object
-                  clearable
-                ></v-autocomplete>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="cancelgrey" text @click="closePersonCheckinDialog"
-            >Cancel</v-btn
-          >
-          <v-btn color="saveblue" text @click="savePersonCheckin"
-            >Check-in</v-btn
-          >
-        </v-card-actions>
+                </v-col>
+                <v-col cols="12">
+                  <v-autocomplete
+                    label="Select Asset for Check-in"
+                    v-model="selectedPersonAsset"
+                    :items="availableForCheckinPersonAssets"
+                    item-text="title"
+                    item-value="personAssetId"
+                    :rules="[rules.required]"
+                    return-object
+                    clearable
+                  ></v-autocomplete>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="cancelgrey" text @click="closePersonCheckinDialog"
+              >Cancel</v-btn
+            >
+            <v-btn
+              color="saveblue"
+              text
+              @click="savePersonCheckin"
+              :disabled="!checkinFormValid"
+              >Check-in</v-btn
+            >
+          </v-card-actions>
+        </v-form>
       </v-card>
     </v-dialog>
 
@@ -1250,76 +1232,83 @@ onMounted(async () => {
         <v-card-title>
           <span class="headline">Checkout Asset</span>
         </v-card-title>
-        <v-card-text>
-          <v-container>
-            <v-row>
-              <v-col cols="12">
-                <v-autocomplete
-                  label="Select Building"
-                  v-model="newBuildingAsset.buildingId"
-                  :items="buildings"
-                  item-text="title"
-                  item-value="key"
-                  :rules="[rules.required]"
-                  return-object
-                  clearable
-                ></v-autocomplete>
-              </v-col>
-              <v-col cols="12">
-                <v-autocomplete
-                  label="Select Asset"
-                  v-model="newBuildingAsset.serializedAssetId"
-                  :items="availableForCheckoutBuildingAssets"
-                  item-text="title"
-                  item-value="key"
-                  :rules="[rules.required]"
-                  return-object
-                  clearable
-                ></v-autocomplete>
-              </v-col>
-              <v-col cols="12">
-                <v-checkbox
-                  v-model="indefiniteCheckout"
-                  label="Indefinite Checkout"
-                ></v-checkbox>
-              </v-col>
-              <v-col cols="12" v-if="!indefiniteCheckout">
-                <v-menu
-                  v-model="menu"
-                  :close-on-content-click="false"
-                  :nudge-right="40"
-                  transition="scale-transition"
-                  offset-y
-                  min-width="auto"
-                >
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-text-field
-                      v-model="formattedCheckinDate"
-                      label="Expected Checkin Date"
-                      prepend-icon="mdi-calendar"
-                      readonly
-                      v-bind="attrs"
-                      @click="menu = !menu"
-                    ></v-text-field>
-                  </template>
-                  <v-date-picker
-                    v-model="expectedCheckinDate"
-                    @input="menu = false"
-                  ></v-date-picker>
-                </v-menu>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="cancelgrey" text @click="closeBuildingCheckoutDialog"
-            >Cancel</v-btn
-          >
-          <v-btn color="saveblue" text @click="saveBuildingCheckout"
-            >Checkout</v-btn
-          >
-        </v-card-actions>
+        <v-form ref="buildingCheckoutForm" v-model="checkoutFormValid">
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <v-autocomplete
+                    label="Select Building"
+                    v-model="newBuildingAsset.buildingId"
+                    :items="buildings"
+                    item-text="title"
+                    item-value="key"
+                    :rules="[rules.required]"
+                    return-object
+                    clearable
+                  ></v-autocomplete>
+                </v-col>
+                <v-col cols="12">
+                  <v-autocomplete
+                    label="Select Asset"
+                    v-model="newBuildingAsset.serializedAssetId"
+                    :items="availableForCheckoutBuildingAssets"
+                    item-text="title"
+                    item-value="key"
+                    :rules="[rules.required]"
+                    return-object
+                    clearable
+                  ></v-autocomplete>
+                </v-col>
+                <v-col cols="12">
+                  <v-checkbox
+                    v-model="indefiniteCheckout"
+                    label="Indefinite Checkout"
+                  ></v-checkbox>
+                </v-col>
+                <v-col cols="12" v-if="!indefiniteCheckout">
+                  <v-menu
+                    v-model="menu"
+                    :close-on-content-click="false"
+                    :nudge-right="40"
+                    transition="scale-transition"
+                    offset-y
+                    min-width="auto"
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-text-field
+                        v-model="formattedCheckinDate"
+                        label="Expected Checkin Date"
+                        prepend-icon="mdi-calendar"
+                        :rules="[rules.required]"
+                        readonly
+                        v-bind="attrs"
+                        @click="menu = !menu"
+                      ></v-text-field>
+                    </template>
+                    <v-date-picker
+                      v-model="expectedCheckinDate"
+                      @input="menu = false"
+                    ></v-date-picker>
+                  </v-menu>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="cancelgrey" text @click="closeBuildingCheckoutDialog"
+              >Cancel</v-btn
+            >
+            <v-btn
+              color="saveblue"
+              text
+              @click="saveBuildingCheckout"
+              :disabled="!checkoutFormValid"
+              >Checkout</v-btn
+            >
+          </v-card-actions>
+        </v-form>
       </v-card>
     </v-dialog>
 
@@ -1329,11 +1318,12 @@ onMounted(async () => {
         <v-card-title>
           <span class="headline">Check-in Asset</span>
         </v-card-title>
-        <v-card-text>
-          <v-container>
-            <v-row>
-              <v-col cols="12">
-                <!-- <v-autocomplete
+        <v-form ref="buildingCheckinForm" v-model="checkinFormValid">
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <!-- <v-autocomplete
                   label="Select Building"
                   v-model="newBuildingAsset.buildingId"
                   :items="buildingsWithCheckedOutAssets"
@@ -1343,31 +1333,36 @@ onMounted(async () => {
                   return-object
                   clearable
                 ></v-autocomplete> -->
-              </v-col>
-              <v-col cols="12">
-                <v-autocomplete
-                  label="Select Asset for Check-in"
-                  v-model="selectedBuildingAsset"
-                  :items="availableForCheckinBuildingAssets"
-                  item-text="title"
-                  item-value="buildingAssetId"
-                  :rules="[rules.required]"
-                  return-object
-                  clearable
-                ></v-autocomplete>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="cancelgrey" text @click="closeBuildingCheckinDialog"
-            >Cancel</v-btn
-          >
-          <v-btn color="saveblue" text @click="saveBuildingCheckin"
-            >Check-in</v-btn
-          >
-        </v-card-actions>
+                </v-col>
+                <v-col cols="12">
+                  <v-autocomplete
+                    label="Select Asset for Check-in"
+                    v-model="selectedBuildingAsset"
+                    :items="availableForCheckinBuildingAssets"
+                    item-text="title"
+                    item-value="buildingAssetId"
+                    :rules="[rules.required]"
+                    return-object
+                    clearable
+                  ></v-autocomplete>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="cancelgrey" text @click="closeBuildingCheckinDialog"
+              >Cancel</v-btn
+            >
+            <v-btn
+              color="saveblue"
+              text
+              @click="saveBuildingCheckin"
+              :disabled="!checkinFormValid"
+              >Check-in</v-btn
+            >
+          </v-card-actions>
+        </v-form>
       </v-card>
     </v-dialog>
 
@@ -1377,76 +1372,83 @@ onMounted(async () => {
         <v-card-title>
           <span class="headline">Checkout Asset</span>
         </v-card-title>
-        <v-card-text>
-          <v-container>
-            <v-row>
-              <v-col cols="12">
-                <v-autocomplete
-                  label="Select Room"
-                  v-model="newRoomAsset.roomId"
-                  :items="rooms"
-                  item-text="title"
-                  item-value="key"
-                  :rules="[rules.required]"
-                  return-object
-                  clearable
-                ></v-autocomplete>
-              </v-col>
-              <v-col cols="12">
-                <v-autocomplete
-                  label="Select Asset"
-                  v-model="newRoomAsset.serializedAssetId"
-                  :items="availableForCheckoutRoomAssets"
-                  item-text="title"
-                  item-value="key"
-                  :rules="[rules.required]"
-                  return-object
-                  clearable
-                ></v-autocomplete>
-              </v-col>
-              <v-col cols="12">
-                <v-checkbox
-                  v-model="indefiniteCheckout"
-                  label="Indefinite Checkout"
-                ></v-checkbox>
-              </v-col>
-              <v-col cols="12" v-if="!indefiniteCheckout">
-                <v-menu
-                  v-model="menu"
-                  :close-on-content-click="false"
-                  :nudge-right="40"
-                  transition="scale-transition"
-                  offset-y
-                  min-width="auto"
-                >
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-text-field
-                      v-model="formattedCheckinDate"
-                      label="Expected Checkin Date"
-                      prepend-icon="mdi-calendar"
-                      readonly
-                      v-bind="attrs"
-                      @click="menu = !menu"
-                    ></v-text-field>
-                  </template>
-                  <v-date-picker
-                    v-model="expectedCheckinDate"
-                    @input="menu = false"
-                  ></v-date-picker>
-                </v-menu>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="cancelgrey" text @click="closeRoomCheckoutDialog"
-            >Cancel</v-btn
-          >
-          <v-btn color="saveblue" text @click="saveRoomCheckout"
-            >Checkout</v-btn
-          >
-        </v-card-actions>
+        <v-form ref="roomCheckoutForm" v-model="checkoutFormValid">
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <v-autocomplete
+                    label="Select Room"
+                    v-model="newRoomAsset.roomId"
+                    :items="rooms"
+                    item-text="title"
+                    item-value="key"
+                    :rules="[rules.required]"
+                    return-object
+                    clearable
+                  ></v-autocomplete>
+                </v-col>
+                <v-col cols="12">
+                  <v-autocomplete
+                    label="Select Asset"
+                    v-model="newRoomAsset.serializedAssetId"
+                    :items="availableForCheckoutRoomAssets"
+                    item-text="title"
+                    item-value="key"
+                    :rules="[rules.required]"
+                    return-object
+                    clearable
+                  ></v-autocomplete>
+                </v-col>
+                <v-col cols="12">
+                  <v-checkbox
+                    v-model="indefiniteCheckout"
+                    label="Indefinite Checkout"
+                  ></v-checkbox>
+                </v-col>
+                <v-col cols="12" v-if="!indefiniteCheckout">
+                  <v-menu
+                    v-model="menu"
+                    :close-on-content-click="false"
+                    :nudge-right="40"
+                    transition="scale-transition"
+                    offset-y
+                    min-width="auto"
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-text-field
+                        v-model="formattedCheckinDate"
+                        label="Expected Checkin Date"
+                        prepend-icon="mdi-calendar"
+                        :rules="[rules.required]"
+                        readonly
+                        v-bind="attrs"
+                        @click="menu = !menu"
+                      ></v-text-field>
+                    </template>
+                    <v-date-picker
+                      v-model="expectedCheckinDate"
+                      @input="menu = false"
+                    ></v-date-picker>
+                  </v-menu>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="cancelgrey" text @click="closeRoomCheckoutDialog"
+              >Cancel</v-btn
+            >
+            <v-btn
+              color="saveblue"
+              text
+              @click="saveRoomCheckout"
+              :disabled="!checkoutFormValid"
+              >Checkout</v-btn
+            >
+          </v-card-actions>
+        </v-form>
       </v-card>
     </v-dialog>
 
@@ -1456,11 +1458,12 @@ onMounted(async () => {
         <v-card-title>
           <span class="headline">Check-in Asset</span>
         </v-card-title>
-        <v-card-text>
-          <v-container>
-            <v-row>
-              <v-col cols="12">
-                <!-- <v-autocomplete
+        <v-form ref="roomCheckinForm" v-model="checkinFormValid">
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <!-- <v-autocomplete
                   label="Select Room"
                   v-model="newRoomAsset.roomId"
                   :items="roomsWithCheckedOutAssets"
@@ -1470,29 +1473,36 @@ onMounted(async () => {
                   return-object
                   clearable
                 ></v-autocomplete> -->
-              </v-col>
-              <v-col cols="12">
-                <v-autocomplete
-                  label="Select Asset for Check-in"
-                  v-model="selectedRoomAsset"
-                  :items="availableForCheckinRoomAssets"
-                  item-text="title"
-                  item-value="roomAssetId"
-                  :rules="[rules.required]"
-                  return-object
-                  clearable
-                ></v-autocomplete>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="cancelgrey" text @click="closeRoomCheckinDialog"
-            >Cancel</v-btn
-          >
-          <v-btn color="saveblue" text @click="saveRoomCheckin">Check-in</v-btn>
-        </v-card-actions>
+                </v-col>
+                <v-col cols="12">
+                  <v-autocomplete
+                    label="Select Asset for Check-in"
+                    v-model="selectedRoomAsset"
+                    :items="availableForCheckinRoomAssets"
+                    item-text="title"
+                    item-value="roomAssetId"
+                    :rules="[rules.required]"
+                    return-object
+                    clearable
+                  ></v-autocomplete>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="cancelgrey" text @click="closeRoomCheckinDialog"
+              >Cancel</v-btn
+            >
+            <v-btn
+              color="saveblue"
+              text
+              @click="saveRoomCheckin"
+              :disabled="!checkinFormValid"
+              >Check-in</v-btn
+            >
+          </v-card-actions>
+        </v-form>
       </v-card>
     </v-dialog>
 

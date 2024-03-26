@@ -196,6 +196,7 @@ const activateSerializedAsset = async (serializedAssetId) => {
 const baseSerializedAssetHeaders = ref([
   { title: "Serial Number", key: "serialNumber" },
   { title: "Notes", key: "notes" },
+  { title: "Status", key: "checkoutStatus" },
 ]);
 
 
@@ -232,7 +233,6 @@ if (store.getters.canDelete) {
 return headers;
   
 });
-
 
 
 // Misc Section
@@ -300,6 +300,10 @@ const goBack = () => {
   router.replace("/assetManage");
 };
 
+const translateStatus = (status) => {
+  return status ? "Checked Out" : "Checked In";
+};
+
 // Call this once to load the default tab's data when the component mounts
 onMounted(async () => {
   console.log(
@@ -333,7 +337,6 @@ onMounted(async () => {
       <v-row>
         <v-col cols="12">
           <v-fade-transition mode="out-in">
-
             <!-- Active asset for profile Section -->
             <div v-if="selectedStatus === 'Active'">
               <v-card>
@@ -357,14 +360,17 @@ onMounted(async () => {
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
                   >
+                    <template v-slot:item.checkoutStatus="{ item }">
+                      <td>{{ translateStatus(item.checkoutStatus) }}</td>
+                    </template>
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editSerializedAsset(item)">
+                      <v-btn icon class="table-icons" @click="editSerializedAsset(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.archive="{ item }">
                       <v-btn
-                        icon
+                        icon class="table-icons"
                         @click="
                           openArchiveDialog({
                             id: item.key,
@@ -395,14 +401,17 @@ onMounted(async () => {
                     :items-per-page="5"
                     :items-per-page-options="[5, 10, 20, 50, -1]"
                   >
+                    <template v-slot:item.checkoutStatus="{ item }">
+                      <td>{{ translateStatus(item.checkoutStatus) }}</td>
+                    </template>
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editSerializedAsset(item)">
+                      <v-btn icon class="table-icons" @click="editSerializedAsset(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.activate="{ item }">
                       <v-btn
-                        icon
+                        icon class="table-icons"
                         @click="
                           openActivateDialog({
                             id: item.key,
@@ -415,7 +424,7 @@ onMounted(async () => {
                     </template>
                     <template v-slot:item.delete="{ item }">
                       <v-btn
-                        icon
+                        icon class="table-icons"
                         @click="
                           openDeleteConfirmDialog({
                             id: item.key,
@@ -482,7 +491,7 @@ onMounted(async () => {
         </v-card-actions>
       </v-card>
     </v-dialog>
-    
+
     <!-- Confirm Delete Dialog -->
     <v-dialog v-model="showDeleteConfirmDialog" max-width="500px">
       <v-card>
