@@ -333,13 +333,13 @@ onMounted(async () => {
                       <td>{{ translateStatus(item.checkoutStatus) }}</td>
                     </template>
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editSerializedAsset(item)">
+                      <v-btn icon class="table-icons" @click="editSerializedAsset(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.archive="{ item }">
                       <v-btn
-                        icon
+                        icon class="table-icons"
                         @click="
                           openArchiveDialog({
                             id: item.key,
@@ -374,13 +374,13 @@ onMounted(async () => {
                       <td>{{ translateStatus(item.checkoutStatus) }}</td>
                     </template>
                     <template v-slot:item.edit="{ item }">
-                      <v-btn icon @click="editSerializedAsset(item)">
+                      <v-btn icon class="table-icons" @click="editSerializedAsset(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </template>
                     <template v-slot:item.activate="{ item }">
                       <v-btn
-                        icon
+                        icon class="table-icons"
                         @click="
                           openActivateDialog({
                             id: item.key,
@@ -393,7 +393,7 @@ onMounted(async () => {
                     </template>
                     <template v-slot:item.delete="{ item }">
                       <v-btn
-                        icon
+                        icon class="table-icons"
                         @click="
                           openDeleteConfirmDialog({
                             id: item.key,
