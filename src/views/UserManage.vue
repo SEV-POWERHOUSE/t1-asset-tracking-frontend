@@ -283,6 +283,7 @@ onMounted(async () => {
                             :items="roleNames"
                             label="Select Role"
                             class="select-fixed-width"
+                            variant="solo"
                             return-object
                             clearable
                           ></v-autocomplete>
