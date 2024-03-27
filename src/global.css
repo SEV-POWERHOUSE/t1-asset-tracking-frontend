@@ -1,11 +1,12 @@
 .select-fixed-width {
-  width: 250px;
+  width: 350px;
+  padding-top: 15px;
+
 }
 
-/* snackbarStyles.css */
 .custom-snackbar {
   position: fixed !important;
-  top: 115px; /* Adjust this value as needed to move the snackbar down */
+  top: 115px;
   left: 50%;
   transform: translateX(-50%);
   bottom: auto !important;

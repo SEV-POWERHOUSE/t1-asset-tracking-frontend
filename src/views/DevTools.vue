@@ -101,7 +101,7 @@ onMounted(fetchDevUsersAndRoles);
 <template>
   <div>
     <v-container>
-      <v-card>
+      <v-card class="elevation-1" style="max-width: 800px; margin: auto;">
         <v-card-title class="d-flex justify-space-between align-center">
           <span>Dev Tools</span>
           <v-btn
@@ -129,7 +129,8 @@ onMounted(fetchDevUsersAndRoles);
                     v-model="item.selectedRoleName"
                     :items="roleNames"
                     label="Select Role"
-                    class="select-fixed-width"
+                    variant="solo"
+                    class= "select-fixed-width"
                   ></v-select>
                 </td>
               </tr>
