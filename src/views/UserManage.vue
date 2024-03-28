@@ -283,6 +283,7 @@ onMounted(async () => {
                             :items="roleNames"
                             label="Select Role"
                             class="select-fixed-width"
+                            variant="solo"
                             return-object
                             clearable
                           ></v-autocomplete>
@@ -321,10 +322,10 @@ onMounted(async () => {
                     v-model:sort-by="userRolesSortBy"
                   >
                     <template v-slot:item.actions="{ item }">
-                      <v-btn icon @click="editUserRole(item)">
+                      <v-btn icon class="table-icons" @click="editUserRole(item)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
-                      <v-btn icon @click="() => openDeleteConfirmDialog(item)">
+                      <v-btn icon class="table-icons" @click="() => openDeleteConfirmDialog(item)">
                         <v-icon color="primary">mdi-delete</v-icon>
                       </v-btn>
                     </template>
