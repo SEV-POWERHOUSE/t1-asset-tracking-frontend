@@ -90,6 +90,8 @@ const retrievePersonAssets = async () => {
         checkoutStatus: personAsset.checkoutStatus,
         expectedCheckinDate: personAsset.expectedCheckinDate,
         checkinDate: personAsset.checkinDate,
+        checkedOutBy: personAsset.checkedOutBy,
+        checkedInBy: personAsset.checkedInBy,
       };
     });
   } catch (error) {
@@ -140,6 +142,8 @@ const retrieveBuildingAssets = async () => {
         checkoutStatus: buildingAsset.checkoutStatus,
         expectedCheckinDate: buildingAsset.expectedCheckinDate,
         checkinDate: buildingAsset.checkinDate,
+        checkedOutBy: personAsset.checkedOutBy,
+        checkedInBy: personAsset.checkedInBy,
       };
     });
   } catch (error) {
@@ -188,6 +192,8 @@ const retrieveRoomAssets = async () => {
         checkoutStatus: roomAsset.checkoutStatus,
         expectedCheckinDate: roomAsset.expectedCheckinDate,
         checkinDate: roomAsset.checkinDate,
+        checkedOutBy: personAsset.checkedOutBy,
+        checkedInBy: personAsset.checkedInBy,
       };
     });
   } catch (error) {
@@ -199,8 +205,9 @@ const retrieveRoomAssets = async () => {
 const activityHeaders = ref([
   { title: "Owner/Facility", key: "owner" },
   { title: "Asset", key: "assetTitle" },
-  { title: "Asset Type", key: "assetType" },
+  { title: "Owner/Facility Type", key: "assignmentType" },
   { title: "Activity Type", key: "activityType" },
+  { title: "Checked Out/In By", key: "activityBy" },
   { title: "Most Recent Date", key: "mostRecentDate" },
 ]);
 
@@ -226,7 +233,8 @@ const combinedAssets = computed(() => {
         assetTitle: assetTitle,
         activityType: "Checkout",
         mostRecentDate: asset.checkoutDate,
-        assetType: "Person Asset",
+        assignmentType: "Person Asset",
+        activityBy: asset.checkedOutBy,
       });
     }
 
@@ -237,7 +245,8 @@ const combinedAssets = computed(() => {
         assetTitle: assetTitle,
         activityType: "Check-in",
         mostRecentDate: asset.checkinDate,
-        assetType: "Person Asset",
+        assignmentType: "Person Asset",
+        activityBy: asset.checkedInBy,
       });
     }
   });
@@ -259,7 +268,7 @@ const combinedAssets = computed(() => {
         assetTitle: assetTitle,
         activityType: "Checkout",
         mostRecentDate: asset.checkoutDate,
-        assetType: "Building Asset",
+        assignmentType: "Building Asset",
       });
     }
 
@@ -269,7 +278,7 @@ const combinedAssets = computed(() => {
         assetTitle: assetTitle,
         activityType: "Check-in",
         mostRecentDate: asset.checkinDate,
-        assetType: "Building Asset",
+        assignmentType: "Building Asset",
       });
     }
   });
@@ -291,7 +300,7 @@ const combinedAssets = computed(() => {
         assetTitle: assetTitle,
         activityType: "Checkout",
         mostRecentDate: asset.checkoutDate,
-        assetType: "Room Asset",
+        assignmentType: "Room Asset",
       });
     }
 
@@ -301,7 +310,7 @@ const combinedAssets = computed(() => {
         assetTitle: assetTitle,
         activityType: "Check-in",
         mostRecentDate: asset.checkinDate,
-        assetType: "Room Asset",
+        assignmentType: "Room Asset",
       });
     }
   });
@@ -315,7 +324,7 @@ const combinedAssets = computed(() => {
     .sort((a, b) => b.mostRecentDateObj - a.mostRecentDateObj)
     .map(({ mostRecentDateObj, ...activity }) => ({
       ...activity,
-      mostRecentDate: format(mostRecentDateObj, "MMM dd, yyyy"),
+      mostRecentDate: format(mostRecentDateObj, "MMM dd, yyyy - h:mm a"),
     }));
 });
 

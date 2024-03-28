@@ -18,10 +18,11 @@ export default {
   updateCheckoutStatus(roomAssetId, checkoutStatus) {
     return this.update(roomAssetId, { checkoutStatus: checkoutStatus });
   },
-  updateCheckoutStatusAndDate(roomAssetId, checkoutStatus, date) {
-    return this.update(roomAssetId, {
+  updateCheckoutStatusAndDate(personAssetId, checkoutStatus, date, checkedInBy) {
+    return this.update(personAssetId, {
       checkoutStatus: checkoutStatus,
       checkinDate: date,
+      checkedInBy: checkedInBy,
     });
   },
   delete(roomAssetId) {
