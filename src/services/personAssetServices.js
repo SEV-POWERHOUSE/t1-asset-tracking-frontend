@@ -18,10 +18,11 @@ export default {
   updateCheckoutStatus(personAssetId, checkoutStatus) {
     return this.update(personAssetId, { checkoutStatus: checkoutStatus });
   },
-  updateCheckoutStatusAndDate(personAssetId, checkoutStatus, date) {
+  updateCheckoutStatusAndDate(personAssetId, checkoutStatus, date, checkedInBy) {
     return this.update(personAssetId, {
       checkoutStatus: checkoutStatus,
       checkinDate: date,
+      checkedInBy: checkedInBy,
     });
   },
   delete(personAssetId) {

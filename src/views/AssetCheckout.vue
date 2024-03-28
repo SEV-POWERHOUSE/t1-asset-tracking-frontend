@@ -7,6 +7,7 @@ import BuildingAssetServices from "../services/buildingAssetServices";
 import RoomServices from "../services/roomServices";
 import RoomAssetServices from "../services/roomAssetServices";
 import { ref, onMounted, watch, computed } from "vue";
+import store from "../store/store.js";
 import { parseISO, formatISO, format } from "date-fns";
 import { utcToZonedTime, zonedTimeToUtc } from "date-fns-tz";
 
@@ -43,6 +44,9 @@ const indefiniteCheckout = ref(true);
 const expectedCheckinDate = ref(null);
 const snackbar = ref(false);
 const snackbarText = ref("");
+const loginUser = computed(() => store.getters.getLoginUserInfo);
+const checkedOutInByFullName = `${loginUser.value.fName} ${loginUser.value.lName}`;
+console.log(loginUser.value);
 const checkoutSortBy = ref([{ key: "checkoutDate", order: "desc" }]);
 const checkinSortBy = ref([{ key: "checkinDate", order: "desc" }]);
 const rules = {
@@ -54,6 +58,7 @@ const newPersonAsset = ref({
   checkoutDate: "",
   checkoutStatus: "",
   expectedCheckinDate: "",
+  checkedOutBy: "",
 });
 const newBuildingAsset = ref({
   serializedAssetId: "",
@@ -61,6 +66,7 @@ const newBuildingAsset = ref({
   checkoutDate: "",
   checkoutStatus: "",
   expectedCheckinDate: "",
+  checkedOutBy: "",
 });
 const newRoomAsset = ref({
   serializedAssetId: "",
@@ -68,6 +74,7 @@ const newRoomAsset = ref({
   checkoutDate: "",
   checkoutStatus: "",
   expectedCheckinDate: "",
+  checkedOutBy: "",
 });
 
 // *** People Section ***
@@ -115,6 +122,8 @@ const retrievePersonAssets = async () => {
         checkoutStatus: personAsset.checkoutStatus,
         expectedCheckinDate: personAsset.expectedCheckinDate,
         checkinDate: personAsset.checkinDate,
+        checkedOutBy: personAsset.checkedOutBy,
+        checkedInBy: personAsset.checkedInBy,
       };
     });
   } catch (error) {
@@ -142,6 +151,7 @@ const savePersonCheckout = async () => {
       checkoutDate: formattedDate,
       checkoutStatus: true,
       expectedCheckinDate: checkinDate,
+      checkedOutBy: checkedOutInByFullName,
     };
 
     try {
@@ -187,7 +197,8 @@ const savePersonCheckin = async () => {
       await PersonAssetServices.updateCheckoutStatusAndDate(
         selectedPersonAsset.personAssetId,
         false,
-        formattedDate
+        formattedDate,
+        checkedOutInByFullName // Pass the name of the user checking in the asset
       );
       await SerializedAssetServices.updateCheckoutStatus(
         selectedPersonAsset.serializedAssetId,
@@ -258,6 +269,7 @@ const personAssetCheckoutHeaders = ref([
   { title: "Owner", key: "fullName" },
   { title: "Asset", key: "title" },
   { title: "Status", key: "checkoutStatus" },
+  { title: "Checked-out By", key: "checkedOutBy" },
   { title: "Expected Check-in Date", key: "expectedCheckinDate" },
   { title: "Checkout Date", key: "checkoutDate" },
 ]);
@@ -267,6 +279,7 @@ const personAssetCheckinHeaders = ref([
   { title: "Owner", key: "fullName" },
   { title: "Asset", key: "title" },
   { title: "Status", key: "checkoutStatus" },
+  { title: "Checked-in By", key: "checkedInBy" },
   { title: "Expected Check-in Date", key: "expectedCheckinDate" },
   { title: "Check-in Date", key: "checkinDate" },
 ]);
@@ -325,6 +338,8 @@ const retrieveBuildingAssets = async () => {
         checkoutStatus: buildingAsset.checkoutStatus,
         expectedCheckinDate: buildingAsset.expectedCheckinDate,
         checkinDate: buildingAsset.checkinDate,
+        checkedOutBy: buildingAsset.checkedOutBy,
+        checkedInBy: buildingAsset.checkedInBy,
       };
     });
   } catch (error) {
@@ -355,6 +370,7 @@ const saveBuildingCheckout = async () => {
       checkoutDate: formattedDate,
       checkoutStatus: true,
       expectedCheckinDate: checkinDate,
+      checkedOutBy: checkedOutInByFullName,
     };
 
     try {
@@ -400,7 +416,8 @@ const saveBuildingCheckin = async () => {
       await BuildingAssetServices.updateCheckoutStatusAndDate(
         selectedBuildingAsset.buildingAssetId,
         false,
-        formattedDate
+        formattedDate,
+        checkedOutInByFullName // Pass the name of the user checking in the asset
       );
       await SerializedAssetServices.updateCheckoutStatus(
         selectedBuildingAsset.serializedAssetId,
@@ -465,6 +482,7 @@ const buildingAssetCheckoutHeaders = ref([
   { title: "Building", key: "name" },
   { title: "Asset", key: "title" },
   { title: "Status", key: "checkoutStatus" },
+  { title: "Checked-out By", key: "checkedOutBy" },
   { title: "Expected Check-in Date", key: "expectedCheckinDate" },
   { title: "Checkout Date", key: "checkoutDate" },
 ]);
@@ -474,6 +492,7 @@ const buildingAssetCheckinHeaders = ref([
   { title: "Building", key: "name" },
   { title: "Asset", key: "title" },
   { title: "Status", key: "checkoutStatus" },
+  { title: "Checked-in By", key: "checkedInBy" },
   { title: "Expected Check-in Date", key: "expectedCheckinDate" },
   { title: "Check-in Date", key: "checkinDate" },
 ]);
@@ -530,6 +549,8 @@ const retrieveRoomAssets = async () => {
         checkoutStatus: roomAsset.checkoutStatus,
         expectedCheckinDate: roomAsset.expectedCheckinDate,
         checkinDate: roomAsset.checkinDate,
+        checkedOutBy: roomAsset.checkedOutBy,
+        checkedInBy: roomAsset.checkedInBy,
       };
     });
   } catch (error) {
@@ -557,6 +578,7 @@ const saveRoomCheckout = async () => {
       checkoutDate: formattedDate,
       checkoutStatus: true,
       expectedCheckinDate: checkinDate,
+      checkedOutBy: checkedOutInByFullName,
     };
 
     try {
@@ -602,7 +624,8 @@ const saveRoomCheckin = async () => {
       await RoomAssetServices.updateCheckoutStatusAndDate(
         selectedRoomAsset.roomAssetId,
         false,
-        formattedDate
+        formattedDate,
+        checkedOutInByFullName // Pass the name of the user checking in the asset
       );
       await SerializedAssetServices.updateCheckoutStatus(
         selectedRoomAsset.serializedAssetId,
@@ -663,6 +686,7 @@ const roomAssetCheckoutHeaders = ref([
   { title: "Room", key: "name" },
   { title: "Asset", key: "title" },
   { title: "Status", key: "checkoutStatus" },
+  { title: "Checked-out By", key: "checkedOutBy" },
   { title: "Expected Check-in Date", key: "expectedCheckinDate" },
   { title: "Checkout Date", key: "checkoutDate" },
 ]);
@@ -672,6 +696,7 @@ const roomAssetCheckinHeaders = ref([
   { title: "Room", key: "name" },
   { title: "Asset", key: "title" },
   { title: "Status", key: "checkoutStatus" },
+  { title: "Checked-in By", key: "checkedInBy" },
   { title: "Expected Check-in Date", key: "expectedCheckinDate" },
   { title: "Check-in Date", key: "checkinDate" },
 ]);
@@ -718,6 +743,14 @@ const translateStatus = (status) => {
 };
 
 const formatDate = (dateString) => {
+  if (!dateString) return "Indefinite"; // Return "Indefinite" if dateString is null or undefined
+  // Parse the dateString to a Date object
+  const date = parseISO(dateString);
+  // Format the date as "MMM dd, yyyy"
+  return format(date, "MMM dd, yyyy - h:mm a");
+};
+
+const formatExpectedDate = (dateString) => {
   if (!dateString) return "Indefinite"; // Return "Indefinite" if dateString is null or undefined
   // Parse the dateString to a Date object
   const date = parseISO(dateString);
@@ -828,7 +861,7 @@ onMounted(async () => {
       <v-row>
         <v-col cols="12">
           <v-toolbar>
-            <v-toolbar-title>Asset Checkout</v-toolbar-title>
+            <v-toolbar-title>Asset Check-Out/In</v-toolbar-title>
           </v-toolbar>
         </v-col>
       </v-row>
@@ -885,8 +918,13 @@ onMounted(async () => {
                     <template v-slot:item.checkoutStatus="{ item }">
                       <td>{{ translateStatus(item.checkoutStatus) }}</td>
                     </template>
+                    <template v-slot:item.checkedOutBy="{ item }">
+                      <td>{{ item.checkedOutBy }}</td>
+                    </template>
                     <template v-slot:item.expectedCheckinDate="{ item }">
-                      <td>{{ formatDate(item.expectedCheckinDate) }}</td>
+                      <td>
+                        {{ formatExpectedDate(item.expectedCheckinDate) }}
+                      </td>
                     </template>
                     <template v-slot:item.checkoutDate="{ item }">
                       <td>{{ formatDate(item.checkoutDate) }}</td>
@@ -922,8 +960,13 @@ onMounted(async () => {
                     <template v-slot:item.checkoutStatus="{ item }">
                       <td>{{ translateStatus(item.checkoutStatus) }}</td>
                     </template>
+                    <template v-slot:item.checkedInBy="{ item }">
+                      <td>{{ item.checkedInBy }}</td>
+                    </template>
                     <template v-slot:item.expectedCheckinDate="{ item }">
-                      <td>{{ formatDate(item.expectedCheckinDate) }}</td>
+                      <td>
+                        {{ formatExpectedDate(item.expectedCheckinDate) }}
+                      </td>
                     </template>
                     <template v-slot:item.checkinDate="{ item }">
                       <td>{{ formatDate(item.checkinDate) }}</td>
@@ -961,8 +1004,13 @@ onMounted(async () => {
                     <template v-slot:item.checkoutStatus="{ item }">
                       <td>{{ translateStatus(item.checkoutStatus) }}</td>
                     </template>
+                    <template v-slot:item.checkedOutBy="{ item }">
+                      <td>{{ item.checkedOutBy }}</td>
+                    </template>
                     <template v-slot:item.expectedCheckinDate="{ item }">
-                      <td>{{ formatDate(item.expectedCheckinDate) }}</td>
+                      <td>
+                        {{ formatExpectedDate(item.expectedCheckinDate) }}
+                      </td>
                     </template>
                     <template v-slot:item.checkoutDate="{ item }">
                       <td>{{ formatDate(item.checkoutDate) }}</td>
@@ -1000,8 +1048,13 @@ onMounted(async () => {
                     <template v-slot:item.checkoutStatus="{ item }">
                       <td>{{ translateStatus(item.checkoutStatus) }}</td>
                     </template>
+                    <template v-slot:item.checkedInBy="{ item }">
+                      <td>{{ item.checkedInBy }}</td>
+                    </template>
                     <template v-slot:item.expectedCheckinDate="{ item }">
-                      <td>{{ formatDate(item.expectedCheckinDate) }}</td>
+                      <td>
+                        {{ formatExpectedDate(item.expectedCheckinDate) }}
+                      </td>
                     </template>
                     <template v-slot:item.checkinDate="{ item }">
                       <td>{{ formatDate(item.checkinDate) }}</td>
@@ -1037,8 +1090,13 @@ onMounted(async () => {
                     <template v-slot:item.checkoutStatus="{ item }">
                       <td>{{ translateStatus(item.checkoutStatus) }}</td>
                     </template>
+                    <template v-slot:item.checkedOutBy="{ item }">
+                      <td>{{ item.checkedOutBy }}</td>
+                    </template>
                     <template v-slot:item.expectedCheckinDate="{ item }">
-                      <td>{{ formatDate(item.expectedCheckinDate) }}</td>
+                      <td>
+                        {{ formatExpectedDate(item.expectedCheckinDate) }}
+                      </td>
                     </template>
                     <template v-slot:item.checkoutDate="{ item }">
                       <td>{{ formatDate(item.checkoutDate) }}</td>
@@ -1071,8 +1129,13 @@ onMounted(async () => {
                     <template v-slot:item.checkoutStatus="{ item }">
                       <td>{{ translateStatus(item.checkoutStatus) }}</td>
                     </template>
+                    <template v-slot:item.checkedInBy="{ item }">
+                      <td>{{ item.checkedInBy }}</td>
+                    </template>
                     <template v-slot:item.expectedCheckinDate="{ item }">
-                      <td>{{ formatDate(item.expectedCheckinDate) }}</td>
+                      <td>
+                        {{ formatExpectedDate(item.expectedCheckinDate) }}
+                      </td>
                     </template>
                     <template v-slot:item.checkinDate="{ item }">
                       <td>{{ formatDate(item.checkinDate) }}</td>

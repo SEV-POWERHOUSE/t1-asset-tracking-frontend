@@ -83,7 +83,7 @@ onMounted(() => {
         <!-- Conditional rendering based on user role -->
         <template v-if="isAdmin">
           <v-btn text :to="{ name: 'adminDashboard' }">Admin Dashboard</v-btn>
-          <v-btn text :to="{ name: 'assetCheckout' }">Checkout</v-btn>
+          <v-btn text :to="{ name: 'assetCheckout' }">Check-Out/In</v-btn>
           <v-btn>
             Manage
             <v-menu activator="parent" open-on-hover>
