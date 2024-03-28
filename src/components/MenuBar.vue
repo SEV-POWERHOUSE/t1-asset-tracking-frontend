@@ -53,7 +53,6 @@ const manageActions = computed(() => {
   return actions;
 });
 
-
 const resetMenu = () => {
   user.value = Utils.getStore("user");
   if (user.value && user.value.fName && user.value.lName) {
@@ -78,7 +77,6 @@ const logout = () => {
     });
 };
 
-
 onMounted(() => {
   logoURL.value = ocLogo;
   resetMenu();
@@ -88,9 +86,15 @@ onMounted(() => {
 <template>
   <div>
     <v-app-bar app color="primary">
-      <router-link :to="store.getters.isAdmin ? { name: 'adminDashboard' }
-        : to = store.getters.isRoleAssigned ? { name: 'userDashboard' }
-          : { name: 'unassignedDashboard' }">
+      <router-link
+        :to="
+          store.getters.isAdmin
+            ? { name: 'adminDashboard' }
+            : (to = store.getters.isRoleAssigned
+                ? { name: 'userDashboard' }
+                : { name: 'unassignedDashboard' })
+        "
+      >
         <v-img class="mx-2" :src="logoURL" height="" width="60" contain></v-img>
       </router-link>
       <v-toolbar-title class="mx-5">{{ title }}</v-toolbar-title>
@@ -100,18 +104,25 @@ onMounted(() => {
         <template v-if="isAdmin">
           <v-btn text :to="{ name: 'adminDashboard' }">Admin Dashboard</v-btn>
           <v-btn text :to="{ name: 'assetCheckout' }">Check-Out/In</v-btn>
+        </template>
 
         <template v-else-if="isRoleAssigned">
           <v-btn text :to="{ name: 'userDashboard' }">User Dashboard</v-btn>
         </template>
 
-        <template v-if="canAdd || canDelete || canEdit || canArchive || canActivate">
+        <template
+          v-if="canAdd || canDelete || canEdit || canArchive || canActivate"
+        >
           <v-btn>
             Manage
             <v-menu activator="parent" open-on-hover>
               <v-list>
-                <v-list-item v-for="(item, index) in manageActions" :key="index" :value="index"
-                  @click="router.push({ name: item.component })">
+                <v-list-item
+                  v-for="(item, index) in manageActions"
+                  :key="index"
+                  :value="index"
+                  @click="router.push({ name: item.component })"
+                >
                   <v-list-item-title>{{ item.title }}</v-list-item-title>
                 </v-list-item>
               </v-list>
@@ -119,13 +130,10 @@ onMounted(() => {
           </v-btn>
         </template>
 
-
         <template v-if="isDev">
           <v-btn text :to="{ name: 'devTools' }">Dev Tools</v-btn>
         </template>
       </template>
-
-      
 
       <template v-if="user">
         <v-menu bottom min-width="200px" rounded offset-y>
@@ -163,7 +171,7 @@ onMounted(() => {
 .logo {
   position: absolute;
   padding: 2px;
-  top: 0;/* Adjust as needed */
-  left: 0;/* Adjust as needed */
+  top: 0; /* Adjust as needed */
+  left: 0; /* Adjust as needed */
 }
 </style>
